@@ -14,8 +14,16 @@ CLOSED: [2024-01-03 Wed 14:39]
 CLOSED: [2024-01-04 Thu 14:09]
 - Semblerait que la connexion ethernet échoue à mon bureau
 - Trouver et corriger du problème
+**** DONE Consulter résultats questionnaire de Ammar
+CLOSED: [2024-01-04 Thu 16:37]
+- Ammar a produit et envoyé un questionnaire aux gestionnaires d'observatoires d'environnements naturels
+  - Afin de comprendre l'existant, leurs usages et besoins
+- Disponible ici : https://survey-results.kazem.fr/protected-routes/survey_stats
+- Consulter cette ressource pour en apprendre plus sur l'existant et les problèmes rencontrés par les gestionnaires d'observatoires
+  - Permettrait ensuite d'en discuter avec Ammar
 **** IN-PROGRESS Suivre cours de Guillaume sur les technologies cloud
 - Disponible ici : https://gitlab.inria.fr/pierre/sct-m1info
+**** IN-PROGRESS Régulariser situation du 02/01
 **** TODO Apprendre raccourcis clavier de Fedora
 - Ouvrir terminal
 - Gérer bureaux virtuels
@@ -27,7 +35,6 @@ CLOSED: [2024-01-04 Thu 14:09]
 **** TODO Trouver des ressources sur Docker & Kubernetes
 - Au-delà du cours de Guillaume, existe des ressources pour rentrer plus en détails sur ces outils (talks, livres)
 - Voir pour en trouver et les consulter
-**** IN-PROGRESS Régulariser situation du 02/01
 *** Done
 - Installer logiciels
   - Emacs & Git étaient déjà installé
@@ -72,7 +79,7 @@ CLOSED: [2024-01-04 Thu 14:09]
         - Solaire probablement, mais s'agit d'une ressource intermittente (jour/nuit, été/hiver)
       - L'énergie étant limitée, comment adapter les traitements en fonction de la quantité à disposition (allumer/éteindre capteurs) ?
       - Comment relancer la plateforme si à court de jus momentanément ?
-    - Amar travaille sur ces problématiques
+    - Ammar travaille sur ces problématiques
       - A rencontré et fait un questionnaire à l'attention des gestionnaires d'observatoires
         - Sur l'existant, leurs besoins, leurs attentes
       - Aurait récupérer et mis en forme les résultats de ce questionnaire
@@ -81,7 +88,7 @@ CLOSED: [2024-01-04 Thu 14:09]
       - Plateforme développée par plusieurs doctorant-es
         - Probablement pas parfait d'un point de vue technique
         - Mais de la doc existe (livrables pour projet européen, doc technique)
-      - A été déployé à Valence dans le cadre d'un hackathon
+      - A été déployée à Valence dans le cadre d'un hackathon
         - Consistait à proposer des applis de smart city (application de suivi de l'ensablement du port, application de détection de la fréquentation des différentes activités proposées)
         - Résultats très satisfaisants semblerait
       - But est d'évaluer cette plateforme pour notre nouvel usage
@@ -89,7 +96,7 @@ CLOSED: [2024-01-04 Thu 14:09]
         - De virer ce qui nous est inutile
         - De consolider ce qui existe et intéressant pour nous
         - Et de l'adapter à notre usage
-    - LivingFog repose sur la techno LORAWAN pour la communication
+    - LivingFog repose sur la techno LoRaWAN pour la communication
       - Pratique pour échanger à longue distance en utilisant peu d'énergie
       - Mais faible bande-passante
       - Et qui pose des contraintes supplémentaires
@@ -153,7 +160,8 @@ CLOSED: [2024-01-04 Thu 14:09]
       - Mais permet de reposer sur des machines dédiées à notre usage, offrant ainsi sécurité et confidentialité
     - Majorité des entreprises ont un usage hybride entre cloud public et privé
       - [[file:img/usage-cloud.png]]
-    - 
+    - Et rien n'empêche d'utiliser plusieurs clouds d'un même type
+      - Pour silo-er les apps, avoir de la redondance en cas de panne d'un provider
     - Questions
       - Un peu de mal à formaliser le PaaS et ce qu'il comprend
         - Je vois ça comme une machine avec déjà son OS de setup
@@ -161,10 +169,89 @@ CLOSED: [2024-01-04 Thu 14:09]
         - Mais le cours mentionne la couche middleware
         - Qu'est-ce qu'elle couvre et peut offrir comme services ?
           - Mention de DBs et frameworks HPC
+  - CM2 - Virtualisation
+    - Définition
+      - Un logiciel qui imite un appareil physique
+      - Fournit au moins les mêmes fonctionnalités
+      - Utilise une interface identique
+    - Avantages
+      - Peut être créé et supprimé à la volée
+      - Peut être facilement modifié/configuré
+      - Peut proposer des fonctionnalités supplémentaires à la version physique
+    - Exemples
+      - Clavier virtuel
+      - Disque virtuel
+      - Système de stockage virtuel (NAS, SAN)
+        - Un peu de mal à piger la différence entre ces technos
+      - Réseau virtuel (VLAN, SDN)
+      - Machine virtuelle
+      - Conteneur
+    - Remarques
+      - Slide 8, opération /take snapshot/ : c'est pas /head = new_snapshot/ plutôt ?
+        - Ou /head = empty/ plutôt ?
 - Régulariser situation du 02/01
   - J'ai essayé de déposer mon jour de congé pour le 02/01 le <2024-01-04 Thu>
   - Mais Casa m'empêche de le faire car la date est antérieure à la date du jour
   - À voir au retour de l'assistante d'équipe
+- Consulter résultats questionnaire de Ammar
+  - Résultats obtenus via 59 réponses (17 complètes, 42 incomplètes), couvrant 25 observatoires
+  - Systèmes existants
+    - Sources d'énergie
+      - Principalement du solaire et de la batterie
+      - Comment les observatoires gèrent-ils les limites de ces sources (nuit, batterie vide...) ?
+      - Mentionne une source "Autres", des exemples ?
+    - Techniques de communication
+      - Principalement via mémoire interne (?) et 4G
+        - Qu'est-ce qu'on entend par mémoire interne ?
+        - C'est pas trop coûteux la 4G ?
+    - Équipement info sur site
+      - 47% déclarent que les observatoires incluent de l'équipement info en plus des capteurs
+      - On a une idée du type d'équipement ?
+    - Nombre de capteurs par site
+      - La majorité des sites est regroupée (gausienne) dans les tranches 10-20, 20-50 et 50-100
+    - Utilisation des données par des /operational players/
+      - C'est quoi ?
+    - Détection d'évènements automatique
+      - Peu de détection automatique (17,65%), et encore moins de réponse automatique (29,41%)
+      - À quoi sert la détection sans réponse ?
+      - Exemples de réponse ?
+    - Pré-processing sur site
+      - Peu répandu (29,41%)
+      - À quoi sert ce pré-processing ?
+      - Les données invalides détectées lors de ce pré-processing sont généralement supprimées (81,82%)
+      - Choix ou contrainte ?
+    - Détection automatique de capteurs défectueux
+      - Seulement 5,88% de sites avec cette fonctionnalité
+      - Que font-ils dans ce cas ? Coupure du capteur incriminé ?
+  - Systèmes futurs
+    - Ammar a abordé dans une seconde du questionnaire la question des systèmes futurs et des fonctionnalités désirées
+    - Intégration de données extérieures
+      - En plus des données collectées, une partie considérable des réponses montre un intérêt pour intégrer dans les données d'un site des données extérieures
+      - Plusieurs provenances suggérées
+        - Autres sites/observatoires (52,94%)
+        - Services tiers, e.g. Météo France (76,74%)
+        - Données manuelles (47,06%)
+    - Monitoring de la santé du système
+      - Les réponses au questionnaire montre un intérêt/besoin à ce sujet
+      - Pistes indiquées
+        - Intégrer des données d'autres sources pour aider la détection
+          - Quelles données ?
+          - Comment cela fonctionne ?
+        - Notification
+  - Questions globales
+    - Les figures présentent-elles les résultats des observatoires des 17 réponses complètes uniquement ?
+    - Y a-t-il différents niveaux de réponses aux questions "intéressé-e/non-intéressé-e" ?
+      - Y a une différence entre vouloir "pourquoi pas" une fonctionnalité et avoir besoin d'une fonctionnalité
+      - Cela peut avoir un impact sur les contraintes du système quand la fonctionnalité considérée est "intégrer des données de services tiers" ou "données en temps réel"
+    - Quel est le but de ces observatoires ?
+      - Est-ce qu'ils sont là pour simplement observer ?
+      - Ou certains ont vocation à agir sur l'environnement observé en cas d'évènement (sécheresse, inondation...) ?
+  - Remarques
+    - Choix des couleurs
+      - L'utilisation du vert pour indiqué "non" me paraît non-intuitif
+        - Une couleur proche du vert pour indiquer un résultat positif et une autre proche du rouge pour indiquer un résultat négatif me semble plus commun
+    - Graphique sur l'âge des données collectées
+      - L'unité me paraît pas super adaptée
 ** Backlog
 * Autres
 ** Commandes utiles
@@ -176,3 +263,10 @@ CLOSED: [2024-01-04 Thu 14:09]
 - Afficher image
   - Insérer lien vers image : C-c C-l
   - Toggle inline image : C-c C-x C-v
+- Recherche
+  - /mot RET pour déclencher la recherche
+  - n pour avancer jusqu'à l'occurrence suivante
+  - N pour l'occurrence précédente
+  - ?mot RET pour déclencher la recherche en sens inverse
+- Buffer
+  - Revenir au buffer précédent : SPC TAB
