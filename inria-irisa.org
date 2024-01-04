@@ -1,0 +1,178 @@
+#+STARTUP: inlineimages
+#+TODO: TODO IN-PROGRESS DONE
+#+ORG-IMAGE-ACTUAL-WIDTH: 500px
+
+* Journal de bord
+** Semaine du <2024-01-03 Wed> au <2024-01-05 Fri>
+*** Planned
+**** DONE Installer logiciels
+CLOSED: [2024-01-03 Wed 14:39]
+- Emacs, VSCode, Git, Docker
+**** DONE Configurer Org-mode
+CLOSED: [2024-01-03 Wed 14:39]
+**** DONE Résoudre problème ethernet
+CLOSED: [2024-01-04 Thu 14:09]
+- Semblerait que la connexion ethernet échoue à mon bureau
+- Trouver et corriger du problème
+**** IN-PROGRESS Suivre cours de Guillaume sur les technologies cloud
+- Disponible ici : https://gitlab.inria.fr/pierre/sct-m1info
+**** TODO Apprendre raccourcis clavier de Fedora
+- Ouvrir terminal
+- Gérer bureaux virtuels
+  - Se déplacer entre bureaux
+  - Déplacer applications entre bureaux
+- Augmenter/Diminuer volume
+- Mettre en veille
+- Prendre région en screen
+**** TODO Trouver des ressources sur Docker & Kubernetes
+- Au-delà du cours de Guillaume, existe des ressources pour rentrer plus en détails sur ces outils (talks, livres)
+- Voir pour en trouver et les consulter
+**** IN-PROGRESS Régulariser situation du 02/01
+*** Done
+- Installer logiciels
+  - Emacs & Git étaient déjà installé
+  - A ajouté le repo officiel pour Docker
+  - VSCode, c'était un fichier à installer
+- Configurer Org-mode
+  - Pour org-mode, je suis retourner lire la page de Martin sur la méthodo :
+    - https://people.irisa.fr/Martin.Quinson/Research/Students/Methodo/
+  - Il y parle de spacemacs, une configuration préfaite d'emacs
+    - https://www.spacemacs.org/
+  - Je l'ai installé et fait son tuto
+  - Un peu pertubante initialement puisque cette config combine les commandes de vim & celles d'emacs
+  - À voir ce que cela donne à l'usage
+- Réunion avec Guillaume <2024-01-03 Wed> à 15h00
+  - Questions
+    - Par où commencer ?
+      - Documents à lire ?
+      - Code ?
+    - Comment communiquer ?
+      - Mattermost ?
+  - Notes
+    - Olivier s'intéresse aux capteurs Smartsense
+    - Travaille avec Guillaume sur le projet Terra Forma
+    - Projet coordonné par membre du département de géo-sciences de l'univ de Rennes
+    - Majorité des membres du projet sont non-informaticiens, étudient les sciences de l'environnement
+    - Intéressés par des observatoires de l'environnement naturels
+    - Délimitent des territoires intéressants et les équipent de capteurs intelligents
+    - Solution de base nécessite de récupérer les données sur le terrain après temps de collecte
+      - Mais sujets de recherche peuvent nécessiter de traiter les données régulièrement
+      - Mais territoires pas forcément accessibles
+      - Mettent donc des stations de calculs au sein des environnements
+    - Mais stations de calculs existantes répondent pas au besoin
+      - Généralement propriétaires
+      - Ne permettent que l'archivage des données et la transmission à un cloud
+      - Souhaiteraient mettre en place leurs propres applications
+        - Déclencher des actions (mettre en route capteurs, changer fréquence d'échantillonnage...) suite à un évenement en temps réel
+        - Faire tourner des modèles de l'environnement et les comparer aux données réelles pour les valider/invalider
+          - Et potentiellement évaluer l'état de l'environnement si on joue sur un de ces paramètres
+      - Mais les solutions ne le permettent pas
+    - Utilisation de plateformes de calcul en milieu naturel isolés posent des questions
+      - Où trouver l'énergie pour les alimenter ?
+        - Solaire probablement, mais s'agit d'une ressource intermittente (jour/nuit, été/hiver)
+      - L'énergie étant limitée, comment adapter les traitements en fonction de la quantité à disposition (allumer/éteindre capteurs) ?
+      - Comment relancer la plateforme si à court de jus momentanément ?
+    - Amar travaille sur ces problématiques
+      - A rencontré et fait un questionnaire à l'attention des gestionnaires d'observatoires
+        - Sur l'existant, leurs besoins, leurs attentes
+      - Aurait récupérer et mis en forme les résultats de ce questionnaire
+      - Voir avec lui à ce sujet
+    - En ce qui me concerne, but du projet est de prendre en main la plateforme LivingFog
+      - Plateforme développée par plusieurs doctorant-es
+        - Probablement pas parfait d'un point de vue technique
+        - Mais de la doc existe (livrables pour projet européen, doc technique)
+      - A été déployé à Valence dans le cadre d'un hackathon
+        - Consistait à proposer des applis de smart city (application de suivi de l'ensablement du port, application de détection de la fréquentation des différentes activités proposées)
+        - Résultats très satisfaisants semblerait
+      - But est d'évaluer cette plateforme pour notre nouvel usage
+        - De déterminer ce qui nous intéresse et non
+        - De virer ce qui nous est inutile
+        - De consolider ce qui existe et intéressant pour nous
+        - Et de l'adapter à notre usage
+    - LivingFog repose sur la techno LORAWAN pour la communication
+      - Pratique pour échanger à longue distance en utilisant peu d'énergie
+      - Mais faible bande-passante
+      - Et qui pose des contraintes supplémentaires
+        - Capteurs envoient les données à des gateways qui relaient les messages
+        - Mais pas d'association entre capteurs et gateways
+          - Les messages sont donc dupliqués
+        - La déduplication des messages est effectuée de manière centralisée
+      - Des gens de Terra Forma se penchent dessus, nous, on ne va pas se concentrer dessus
+    - On va plutôt se pencher sur la partie cluster
+      - Utilise des clusters de raspberry
+      - Fait tourner kubernetes dessus pour gérer un ensemble d'applications sur un cluster
+        - Existe des versions allégées de kubernetes k3s pour cluster de raspberry
+    - Première étape est donc de monter en compétence sur les technos correspondantes
+    - Guillaume a un cours sur les technos Cloud
+      - Va m'y donner accès pour que je le suive et que je monte en compétence là-dessus
+    - Creuser plus particulièrement Docker & Kubernetes
+- Résoudre problème ethernet
+  - Guillaume m'a explique que les prises Ethernet ne sont pas toutes rattachées au même réseau
+  - Peut être nécessaire de changer la prise sur laquelle je suis branché
+  - Cela n'a rien changé
+  - Après discussion avec les membres de la DSI, m'ont dit d'ouvrir un ticket pour qu'ils affectent en dur l'adresse mac du dock à ma machine
+  - Ça a résolu mon problème de connexion
+- Suivre cours de Guillaume sur les technologies cloud
+  - CM1 - Introduction au Cloud
+    - Pour offrir un service plutôt qu'un produit, nécessité d'une infrastructure
+    - Cloud offre plusieurs bénéfices aux users
+      - Comparé à un système traditionnel, permet de déléguer la gestion de l'environnement au provider
+      - Permet d'utiliser uniquement les ressources dont l'on a besoin à un instant T
+        - Et non pas perpetuellement les ressources dont l'on a besoin pour tenir la charge lors des pics d'activité
+      - Permet donc de scale de manière flexible en fonction des besoin
+    - Différences entre IaaS, PaaS et SaaS
+      - [[file:img/iaas-paas-saas.png]]
+      - IaaS
+        - Provider ne fournit que les machines virtuelles
+        - C'est aux users de setup leurs machines à partir de l'install de l'OS
+      - PaaS
+        - Ici la machine est déjà installée
+        - Il ne reste plus qu'à installer son ou ses applications
+      - SaaS
+        - Ici, aucune installation nécessaire
+        - On souscrit directement une instance de l'application désirée
+    - Mentionne que certaines entreprises créent leur propre cloud privé
+      - Détaillé par : https://www.datamation.com/cloud/private-vs-public-cloud/
+    - Cloud public
+      - Cloud tel que je l'imagine et connais
+      - Géré par un provider
+      - Les entreprises ont recours à ses services et se "contentent" de l'utiliser
+    - Cloud privé sur site
+      - L'entreprise recrée un cloud chez elle
+        - Data-center, machines, gestion
+      - Pour cela, peut reposer sur des outils mis à disposition par les cloud providers ou des projets OS (OpenStack)
+      - Offre la confidentialité et souveraineté des données
+      - Mais en échange, introduit
+        - Une charge de travail (setup et manage le cloud)
+        - Des coûts à priori (data center, machines)
+        - Une limitation de la scalability (doit acheter des machines supplémentaires lorsque atteint la charge limite)
+    - Cloud privé hébergé
+      - Possible aussi de demander à un provider de s'occuper de notre cloud privé
+      - Caractéristiques similaires à un cloud public
+        - Même si nécessite plus de préparations et de coûts en amonts qu'une offre publique
+      - Mais permet de reposer sur des machines dédiées à notre usage, offrant ainsi sécurité et confidentialité
+    - Majorité des entreprises ont un usage hybride entre cloud public et privé
+      - [[file:img/usage-cloud.png]]
+    - 
+    - Questions
+      - Un peu de mal à formaliser le PaaS et ce qu'il comprend
+        - Je vois ça comme une machine avec déjà son OS de setup
+        - Il ne reste plus qu'à installer son application
+        - Mais le cours mentionne la couche middleware
+        - Qu'est-ce qu'elle couvre et peut offrir comme services ?
+          - Mention de DBs et frameworks HPC
+- Régulariser situation du 02/01
+  - J'ai essayé de déposer mon jour de congé pour le 02/01 le <2024-01-04 Thu>
+  - Mais Casa m'empêche de le faire car la date est antérieure à la date du jour
+  - À voir au retour de l'assistante d'équipe
+** Backlog
+* Autres
+** Commandes utiles
+*** Emacs
+- Naviguer dans le fichier
+  - Haut/bas : k/j
+  - Gauche/droite : h/l
+  - Début/fin : g-g/G
+- Afficher image
+  - Insérer lien vers image : C-c C-l
+  - Toggle inline image : C-c C-x C-v
