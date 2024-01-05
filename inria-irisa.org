@@ -190,6 +190,7 @@ CLOSED: [2024-01-05 Fri 07:57]
     - Remarques
       - Slide 8, opération /take snapshot/ : c'est pas /head = new_snapshot/ plutôt ?
         - Ou /head = empty/ plutôt ?
+  - CM3 - Infrastructures cloud VM-based
 - Régulariser situation du 02/01
   - J'ai essayé de déposer mon jour de congé pour le 02/01 le <2024-01-04 Thu>
   - Mais Casa m'empêche de le faire car la date est antérieure à la date du jour
@@ -256,7 +257,29 @@ CLOSED: [2024-01-05 Fri 07:57]
         - Une couleur proche du vert pour indiquer un résultat positif et une autre proche du rouge pour indiquer un résultat négatif me semble plus commun
     - Graphique sur l'âge des données collectées
       - L'unité me paraît pas super adaptée
+  - Discussion
+    - Source d'énergie
+      - Batterie interne = piles
+      - Mais nécessite tournée régulière pour la maintenance
+        - Nécessaire de toute façon pour récupérer les données
+    - Équipement IT
+      - Ammar n'est pas convaincu qu'il y ait tant d'observatoires sans data logger
+        - À creuser avec les gestionnaires d'observatoires
+    - Operational Players
+      - Organisations tierces, généralement services publiques, qui pourraient utiliser les données collectées par les observatoires pour leur tâche, e.g. alerter la population sur un risque d'inondation, de sécheresse
+      - Mais l'utilisation des données des observatoires par les acteurs opérationnels n'est pas le but de tous les observatoires
+    - Réponse automatique à un event
+      - C'est 30% global, pas juste en réponse à la détection automatique
+      - Y a des events manuels, e.g. le passage en hiver
+    - Hétérogénéité des observatoires
+      - L'ensemble des observatoires montre une grande hétérogénéité de leurs buts, contraintes et besoins
+        - Certains ont accès à la 4G, au réseau électrique
+      - Tous ne nous intéressent pas dans le cadre de ce projet
+      - But du questionnaire est d'identifier les observatoires auxquels nous pouvons apporter quelque chose
 ** Backlog
+*** TODO Lire *OZCAR: The French Network of Critical Zone Observatories*
+- Ammar m'a recommandé cet article pour en apprendre plus sur les observatoires et leurs buts
+- Le consulter
 * Autres
 ** Commandes utiles
 *** Fedora
@@ -291,3 +314,10 @@ CLOSED: [2024-01-05 Fri 07:57]
   - ?mot RET pour déclencher la recherche en sens inverse
 - Buffer
   - Revenir au buffer précédent : SPC TAB
+*** Terminal
+- Ouvrir un nouvel onglet
+  - Ctrl + Shift + T
+- Changer d'onglet
+  - Alt + 1/2/3
+- Fermer onglet
+  - Ctrl + Shift + W
