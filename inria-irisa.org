@@ -21,17 +21,18 @@ CLOSED: [2024-01-04 Thu 16:37]
 - Disponible ici : https://survey-results.kazem.fr/protected-routes/survey_stats
 - Consulter cette ressource pour en apprendre plus sur l'existant et les problèmes rencontrés par les gestionnaires d'observatoires
   - Permettrait ensuite d'en discuter avec Ammar
-**** IN-PROGRESS Suivre cours de Guillaume sur les technologies cloud
-- Disponible ici : https://gitlab.inria.fr/pierre/sct-m1info
-**** IN-PROGRESS Régulariser situation du 02/01
-**** TODO Apprendre raccourcis clavier de Fedora
+**** DONE Apprendre raccourcis clavier de Fedora
+CLOSED: [2024-01-05 Fri 07:57]
 - Ouvrir terminal
 - Gérer bureaux virtuels
   - Se déplacer entre bureaux
   - Déplacer applications entre bureaux
 - Augmenter/Diminuer volume
 - Mettre en veille
-- Prendre région en screen
+- Prendre en screenshot une zone de l'écran
+**** IN-PROGRESS Suivre cours de Guillaume sur les technologies cloud
+- Disponible ici : https://gitlab.inria.fr/pierre/sct-m1info
+**** IN-PROGRESS Régulariser situation du 02/01
 **** TODO Trouver des ressources sur Docker & Kubernetes
 - Au-delà du cours de Guillaume, existe des ressources pour rentrer plus en détails sur ces outils (talks, livres)
 - Voir pour en trouver et les consulter
@@ -246,6 +247,9 @@ CLOSED: [2024-01-04 Thu 16:37]
     - Quel est le but de ces observatoires ?
       - Est-ce qu'ils sont là pour simplement observer ?
       - Ou certains ont vocation à agir sur l'environnement observé en cas d'évènement (sécheresse, inondation...) ?
+    - Y avait-il des questions libres à ce questionnaire ?
+      - Ammar pose des questions sur des aspects précis des observatoires et définit des pistes d'améliorations de par son formulaire
+      - Mais est-ce que d'autres aspects sont importants pour les gestionnaires d'observatoires et n'étaient pas abordés dans le questionnaire ?
   - Remarques
     - Choix des couleurs
       - L'utilisation du vert pour indiqué "non" me paraît non-intuitif
@@ -255,11 +259,28 @@ CLOSED: [2024-01-04 Thu 16:37]
 ** Backlog
 * Autres
 ** Commandes utiles
+*** Fedora
+- Se déplacer entre bureaux virtuels
+  - Ctrl + Alt + Left/Right
+- Déplacer application courante entre bureaux virtuels
+  - Ctrl + Alt + Shift + Left/Right
+- Redimensionner l'application courante
+  - Super + Left/Right/Up/Down
+- Déplacer application courante entre écrans
+  - Super + Shift + Left/Right/Up/Down
+- Prendre en screenshot une zone de l'écran
+  - Print Screen
+- Verrouiller l'écran
+  - Super + l
 *** Emacs
 - Naviguer dans le fichier
   - Haut/bas : k/j
   - Gauche/droite : h/l
   - Début/fin : g-g/G
+- Copier/Coller
+  - Sélection : C-SPC
+  - Copier (yank) : y (ou M-y pour capturer la ligne entière et le retour à la ligne précédent)
+  - Coller : p (après) ou P (avant)
 - Afficher image
   - Insérer lien vers image : C-c C-l
   - Toggle inline image : C-c C-x C-v
