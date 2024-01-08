@@ -3,6 +3,64 @@
 #+ORG-IMAGE-ACTUAL-WIDTH: 500px
 
 * Journal de bord
+** Semaine du <2024-01-08 Mon> au <2024-01-12 Fri>
+*** Planned
+**** IN-PROGRESS Suivre cours de Guillaume sur les technologies cloud
+- Disponible ici : https://gitlab.inria.fr/pierre/sct-m1info
+**** IN-PROGRESS Régulariser situation du 02/01
+**** TODO Trouver des ressources sur Docker & Kubernetes
+- Au-delà du cours de Guillaume, existe des ressources pour rentrer plus en détails sur ces outils (talks, livres)
+- Voir pour en trouver et les consulter
+*** Done
+- Suivre cours de Guillaume sur les technologies cloud
+  - CM5 - Services cloud réseau
+    - S'intéresse aux différents services réseau mis à disposition par les cloud providers
+    - Bien beau d'instancier des VMs/conteneurs
+    - Mais doit leur attribuer une adresse IP privée
+      - Et une adresse IP publique pour ceux qui doivent pouvoir être contactés de l'extérieur
+      - Possède un pool d'adresses IPs qui vont être attribuées dynamiquement aux instances
+    - Doit créer les routes de communication entre ces instances, et entre ces instances et le monde extérieur
+      - Utilise des VLANs et probablement des techniques de SDNs
+    - Doit aussi considérer l'aspect sécurité
+      - Mettre en place des pare-feux, VPNs
+      - Provider clouds proposent des services de pare-feux
+        - FWaaS : FireWall as a Service
+    - Finalement, pour la scalabilité, doit généralement mettre en place du load balancing
+      - LBaaS : Load-Balancing as a Service
+    - Questions
+      - C'est quoi exactement la différence entre VLANs et SDNs ?
+        - P-e lire un peu à ce sujet
+        - *Cloud Network Virtualization: Benefits of SDN over VLAN*
+          - Blogpost disponible ici : https://cloudsecurityalliance.org/blog/2021/06/25/cloud-network-virtualization-benefits-of-sdn-over-vlan/
+          - De ce que je comprends, les VLANs ont initialement été conçus pour créer plusieurs réseaux virtuels au sein d'un même réseau local
+            - Limité au sein du LAN
+          - Pas les mêmes conditions que le cloud
+            - Un single-tenant vs. multi-tenant
+            - Pas la même échelle
+          - Ne sont donc pas adaptés à ce nouveau cas d'usage
+            - Particulièrement d'un point de vue sécu/isolation
+          - L'approche SDN répond à ce nouveau besoin
+            - Découple le /control plane/ du /data plane/, i.e. découple le routing de l'envoi effectif des messages
+              - Un peu de mal à piger les implications de cela
+              - Cela me paraît évident que ça doit être découplé
+              - Ne dois pas comprendre les contraintes matérielles
+            - Permet de configurer plus finement et simplement les firewalls
+              - Adopte la politique du /default deny/, contrairement à l'existant
+            - Protège d'attaques nativement
+            - Conçu pour l'élasticité
+        - *Network Virtualisation and the difference with VLANs, SDNs*
+          - Blogpost disponible ici : https://craigread.cloud/network-virtualisation-and-the-difference-with-vlans-sdns/
+          - Re-explique qu'un VLAN permet de diviser un LAN en de multiples réseaux
+          - Explique que le VLAN n'est pas de la virtualisation de réseau
+            - Pas moyen de prendre une snapshot du réseau, de le cloner ou déplacer
+            - Pas sûr de comprendre de ce qu'on entend par cloner un réseau concrètement
+              - Et de l'usage qu'est fait de cette fonctionnalité
+          - Précise aussi que SDN n'est pas de la virtualisation non plus
+            - Ne virtualise pas les composants, e.g. switchs et routeurs
+            - Mais permet de les contrôler logiciellement
+          - Mais que la virtualisation de réseau existe belle & bien
+            - Permet de virtualiser le réseau complet, hardware compris
+          - Quand utiliser SDN vs. Network Virtualisation ?
 ** Semaine du <2024-01-03 Wed> au <2024-01-05 Fri>
 *** Planned
 **** DONE Installer logiciels
@@ -191,6 +249,53 @@ CLOSED: [2024-01-05 Fri 07:57]
       - Slide 8, opération /take snapshot/ : c'est pas /head = new_snapshot/ plutôt ?
         - Ou /head = empty/ plutôt ?
   - CM3 - Infrastructures cloud VM-based
+    - Porte principalement sur la description de l'architecture système d'un cloud
+    - Prend pour cela comme exemple OpenStack
+      - Se base sur la présentation qui en est faite lors de la *Cloud Architect Alliance #15*
+      - Disponible ici : https://www.slideshare.net/alessandrovozza/cloud-architect-alliance-15-openstack
+    - Globalement, une multitude de différents services
+      - [[file:img/2015-open-stack-architecture.png]]
+    - Chacun ayant son rôle et ses responsabilités
+      - E.g. Keystone
+        - Service d'authentification et d'autorisation
+        - Fournit aussi la liste des autres services
+    - Composants autonomes, pouvant être indépendamment répliqués pour répondre aux besoins (charge, disponibilité...)
+  - CM4 - Services cloud de stockage
+    - Présente les différents types de service de stockage offerts par les cloud providers
+    - Object storage
+      - Niveau de granularité est le fichier
+      - Permet de créer,lire et supprimer des fichiers
+      - Mais pas de les modifier
+        - Les fichiers sont donc immuables
+      - E.g. Amazon S3 (Simple Storage Service)
+    - Block storage
+      - Niveau de granularité est le volume, i.e. des partitions disques virtuelles
+      - Permet de créer, modifier les caractéristiques (taille, type de stockage), et d'attacher des volumes aux VMs
+      - E.g. Amazon EBS (Elastic Block Store)
+      - Propose généralement services supplémentaires
+        - Snapshotting, et sauvegarde/réplication des snapshots effectuées
+    - Relationnal storage
+      - Indique qu'on peut démarrer et gérer son propre SGBD relationnel sur une VM
+      - Mais que les cloud providers proposent directement des services de BDDs relationnelles
+      - Insiste cependant sur les limites de ce type de système
+        - Ne tolèrent pas les partitions réseaux généralement
+        - Deviennent soit indisponible, soit incohérente de manière non-maitrisée
+    - NoSQL storage
+      - Présente les bases de données NoSQL
+      - Précise qu'elles ont été conçues pour les besoins des applications cloud, notamment
+        - Scalable, i.e. supporter un dataset de très grande taille et une charge importante
+        - Elastic, i.e. faciliter l'ajout & la suppression d'instances à la volée
+        - Partition tolerant
+      - Détaille ensuite différents SGBDs NoSQL
+        - DynamoDB (KV-Store)
+        - MongoDB (Document-based)
+        - Apache Cassandra (Column-based)
+    - Remarques
+      - Je sais pas si Guillaume mentionne la vague NewSQL dans la partie sur les services de SGBDs relationnels
+        - Mais le constat est peu élogieux sous la forme actuelle
+        - Est-ce que les SGBDs relationnels sont si inadaptées aux applications distribuées ?
+          - Notamment, les systèmes appartenant à la vague NewSQL ne sont pas partition tolerant ?
+        - Peut aussi s'intéresser à ce qui se fait du côté de ElectricSQL
 - Régulariser situation du 02/01
   - J'ai essayé de déposer mon jour de congé pour le 02/01 le <2024-01-04 Thu>
   - Mais Casa m'empêche de le faire car la date est antérieure à la date du jour
@@ -321,3 +426,4 @@ CLOSED: [2024-01-05 Fri 07:57]
   - Alt + 1/2/3
 - Fermer onglet
   - Ctrl + Shift + W
+    
