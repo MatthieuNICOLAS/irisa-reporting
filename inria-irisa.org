@@ -61,6 +61,94 @@
           - Mais que la virtualisation de réseau existe belle & bien
             - Permet de virtualiser le réseau complet, hardware compris
           - Quand utiliser SDN vs. Network Virtualisation ?
+  - CM6 - Microservices
+    - Porte sur l'évolution de l'architecture système des applications
+    - Anciennement, architecture monolithique
+      - Simple
+      - Mais des limites
+        - Pas de contrôle de droits d'accès sur les données par domaine/métier
+        - Un bug d'un domaine/métier de l'application peut la faire crasher dans son entièreté
+          - i.e. pas d'isolation
+        - Difficile à scale
+          - La base de données est un bottleneck
+          - De part le fonctionnement des writes et des transactions
+    - Architecture orientée micro-services
+      - Décompose l'application en multitude de services
+      - Chaque service doit avoir une fonctionnalité précise
+        - Separation of Concern
+      - Les services peuvent communiquer entre eux, si nécessaire, par le biais de leur API
+      - Chaque service est responsable de ses données
+        - Chaque service peut ainsi choisir ses outils, i.e. son SGBD, en fonction de ses use cases
+      - Principes d'une architecture orientée micro-services
+        - Se base sur : https://nirmata.com/2015/02/02/microservices-five-architectural-constraints/
+        - Elastic : chaque service doit pouvoir scale up/down de manière indépendante des autres services
+        - Resilient : un service doit crasher sans impacter les autres services
+        - Composable : les services doivent proposer des APIs uniformes et conçues pour la composition
+        - Minimal : un microservice doit être composé uniquement des entités fortement liées
+        - Complete : un microservice doit être fonctionnellement complet
+      - Pour la communication entre services, une approche éprouvée est d'utiliser un message broker
+        - Permet de découpler les composants
+        - Pas de blocage pour l'initiateur d'une requête pendant le calcul de la réponse
+        - Permet de scale le service produisant la réponse en fonction de la workload de manière transparente
+    - Aborde ensuite l'approche DevOps
+      - Là aussi, devrais lire plus à ce sujet
+      - *What is DevOps*
+        - Disponible ici : https://about.gitlab.com/topics/devops/
+        - Méthodologie consistant à coupler les tâches des équipes de développement et d'opérations (déploiement)
+        - A pour but de
+          - Mettre en place un cycle de développement incrémental
+          - Livrer rapidement les nouvelles versions du logiciel
+          - Améliorer la qualité du logiciel
+        - Cela passe par
+          - Collaboration approfondie entre les équipes dev et ops
+            - Des équipes à objectifs intrinséquemment différents et parfois contraire
+              - Dev : Faire évoluer rapidement l'application pour répondre aux retours
+              - Ops : Garantir le bon fonctionnement de l'application
+            - L'idée est ici de les faire faire cause commune
+          - Incorporation et automatisation de bonnes pratiques
+            - Tests, Livraison, Déploiement
+        - Se base sur les 4 principes suivant
+          - Automatisation des phases du cycle de vie du logiciel
+            - Test, build, release
+          - Collaboration et communication
+            - Entre les anciennes différentes équipes
+          - Amélioration continue et minimisation des pertes de temps
+            - Automatisation des tâches répétitives
+            - Identification perpétuelle de pistes d'amélioration
+          - Focalisation sur les besoins des utilisateur-rices
+            - L'automatisation des tâches permet de se focaliser sur les retours des utilisateur-rices
+            - Et livrer rapidement une nouvelle version y répondant grâce à l'accélération du cycle de vie de l'application
+    - CM7 - Conteneurs et Docker
+      - Présente Docker
+      - Rappelle qu'on a un intérêt à virtualiser
+        - Permet d'isoler les différents composants d'une application
+        - D'embarquer l'ensemble des dépendances
+        - Et d'éviter les potentiels conflits, e.g. dépendances incompatibles
+      - Mais que les VMs sont volumineuses, lentes à instancier et ajoutent un surcoût computationnel
+      - Les conteneurs répondent aux mêmes problématiques
+      - Mais de manière plus efficace
+        - Reposent sur l'OS de la machine
+          - Permet d'éviter l'utilisation coûteuse d'un hyperviseur
+        - Reposent sur le système de layers
+          - Permet de partager/factoriser des mêmes layers entre conteneurs
+      - Précise cependant que Docker n'est un outil nativement conçu pour un usage dans le cloud
+        - Conçu plutôt pour tourner sur une machine donné
+      - Un orchestrateur est nécessaire pour cela
+- Réunion avec Guillaume le <2024-01-10 Wed>
+  - Préparation
+    - Technologies Cloud
+      - As-tu des ressources que tu conseilles, notamment sur Docker & Kubernetes ?
+    - Observatoires
+      - Consulté le site d'Ammar sur les résultats de son questionnaire
+        - Et débriefé avec lui
+      - M'a permis de constater la grande hétérogénéité des observatoires
+        - Source d'énergie, réseau disponible, etc.
+      - Quels sont nos objectifs ?
+        - À qui on s'adresse ?
+        - Quelles sont nos contraintes ?
+      - Ammar m'a parlé d'OZCAR et m'a linké un article
+        - Prévois de le lire pour mieux comprendre les enjeux des observatoires
+  - Notes
 ** Semaine du <2024-01-03 Wed> au <2024-01-05 Fri>
 *** Planned
 **** DONE Installer logiciels
@@ -387,6 +475,10 @@ CLOSED: [2024-01-05 Fri 07:57]
 - Le consulter
 * Autres
 ** Commandes utiles
+- Mettre à jour paquets
+  - dnf check-update
+  - sudo dnf upgrade
+** Raccourcis utiles
 *** Fedora
 - Se déplacer entre bureaux virtuels
   - Ctrl + Alt + Left/Right
@@ -426,4 +518,3 @@ CLOSED: [2024-01-05 Fri 07:57]
   - Alt + 1/2/3
 - Fermer onglet
   - Ctrl + Shift + W
-    
