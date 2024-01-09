@@ -4,12 +4,19 @@
 * Journal de bord
 ** Semaine du <2024-01-08 Mon> au <2024-01-12 Fri>
 *** Planned
+**** DONE Régulariser situation du 02/01
+CLOSED: [2024-01-09 Tue 14:36]
 **** IN-PROGRESS Suivre cours de Guillaume sur les technologies cloud
 - Disponible ici : https://gitlab.inria.fr/pierre/sct-m1info
-**** IN-PROGRESS Régulariser situation du 02/01
 **** TODO Trouver des ressources sur Docker & Kubernetes
 - Au-delà du cours de Guillaume, existe des ressources pour rentrer plus en détails sur ces outils (talks, livres)
 - Voir pour en trouver et les consulter
+**** IN-PROGRESS Prendre en main Kubernetes
+- J'ai atteint la partie du cours de Guillaume présentant Kubernetes
+- Voir maintenant pour expérimenter avec histoire de creuser l'outil
+- Ressources disponibles :
+  - Le TP du cours de Guillaume : [[file:~/Documents/sct-m1info/support/pdf/tp08.orchestration.pdf]]
+  - Le tuto de Digital Ocean sur faire fonctionner Kubernetes en local : https://www.digitalocean.com/community/tutorials/how-to-use-minikube-for-local-kubernetes-development-and-testing
 *** Done
 - Suivre cours de Guillaume sur les technologies cloud
   - CM5 - Services cloud réseau
@@ -194,6 +201,11 @@
         - Est-ce que ça a un impact sur la façon de créer ses images Docker ?
 - Réunion avec Guillaume le <2024-01-10 Wed>
   - Préparation
+    - HS RH
+      - A fait une demande de régularisation de congé pour le 02/01
+      - A permis de détecter quelques problèmes
+        - Personne qui valide mes demandes de congés
+        - Jours reportés de l'an dernier
     - Technologies Cloud
       - As-tu des ressources que tu conseilles, notamment sur Docker & Kubernetes ?
     - Observatoires
@@ -207,6 +219,63 @@
       - Ammar m'a parlé d'OZCAR et m'a linké un article
         - Prévois de le lire pour mieux comprendre les enjeux des observatoires
   - Notes
+- Régulariser situation du 02/01
+  - A envoyé une demande de régularisation
+  - Sur les conseils de Myriam, en a profité pour notifier des problèmes de
+    - Personne qui valide mes demandes de congés
+    - Jours reportés de l'an dernier
+  - Demande a été traitée
+- Prendre en main Kubernetes
+  - Plutôt que de faire tourner l'environnement kubernetes en complet sur sa machine
+  - Semble plus commun d'utiliser un outil pour virtualiser le cluster et les différents composants de k8s
+  - Plusieurs outils existent
+    - minikube : https://github.com/kubernetes/minikube
+      - Outil dev par l'équipe de k8s
+    - kind : https://github.com/kubernetes-sigs/kind
+      - Outil dev par l'équipe de k8s
+      - Conçu initialement pour tester k8s
+      - Indiqué comme pouvant être aussi utilisé pour le dev d'applis locales
+  - Plusieurs blogposts font des comparaisons entre ces outils
+    - https://www.blueshoe.io/blog/minikube-vs-k3d-vs-kind-vs-getdeck-beiboot/
+    - https://shipit.dev/posts/minikube-vs-kind-vs-k3s.html
+    - https://alperenbayramoglu2.medium.com/simple-comparison-of-lightweight-k8s-implementations-7c07c4e6e95f
+    - Pour prendre en main k8s, les différentes options semblent se valoir
+      - [[file:img/kubernetes-distrib-comparaison.png]]
+  - Je croyais que k8s était un logiciel/environnement unique
+  - Mais il semble y avoir une multitude de distributions différentes
+    - Notamment des distribs conçues pour/orientées IoT & Edge
+    - K3s : https://github.com/k3s-io/k3s
+    - MicroK8s : https://github.com/canonical/microk8s
+  - Pour démarrer, suis le tuto : https://www.digitalocean.com/community/tutorials/how-to-use-minikube-for-local-kubernetes-development-and-testing
+    - Quelques difficultés à la première étape
+      - minikube plantait silencieusement
+      - Ajouter l'option /--driver=docker/ a permis de dépasser l'erreur rencontrée
+        - Ai ajouté l'option à ma config par défaut
+          - minikube config set driver docker
+    - Ai pu suivre le reste du tuto sans erreurs
+    - Pas trop compris les points suivants
+      - kubectl create deployment web --image=gcr.io/google-samples/hello-app:1.0
+        - Permet de créer un deployment nommé web en utilisant l'image passée en option
+        - Mais c'est quoi un deployment ?
+        - Options notables de la commande create deployment
+          - --replicas=X : permet d'indiquer un nombre de replicas initial
+          - --port=Y : permet d'exposer le port donné
+        - C'est créé sur un ou plusieurs noeuds ?
+      - kubetcl expose deployment web --type=NodePort --port=8080
+        - Permet de créer un service qui expose la ressource demandée
+        - À quoi correspondent les options --type et --port ?
+        - --port
+          - Le port sur lequel écoute l'application du ou des pods
+          - Des pods ou des noeuds ?
+        - --type
+          - Le type de service qui va être créé
+          - Ici, je suppose que c'est un service simple qui se contente de faire du port forwarding
+          - Plus d'infos ici : https://kubernetes.io/docs/concepts/services-networking/service/#type-nodeport
+          - Cette page précise qu'on peut aussi passer comme valeur LoadBalancer
+          - Permet de provisionner un load balancer fournit par le cloud provider
+          - Quid dans minikube ?
+            - Le tuto de k8s le fait faire
+            - Pas d'erreur reportée, service fonctionnel
 ** Semaine du <2024-01-03 Wed> au <2024-01-05 Fri>
 *** Planned
 **** DONE Installer logiciels
