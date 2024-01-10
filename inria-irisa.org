@@ -227,6 +227,7 @@ CLOSED: [2024-01-09 Tue 14:36]
         - Surpris que k8s soit pas un environnement unique, mais une multitude de distribution
           - Ai vu qu'il y a des distribs faites pour l'IoT : k3s, k0s
       - As-tu des ressources que tu conseilles, notamment sur Docker & Kubernetes ?
+        - Understanding Docker/Kubernetes in a visual way par Aurélie Vache
     - Observatoires
       - Consulté le site d'Ammar sur les résultats de son questionnaire
         - Et débriefé avec lui
@@ -238,6 +239,34 @@ CLOSED: [2024-01-09 Tue 14:36]
       - Ammar m'a parlé d'OZCAR et m'a linké un article
         - Prévois de le lire pour mieux comprendre les enjeux des observatoires
   - Notes
+    - Deployment
+      - Outil de base de k8s
+    - Peut associer un Service LoadBalancer à un Deployment
+    - k8s se focalise sur l'état desiré et l'état observé
+      - Enregistre dans BDD l'état désiré
+      - Puis observe son état
+        - Outil de monitoring souvent ajouté : Prometheus
+    - Voir du côté de Vagrant
+      - Infrastructure as Code
+        - Décrit l'infrastructure que l'on souhaite déployer via des services Cloud
+      - Vagrant est l'équivalent local
+        - Utilisé dans LivingFog
+      - Permet de déployer Kubernetes et consorts
+    - Observatoires
+      - Nous nous intéressons aux observatoires
+        - Isolés
+        - Variétés de capteurs
+        - Variétés d'utilisateurs
+        - Contraintes sur énergie et bande-passante
+      - Mais aurons quand même grande hétérogénéité
+        - Type de tâches
+        - Volume de données
+      - Sujet à considérer est la problématique du changement
+        - Comment accompagner les scientifiques dans l'adoption de la solution que l'on va proposer ?
+        - P-e voir avec les ingés du service d'hydrologie pour déployer nos essais
+          - Ont mis en place un petit observatoire au niveau du ruisseau
+            - Avec capteurs
+            - Et autres ?
 - Régulariser situation du 02/01
   - A envoyé une demande de régularisation
   - Sur les conseils de Myriam, en a profité pour notifier des problèmes de
@@ -663,6 +692,29 @@ CLOSED: [2024-01-05 Fri 07:57]
 - Lors de l'ajout du 2nd Node à mon cluster minikube, j'ai eu le warning suivant
   - Cluster was created without any CNI, adding a node to it might cause broken networking.
 - Voir ce que cela signifie et ce que je dois modifier
+*** TODO Déployer une application complexe avec k8s
+- Les tutos que je suis pour le moment se contentent de déployer des applications simples
+  - I.e. Un pod faisant tourner un nginx
+- Pour apprendre correctement k8s, serait intéressant de déployer une application composée de
+  - Serveurs d'applications, répliqués
+    - Avec un load balancer pour répartir la charge
+  - Interagissant avec une BDD
+    - Elle aussi répliquée ?
+- Cela permettrait de creuser
+  - La configuration et le déploiement de pods différents
+  - Les interactions entre ces pods, potentiellement sur des noeuds différents
+  - L'utilisation de volumes
+  - L'utilisation de fichiers de description
+*** TODO Se familiariser avec le concept d'Infrastructure as Code (IAC)
+- Plutôt que de setup manuellement Kubernetes sur ses machines
+- Semblerait que la pratique soit d'automatiser son setup
+- Process connu comme l'Infrastructure as Code
+- Se renseigner et documenter à ce sujet
+- Ressources rapides
+  - https://learn.microsoft.com/en-us/devops/deliver/what-is-infrastructure-as-code
+  - https://aws.amazon.com/what-is/iac/
+- Guillaume mentionnait notamment l'outil Vagrant
+  - https://www.vagrantup.com/
 * Autres
 ** Commandes utiles
 - Mettre à jour paquets
