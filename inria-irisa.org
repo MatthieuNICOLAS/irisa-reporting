@@ -124,81 +124,81 @@ CLOSED: [2024-01-09 Tue 14:36]
           - Focalisation sur les besoins des utilisateur-rices
             - L'automatisation des tâches permet de se focaliser sur les retours des utilisateur-rices
             - Et livrer rapidement une nouvelle version y répondant grâce à l'accélération du cycle de vie de l'application
-    - CM7 - Conteneurs et Docker
-      - Présente Docker
-      - Rappelle qu'on a un intérêt à virtualiser
-        - Permet d'isoler les différents composants d'une application
-        - D'embarquer l'ensemble des dépendances
-        - Et d'éviter les potentiels conflits, e.g. dépendances incompatibles
-      - Mais que les VMs sont volumineuses, lentes à instancier et ajoutent un surcoût computationnel
-      - Les conteneurs répondent aux mêmes problématiques
-      - Mais de manière plus efficace
-        - Reposent sur l'OS de la machine
-          - Permet d'éviter l'utilisation coûteuse d'un hyperviseur
-        - Reposent sur le système de layers
-          - Permet de partager/factoriser des mêmes layers entre conteneurs
-      - Précise cependant que Docker n'est un outil nativement conçu pour un usage dans le cloud
-        - Conçu plutôt pour tourner sur une machine donné
-      - Un orchestrateur est nécessaire pour cela
-    - CM8 - Kubernetes et Orchestration de conteneurs
-      - Les conteneurs, c'est bien
-      - Mais dans un environnement cloud, ils ne sont pas suffisants par eux-mêmes
-      - Entre autres, des besoins de
-        - Scaling automatique
-        - Détecter et redémarrer les conteneurs ayant une panne
-        - Mettre en place des configurations réseaux avancées
-      - Kubernetes permet de répondre à ces besoins
-      - Notion de pod
-        - Kubernetes permet de créer des pods
-        - Un pod contient un ou plusieurs conteneurs et volumes
-        - Et possède une adresse IP pour le tout
-        - *NOTE* Si un élément du pod rencontre une panne, Kubernetes tue le pod entier
-        - Pour créer pods, se basent sur des fichiers de description
-          - À la *docker-compose*
-      - Insiste sur le fait qu'il *ne faut pas utiliser un unique pod*
-        - Pod peu gourmand, n'utilise qu'une fraction des ressources du noeud
-        - Pod éphémère, peut être tué par Kubernetes de manière inopinée, sans sommation
-      - À la place, *utiliser un groupe de pods identiques*
-      - Notion de Controller
-        - Kubernetes est un outil déclaratif
-          - Users n'indiquent pas quelles commandes effectuer
-          - Mais quel est l'état désiré
-          - Kubernetes se charge de transitionner de l'état courant à cet état cible
-            - [[file:img/kubernetes-reconciliation-loop.png]]
-        - Propose plusieurs types de controllers
-          - /Deployment/ a l'air d'être le controller "par défaut"
-          - /StatefulSet/ pour les applications stateful
-            - À la mort d'un pod, le recréé en réutilisant le même volume
-          - /Job/ pour les tâches courtes
-          - /DeamonSet/ pour que tous les noeuds matchant un critère démarre une instance d'un pod
-            - Prend en compte les noeuds qui apparaissent au cours de la vie de l'application
-          - Possibilité de créer de nouveaux controllers si besoin
-        - Commandes existent pour manipuler directement les controllers
-          - E.g. pour déployer une application
-          - Étrangement, le niveau de granularité a l'air d'être sur l'image Docker et non pas le pod
-        - Mais fonctionne aussi via des fichiers de description
-        - Comment ça marche si application nécessitent de combiner plusieurs controllers ?
-          - Un fichier unique ?
-          - Ou un ensemble de fichiers de descriptions ?
-      - Controllers incorporent des mécanismes supplémentaires
-        - E.g. *Rolling Updates* : déploie progressivement de nouveaux pods se basant sur une nouvelle image puis interrompt les anciens pods
-      - Kubernetes déploient aussi des Services
-        - Sert de front-end pour les pods
-        - Observe les pods pour déterminer à quel pod transmettre une requête
-        - Se base pour cela sur un (des?) Selector(s)
-          - Comment fonctionnent-ils ?
-          - Possibilité/Besoin d'en faire des customs ?
-      - D'un point de vue réseau
-        - Communications entre containers se font via localhost
-        - Communications entre pods (d'un même noeud) se font via les adresses IPs uniques des pods
-        - Communications entre pod et service se font via l'adresse IP unique du service
-        - Comment un container découvre l'adresse IP d'un pod/du service ?
-      - Précise que Kubernetes ne repose sur le runtime Docker depuis sa v1.20
-        - Utilise toujours les images Docker
-        - Mais utilise un (des?) runtime(s) plus efficaces et standardisés
-        - Quid des volumes et networks ?
-          - Ne reposent pas du tout sur les solutions proposées par Docker ?
-        - Est-ce que ça a un impact sur la façon de créer ses images Docker ?
+  - CM7 - Conteneurs et Docker
+    - Présente Docker
+    - Rappelle qu'on a un intérêt à virtualiser
+      - Permet d'isoler les différents composants d'une application
+      - D'embarquer l'ensemble des dépendances
+      - Et d'éviter les potentiels conflits, e.g. dépendances incompatibles
+    - Mais que les VMs sont volumineuses, lentes à instancier et ajoutent un surcoût computationnel
+    - Les conteneurs répondent aux mêmes problématiques
+    - Mais de manière plus efficace
+      - Reposent sur l'OS de la machine
+        - Permet d'éviter l'utilisation coûteuse d'un hyperviseur
+      - Reposent sur le système de layers
+        - Permet de partager/factoriser des mêmes layers entre conteneurs
+    - Précise cependant que Docker n'est un outil nativement conçu pour un usage dans le cloud
+      - Conçu plutôt pour tourner sur une machine donné
+    - Un orchestrateur est nécessaire pour cela
+  - CM8 - Kubernetes et Orchestration de conteneurs
+    - Les conteneurs, c'est bien
+    - Mais dans un environnement cloud, ils ne sont pas suffisants par eux-mêmes
+    - Entre autres, des besoins de
+      - Scaling automatique
+      - Détecter et redémarrer les conteneurs ayant une panne
+      - Mettre en place des configurations réseaux avancées
+    - Kubernetes permet de répondre à ces besoins
+    - Notion de pod
+      - Kubernetes permet de créer des pods
+      - Un pod contient un ou plusieurs conteneurs et volumes
+      - Et possède une adresse IP pour le tout
+      - *NOTE* Si un élément du pod rencontre une panne, Kubernetes tue le pod entier
+      - Pour créer pods, se basent sur des fichiers de description
+        - À la *docker-compose*
+    - Insiste sur le fait qu'il *ne faut pas utiliser un unique pod*
+      - Pod peu gourmand, n'utilise qu'une fraction des ressources du noeud
+      - Pod éphémère, peut être tué par Kubernetes de manière inopinée, sans sommation
+    - À la place, *utiliser un groupe de pods identiques*
+    - Notion de Controller
+      - Kubernetes est un outil déclaratif
+        - Users n'indiquent pas quelles commandes effectuer
+        - Mais quel est l'état désiré
+        - Kubernetes se charge de transitionner de l'état courant à cet état cible
+          - [[file:img/kubernetes-reconciliation-loop.png]]
+      - Propose plusieurs types de controllers
+        - /Deployment/ a l'air d'être le controller "par défaut"
+        - /StatefulSet/ pour les applications stateful
+          - À la mort d'un pod, le recréé en réutilisant le même volume
+        - /Job/ pour les tâches courtes
+        - /DeamonSet/ pour que tous les noeuds matchant un critère démarre une instance d'un pod
+          - Prend en compte les noeuds qui apparaissent au cours de la vie de l'application
+        - Possibilité de créer de nouveaux controllers si besoin
+      - Commandes existent pour manipuler directement les controllers
+        - E.g. pour déployer une application
+        - Étrangement, le niveau de granularité a l'air d'être sur l'image Docker et non pas le pod
+      - Mais fonctionne aussi via des fichiers de description
+      - Comment ça marche si application nécessitent de combiner plusieurs controllers ?
+        - Un fichier unique ?
+        - Ou un ensemble de fichiers de descriptions ?
+    - Controllers incorporent des mécanismes supplémentaires
+      - E.g. *Rolling Updates* : déploie progressivement de nouveaux pods se basant sur une nouvelle image puis interrompt les anciens pods
+    - Kubernetes déploient aussi des Services
+      - Sert de front-end pour les pods
+      - Observe les pods pour déterminer à quel pod transmettre une requête
+      - Se base pour cela sur un (des?) Selector(s)
+        - Comment fonctionnent-ils ?
+        - Possibilité/Besoin d'en faire des customs ?
+    - D'un point de vue réseau
+      - Communications entre containers se font via localhost
+      - Communications entre pods (d'un même noeud) se font via les adresses IPs uniques des pods
+      - Communications entre pod et service se font via l'adresse IP unique du service
+      - Comment un container découvre l'adresse IP d'un pod/du service ?
+    - Précise que Kubernetes ne repose sur le runtime Docker depuis sa v1.20
+      - Utilise toujours les images Docker
+      - Mais utilise un (des?) runtime(s) plus efficaces et standardisés
+      - Quid des volumes et networks ?
+        - Ne reposent pas du tout sur les solutions proposées par Docker ?
+      - Est-ce que ça a un impact sur la façon de créer ses images Docker ?
 - Réunion avec Guillaume le <2024-01-10 Wed>
   - Préparation
     - HS RH
@@ -207,6 +207,25 @@ CLOSED: [2024-01-09 Tue 14:36]
         - Personne qui valide mes demandes de congés
         - Jours reportés de l'an dernier
     - Technologies Cloud
+      - Suivi le cours jusqu'au CM sur l'orchestration
+        - M'a permis de revoir les bases
+          - I/P/SaaS
+            - Un peu de mal à délimiter PaaS
+          - Infrastructures et Services
+            - Ne connaissais pas OpenStack
+            - Et que certaines organisations mettaient en place leur cloud privé
+            - Par contre, est-ce qu'on retrouve les mêmes outils dans le fog ?
+              - Ou est-ce trop gourmand ?
+          - Services de stockage
+            - Les SGBDs relationnels sont si peu adaptés au cloud ?
+            - Pas trop creusé le sujet, mais j'entendais parler de NewSQL
+      - Commence à expérimenter avec k8s
+        - Installé minikube sur ma machine
+        - En train de parcourir les tutos sur créer cluster, déployer simple application web
+        - Et d'apprendre les concepts (Pods, Nodes, Services, Deployment...)
+        - Curieux du fonctionnement du Control Plane pour qu'il ne soit pas un SPOF
+        - Surpris que k8s soit pas un environnement unique, mais une multitude de distribution
+          - Ai vu qu'il y a des distribs faites pour l'IoT : k3s, k0s
       - As-tu des ressources que tu conseilles, notamment sur Docker & Kubernetes ?
     - Observatoires
       - Consulté le site d'Ammar sur les résultats de son questionnaire
@@ -276,6 +295,40 @@ CLOSED: [2024-01-09 Tue 14:36]
           - Quid dans minikube ?
             - Le tuto de k8s le fait faire
             - Pas d'erreur reportée, service fonctionnel
+  - Passe maintenant à : https://kubernetes.io/docs/tutorials/kubernetes-basics/
+    - Cluster
+      - Ensemble composé de Nodes et du Control Plane
+      - Node
+        - Machine, potentiellement virtuelle, qui sert de worker pour l'application
+        - Va faire tourner des Pods
+        - Chaque noeud possède un Kubelet
+          - Agent qui gère le noeud et sa communication avec le Control Plane
+      - Control Plane
+        - Orchestrateur qui gère la maintenance de l'état de l'application, son passage à l'échelle et ses rolling updates
+        - Quelles garanties sont offertes par le Control Plane ?
+          - Est-il distribué ? Comment fonctionne-t-il ? Quel impact sur son comportement en cas de panne d'une des répliques ?
+    - Deployment
+      - Permet de décrire l'état souhaité
+      - Un Deployment Controller, géré par le (faisant partie du ?) Control Plane, va ensuite monitorer l'état de l'application et instancier/retirer des Pods au besoin pour obtenir l'état souhaité
+    - Le tuto fait remarquer que, au moment de lancer une application, on a un seul Node de disponible
+      - Le Node qui fait aussi tourner le Control Plane
+    - On peut cependant lancer une application
+      - Celle-ci tournera alors sur le même Node que le Control Plane
+    - Me paraît mieux de modifier le setup de base pour avoir plusieurs noeuds
+      - Au moins 2, le Control Plane et un Worker
+      - Pour cela, suis tutos :
+        - https://minikube.sigs.k8s.io/docs/tutorials/multi_node/
+        - https://medium.com/cloudnloud/how-to-minikube-with-multi-node-setup-1159006fc80e
+      - Commandes
+        - Créer cluster : minikube start --nodes=2
+        - Ajouter Node à cluster existant : minikube node add
+          - À voir comment on précise à quel cluster on ajoute ce Node
+      - Semble y avoir un problème avec le driver par défaut pour les Volumes dans un cluster multi-nodes
+        - https://minikube.sigs.k8s.io/docs/tutorials/volume_snapshots_and_csi/
+        - Voir ce que cela implique et corriger si besoin
+      - Minikube m'a aussi affiché un warning lors de l'ajout du Node
+        - Cluster was created without any CNI, adding a node to it might cause broken networking.
+        - Voir ce que cela implique et corriger si besoin
 ** Semaine du <2024-01-03 Wed> au <2024-01-05 Fri>
 *** Planned
 **** DONE Installer logiciels
@@ -600,6 +653,16 @@ CLOSED: [2024-01-05 Fri 07:57]
 *** TODO Lire *OZCAR: The French Network of Critical Zone Observatories*
 - Ammar m'a recommandé cet article pour en apprendre plus sur les observatoires et leurs buts
 - Le consulter
+*** TODO Utiliser un driver pour Volume adapté aux clusters multi-nodes
+- La page tuto de k8s indiquant comment lancer un cluster multi-nodes mentionne un problème avec le driver pour Volume par défaut
+  - https://minikube.sigs.k8s.io/docs/tutorials/multi_node/
+- Renvoie à la page suivante :
+  - https://minikube.sigs.k8s.io/docs/tutorials/volume_snapshots_and_csi/
+- Voir si le problème est toujours d'actualité et si c'est bien la solution conseillée
+*** TODO Adapter la configuration réseau pour clusters multi-nodes
+- Lors de l'ajout du 2nd Node à mon cluster minikube, j'ai eu le warning suivant
+  - Cluster was created without any CNI, adding a node to it might cause broken networking.
+- Voir ce que cela signifie et ce que je dois modifier
 * Autres
 ** Commandes utiles
 - Mettre à jour paquets
