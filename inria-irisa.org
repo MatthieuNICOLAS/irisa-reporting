@@ -6,9 +6,11 @@
 *** Planned
 **** DONE Régulariser situation du 02/01
 CLOSED: [2024-01-09 Tue 14:36]
-**** IN-PROGRESS Suivre cours de Guillaume sur les technologies cloud
+**** DONE Suivre cours de Guillaume sur les technologies cloud
+CLOSED: [2024-01-10 Wed 11:47]
 - Disponible ici : https://gitlab.inria.fr/pierre/sct-m1info
-**** TODO Trouver des ressources sur Docker & Kubernetes
+**** DONE Trouver des ressources sur Docker & Kubernetes
+CLOSED: [2024-01-10 Wed 13:49]
 - Au-delà du cours de Guillaume, existe des ressources pour rentrer plus en détails sur ces outils (talks, livres)
 - Voir pour en trouver et les consulter
 **** IN-PROGRESS Prendre en main Kubernetes
@@ -358,6 +360,66 @@ CLOSED: [2024-01-09 Tue 14:36]
       - Minikube m'a aussi affiché un warning lors de l'ajout du Node
         - Cluster was created without any CNI, adding a node to it might cause broken networking.
         - Voir ce que cela implique et corriger si besoin
+- Trouver des ressources Docker & Kubernetes
+  - Guillaume m'a passé le livre *Understanding Kubernetes in a visual way* par Aurélie Vache
+  - Elle a aussi fait une série de vidéos sur le sujet :
+    - https://www.youtube.com/watch?v=a1Uwoq1Yv6U&list=PLmw3X80dPdlzksg6X9s23LEkLMWFGGUn5
+  - Aussi trouvé les vidéos suivantes qui ont l'air pertinentes
+    - *Kubernetes Design Principles: Understand the Why* : https://www.youtube.com/watch?v=ZuIQurh_kDk
+    - *Kubernetes Explained in 6 Minutes | k8s Architecture* : https://www.youtube.com/watch?v=TlHvYWVUZyc
+  - Me parait un bon début
+- Discussion avec Éric Poiseau et Olivier Sentieys
+  - En réponse au mail de Guillaume informant les autres membres du projet SmartOps, Éric m'a proposé de passer le voir
+  - Il m'a présenté le SED et s'est occupé de quelques démarches
+    - Ajout à la mailing list ingedev
+    - Ajout au mattermost devel
+    - Ajout au groupe gitlab SmartSense
+    - Présentation rapide de l'AGOS
+  - A insisté sur le fait que je passe le voir si je rencontre des difficultés ou ai besoin d'un avis extérieur
+  - M'a ensuite présenté à Olivier Sentieys
+    - Pensais qu'il était basé à Lannion
+    - Mais semble être revenu à Rennes
+    - Seul Mickael Le Gentil est basé à Lannion donc
+  - M'ont parlé du projet SmartSense
+  - Présenté les capteurs SmartSense
+    - Carte sur laquelle les capteurs sont branchés
+    - Interfacée avec une Raspberry Pi (version 3 si j'ai bien suivi)
+      - Permet d'avoir un peu de moyen de calculs localement
+      - Et appliquer des traitements sur les données avant de les remonter
+      - Notamment, plutôt que de transmettre le flux vidéo/audio
+      - Peut traiter ces flux pour remonter des métriques telles que présence de personnes dans la salle, nombre de personnes, type de sons identifiés
+      - Permet ainsi de préserver l'anonymat et de limiter l'usage de bande-passante
+    - Branché sur secteur pour l'alim électrique
+    - Connecté en ethernet pour remonter les données
+    - Existe une version adaptée pour l'extérieur
+      - Fonctionne sur batterie
+      - Et stocke les données collectées sur carte SD, à récupérer manuellement
+  - Montré https://co2.irisa.fr/
+    - Permet de suivre l'évolution de métriques remontées par les capteurs SmartSense d'une salle donnée
+      - e.g. taux de CO2, la température
+    - Surprenamment, n'interroge pas la BDD
+    - Mais récupère et présente les métriques seulement à partir de l'instant T
+    - N'a plus trop l'air de fonctionner
+      - Affiche les données à un instant donné au moment où j'accède à l'application
+      - Mais n'a pas l'air de récupérer/d'afficher de nouvelles données si je reste sur la page
+        - Temps réel ? Fréquence d'échantillonnage ?
+      - Plus troublant, la date donnée par le capteur SmartSense est incorrecte
+        - [[file:img/2024-01-11-screen-co2-irisa.png]]
+      - Et n'a pas l'air de s'actualiser régulièrement
+      - Une slide de l'ADT mentionne que les données collectées sont transmises à une time series DB, InfluxDB
+    - Est-ce que ça ne pose pas de problème d'avoir des données estampillées incorrectement ?
+  - Montré https://smartsense-gest.inria.fr/
+    - A l'air d'être une interface de gestion des capteurs
+    - M'ont créé un compte, mais ne dispose d'aucun droit
+  - Premières pistes de travail concernant SmartSense
+    - Rencontrer Guillermo Andrade-Barroso
+      - Ingénieur du SED qui a été impliqué de manière plus importante dans le projet SmartSense
+      - Aura probablement une meilleure compréhension des différents repos qui composent le projet
+        - De leur fonction, état et pistes de travail
+    - Une piste déjà identifiée consiste en l'ajout du support du WiFi aux capteurs SmartSense
+      - Permettrait dans un contexte en extérieur de transmettre les données
+      - Et de me faire découvrir le système
+    - Puis voir pour faire interagir les capteurs SmartSense avec la plateforme LivingFog
 ** Semaine du <2024-01-03 Wed> au <2024-01-05 Fri>
 *** Planned
 **** DONE Installer logiciels
