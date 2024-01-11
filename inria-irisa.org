@@ -17,6 +17,18 @@ CLOSED: [2024-01-10 Wed 13:49]
 CLOSED: [2024-01-11 Thu 15:57]
 - Talk en 2018 de Saad Ali, ingé Google de l'équipe sur k8s
   - Dispo ici : https://www.youtube.com/watch?v=ZuIQurh_kDk
+**** DONE Adapter la configuration réseau pour clusters multi-nodes
+CLOSED: [2024-01-11 Thu 16:42]
+- Lors de l'ajout du 2nd Node à mon cluster minikube, j'ai eu le warning suivant
+  - Cluster was created without any CNI, adding a node to it might cause broken networking.
+- Voir ce que cela signifie et ce que je dois modifier
+**** DONE Utiliser un driver pour Volume adapté aux clusters multi-nodes
+CLOSED: [2024-01-11 Thu 17:01]
+- La page tuto de k8s indiquant comment lancer un cluster multi-nodes mentionne un problème avec le driver pour Volume par défaut
+  - https://minikube.sigs.k8s.io/docs/tutorials/multi_node/
+- Renvoie à la page suivante :
+  - https://minikube.sigs.k8s.io/docs/tutorials/volume_snapshots_and_csi/
+- Voir si le problème est toujours d'actualité et si c'est bien la solution conseillée
 **** IN-PROGRESS Prendre en main Kubernetes
 - J'ai atteint la partie du cours de Guillaume présentant Kubernetes
 - Voir maintenant pour expérimenter avec histoire de creuser l'outil
@@ -509,6 +521,21 @@ CLOSED: [2024-01-11 Thu 15:57]
     - Permet de découpler le dev de l'application du cluster/service cloud sur lequel elle va tourner
     - Fait la comparaison suivante : k8s, c'est comme un OS pour les applications distribués
       - Permet de ne plus se soucier lors du dev d'une appli distribué de l'environnement dans lequel cette dernière va tourner
+- Adapter la configuration réseau pour clusters multi-nodes
+  - Pas particulièrement réussi à trouver des ressources sur le sujet
+  - J'ai redémarré minikube cette fois-ci avec 2 nodes d'entrée de jeu
+    - minikube start --nodes 2
+  - Le log au démarrage ne m'a pas indiqué le moindre warning
+  - On va considérer que c'est bon du coup
+    - Jusqu'à preuve du contraire
+- Utiliser un driver pour Volume adapté aux clusters multi-nodes
+  - L'issue indiquée ne propose pas d'autres solutions/d'alternatives à celle présentée
+    - Issue : https://github.com/kubernetes/minikube/issues/12360
+  - Et semble assez récente
+    - Correctif courant février 2023
+    - Des users qui confirment la correction du problème courant août 2023
+  - J'ai donc suivi les étapes indiquées
+  - Le setup de la classe de storage semble s'être effectué correctement
 ** Semaine du <2024-01-03 Wed> au <2024-01-05 Fri>
 *** Planned
 **** DONE Installer logiciels
@@ -833,16 +860,6 @@ CLOSED: [2024-01-05 Fri 07:57]
 *** TODO Lire *OZCAR: The French Network of Critical Zone Observatories*
 - Ammar m'a recommandé cet article pour en apprendre plus sur les observatoires et leurs buts
 - Le consulter
-*** TODO Utiliser un driver pour Volume adapté aux clusters multi-nodes
-- La page tuto de k8s indiquant comment lancer un cluster multi-nodes mentionne un problème avec le driver pour Volume par défaut
-  - https://minikube.sigs.k8s.io/docs/tutorials/multi_node/
-- Renvoie à la page suivante :
-  - https://minikube.sigs.k8s.io/docs/tutorials/volume_snapshots_and_csi/
-- Voir si le problème est toujours d'actualité et si c'est bien la solution conseillée
-*** TODO Adapter la configuration réseau pour clusters multi-nodes
-- Lors de l'ajout du 2nd Node à mon cluster minikube, j'ai eu le warning suivant
-  - Cluster was created without any CNI, adding a node to it might cause broken networking.
-- Voir ce que cela signifie et ce que je dois modifier
 *** TODO Déployer une application complexe avec k8s
 - Les tutos que je suis pour le moment se contentent de déployer des applications simples
   - I.e. Un pod faisant tourner un nginx
@@ -856,6 +873,8 @@ CLOSED: [2024-01-05 Fri 07:57]
   - Les interactions entre ces pods, potentiellement sur des noeuds différents
   - L'utilisation de volumes
   - L'utilisation de fichiers de description
+- Exemple
+  - *Deployment of multiple apps on Kubernetes cluster — Walkthrough* : https://wkrzywiec.medium.com/deployment-of-multiple-apps-on-kubernetes-cluster-walkthrough-e05d37ed63d1
 *** TODO Se familiariser avec le concept d'Infrastructure as Code (IAC)
 - Plutôt que de setup manuellement Kubernetes sur ses machines
 - Semblerait que la pratique soit d'automatiser son setup
