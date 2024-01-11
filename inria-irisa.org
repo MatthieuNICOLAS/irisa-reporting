@@ -13,6 +13,10 @@ CLOSED: [2024-01-10 Wed 11:47]
 CLOSED: [2024-01-10 Wed 13:49]
 - Au-delà du cours de Guillaume, existe des ressources pour rentrer plus en détails sur ces outils (talks, livres)
 - Voir pour en trouver et les consulter
+**** DONE Regarder *Kubernetes Design Principles: Understand the Why*
+CLOSED: [2024-01-11 Thu 15:57]
+- Talk en 2018 de Saad Ali, ingé Google de l'équipe sur k8s
+  - Dispo ici : https://www.youtube.com/watch?v=ZuIQurh_kDk
 **** IN-PROGRESS Prendre en main Kubernetes
 - J'ai atteint la partie du cours de Guillaume présentant Kubernetes
 - Voir maintenant pour expérimenter avec histoire de creuser l'outil
@@ -408,6 +412,14 @@ CLOSED: [2024-01-10 Wed 13:49]
       - Et n'a pas l'air de s'actualiser régulièrement
       - Une slide de l'ADT mentionne que les données collectées sont transmises à une time series DB, InfluxDB
     - Est-ce que ça ne pose pas de problème d'avoir des données estampillées incorrectement ?
+    - J'ai rien dit
+    - En me reconnectant sur le site, je suis tombé sur une salle dans laquelle il y avait une réunion au même moment
+    - J'ai ainsi pu faire les capteurs en cours de fonctionnement
+      - [[file:img/2024-01-11-screen-2-co2-irisa.png]]
+    - L'interface affiche ainsi les nouvelles entrées
+      - Une mesure toutes les 20s semblerait
+    - Les capteurs sont donc inactifs entre les réunions ?
+      - Comment cela fonctionne ?
   - Montré https://smartsense-gest.inria.fr/
     - A l'air d'être une interface de gestion des capteurs
     - M'ont créé un compte, mais ne dispose d'aucun droit
@@ -420,6 +432,83 @@ CLOSED: [2024-01-10 Wed 13:49]
       - Permettrait dans un contexte en extérieur de transmettre les données
       - Et de me faire découvrir le système
     - Puis voir pour faire interagir les capteurs SmartSense avec la plateforme LivingFog
+- Regarder *Kubernetes Design Principles: Understand the Why*
+  - Pourquoi k8s ?
+    - Souhaite déployer des conteneurs sur noeuds
+    - Méthode traditionnelle consiste à se log en SSH sur la machine et exécuter la commande
+    - Mais doit ensuite vérifier que tout se déroule correctement
+      - Conteneur n'a pas crash
+      - Noeud n'a pas crash
+      - Connexion SSH a bien fonctionné
+    - Besoin d'un outil de monitoring pour cela
+    - Et de mécanismes de catch up pour gérer tous ces edge cases
+    - Rejoint ce que m'expliquait Guillaume
+      - Se retrouve avec une base de code complexe & lourde pour gérer tous les scénarios étranges
+  - Approche déclarative
+    - Permet en tant qu'user de ne plus se complexifier la tâche avec le "comment"
+    - Se concentre juste sur le "quoi", l'état désiré
+    - Et l'outil est en charge de réaliser ce "quoi", de mettre en place cet état
+  - Pourquoi approche déclarative ?
+    - Auto-recovery
+      - Si une panne survient, c'est k8s qui est en charge de détecter la panne et de re-converger vers l'état désiré
+      - Sans que l'user soit concerné/impliqué dans le "comment"
+  - Comment déployer les containers ?
+    - Approche naïve est que le Control Plane, à partir de la description de l'état désiré
+      - Choisisse un noeud adapté
+      - Commande à ce noeud de démarrer le container
+    - Reproduirait le pattern qu'on aurait avec l'approche impérative
+      - Control Plane devrait alors monitorer et incorporer des mécanismes de catch up en cas de défaillance
+  - Pour éviter cela, ré-utilise une approche déclarative en interne
+    - Control plane définit l'état désiré de chaque noeud
+    - Chaque composant (les noeuds, le scheduler...) va alors oeuvrer pour converger vers l'état indiqué
+    - Approche nommée Level Triggered (vs. Event Triggered)
+      - Event Triggered : approche event-based
+        - Les composants réagissent aux events propagés pour déterminer leurs actions
+        - Si un composant a eu une défaillance et a manqué un event, doit mettre en place un mécanisme pour lui re-propager cet event
+      - Level Triggered : approche par niveaux
+        - Events font progresser de niveau
+        - Niveau mis à disposition des composants
+        - C'est à partir de son niveau courant et du niveau désiré qu'un composant détermine ses actions
+    - Permet de concevoir un système plus simple et robuste
+    - Clame cependant qu'aucun composant n'est un SPOF dans ce système
+      - Quid du Control Plane ?
+      - C'est lui qui conserve l'état désiré du système
+      - Et qui reçoit/gère les demandes de MàJ de l'état
+        - e.g. scheduler a décidé du noeud qui allait être responsable d'un pod donné
+      - Comment il ne peut pas être un SPOF ?
+    - Justifie cela de la manière suivante
+      - Si le Control Plane rencontre une panne
+      - Les différents composants du système continueront à tourner à partir des dernières informations obtenues sur l'état désiré
+      - Si un autre composant a une panne
+      - Le reste du système continue de fonctionner de manière indépendante
+    - Curieux de la charge de travail du Control Plane et du Scheduler
+      - Et de l'impact d'une panne du Scheduler
+    - Cette approche permet aussi de faciliter l'ajout d'add-ons/l'implémentation de composants customs
+      - Doit juste interagir avec le Control Plane pour mettre à jour le niveau comme souhaité
+  - Comment fournir les secrets et autres données de config à l'application ?
+    - L'API k8s fournit plusieurs objets pour représenter ces données
+    - L'API étant transparente, peut modifier son application pour fetch ces données
+    - Mais quid des applications legacy qui récupèrent ces données via un fichier ou des variables d'env depuis des temps immémoriaux ?
+    - k8s permet de fournir ces données aux pods sous la forme de fichiers ou de variable d'env
+  - Comment sont gérés les volumes distants ?
+    - i.e. volumes fournis par des services cloud
+    - Renseigné directement dans la définition du pod
+    - Une fois que le pod schedulé pour un node, le storage controller vérifie si le volume indiqué est attaché au node
+      - Effectue les démarches nécessaires si besoin
+    - Et MàJ l'état du node
+    - Mais c'est une erreur de référencer le type de stockage directement dans la config du pod
+      - Pod plus portable, vendor-locked
+    - Ont mis en place des abstractions pour répondre à ce problème
+      - PersistentVolume et PersistentVolumeClaim
+      - Référence une claim dans la config d'un pod
+      - Une Claim est un objet k8s aussi
+        - Décrit les caractéristiques du volume demandé
+        - e.g. accès read-only/rw, type de stockage
+      - Et un Controller, le Persistent Volume Controller se charge d'allouer un volume correspond aux besoins par rapport aux services disponibles
+  - Pourquoi rendre l'application portable ?
+    - Permet de découpler le dev de l'application du cluster/service cloud sur lequel elle va tourner
+    - Fait la comparaison suivante : k8s, c'est comme un OS pour les applications distribués
+      - Permet de ne plus se soucier lors du dev d'une appli distribué de l'environnement dans lequel cette dernière va tourner
 ** Semaine du <2024-01-03 Wed> au <2024-01-05 Fri>
 *** Planned
 **** DONE Installer logiciels
