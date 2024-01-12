@@ -536,6 +536,81 @@ CLOSED: [2024-01-11 Thu 17:01]
     - Des users qui confirment la correction du problème courant août 2023
   - J'ai donc suivi les étapes indiquées
   - Le setup de la classe de storage semble s'être effectué correctement
+- Réunion SmartSense
+  - Réunion ayant pour objectifs principaux de
+    - Me présenter la plateforme SmartSense
+    - Me présenter les problématiques/pistes de travail que Mickaël & Olivier souhaiteraient qu'on explore au cours de l'ADT
+  - Préparation
+    - Olivier & Eric m'ont déjà présenté les capteurs SmartSense
+      - Le fait qu'ils sont équipés d'une Raspberry Pi 3 pour avoir un peu d'intelligence/puissance de calcul en local
+    - M'ont aussi parlé de Guillermo Andrade-Barroso
+      - Attendais un peu explorer les repos de mon côté pour le contacter
+      - Et d'avoir eu cette réunion
+    - M'ont parlé de 2 applications principalement
+      - https://co2.irisa.fr/
+      - https://smartsense-gest.inria.fr/dashboard
+    - CO2
+      - Permet de suivre les relevés de données par les capteurs dans une salle à partir d'un instant T
+      - Ne voyant pas d'évolution, et les données datant de l'an dernier, pensais qu'il était planté
+      - Mais j'ai eu la chance de tomber sur une réunion lors d'un test
+      - Et pu voir son fonctionnement
+    - Gest
+      - Dashboard du système
+      - Avait l'air de rencontrer des problèmes de certificats quand Eric a souhaité me le présenter
+      - J'ai un compte, mais sans droits d'accès
+    - Curieux de mieux comprendre la galaxie de repos du groupe GitLab
+      - Quels sont les principaux projets ?
+      - Quel est leur rôle respectif ?
+      - Est-ce que certains ne sont plus d'actualité ?
+      - Y a-t-il un document récapitulant l'architecture globale du système ?
+  - Notes
+    - Actuellement, raspberry peu utilisée
+      - Sert juste à passer les données au réseau
+    - Idée serait d'utiliser cette carte pour ajouter des traitements
+      - E.g. préparer les données pour permettre la désaggrégation des données
+        - Histoire de suivre la consommation énergétique de chaque équipement
+      - Détecter la présence de personne
+        - Peut utiliser la vidéo
+        - Mais aussi le CO2
+          - Semblerait qu'il est possible d'estimer le nombre de personnes présentes dans une pièce en fonction de la croissance du taux de CO2
+    - Objectif
+      - Mettre des traitements à chaque tier de l'architecture
+      - Tout au long de la vie de la donnée
+        - De la collecte au cloud
+    - Axe de travail SmartOps
+      - Mettre en place la communication sans-fil
+      - Pour permettre interaction avec Living Fog
+    - Bug d'InfluxDB sur version en extérieur de SmartSense
+      - Fait tourner sur la raspberry une instance InfluxDB
+        - Puisque pas de connexion pour remonter les données
+      - Mais rencontraient des problèmes de stabilité de l'instance
+        - Tâches trop couteuses ?
+        - Serait intéressant de creuser et d'identifier l'origine du problème
+    - Dernière étape
+      - Utiliser du hardware spécialisé, un Digital Software Processor, pour faire un pré-traitement sur les flux (audio/vidéo)
+        - Flux trop important/trop coûteux à traiter par les microprocesseurs équipés
+      - Actuellement, déjà un DSP d'équipé sur les capteurs SmartSense
+      - Un étudiant travaille actuellement sur un projet de cette nature
+        - But est de router les micros sur le DSP pour traiter leurs entrées
+        - Dans le but de faire par ex de la spatialisation de sources sonores
+    - CO2
+      - Application réalisée dans le cadre d'un stage
+        - Pas vraiment testée/validée
+      - Mais bon point d'entrée pour comprendre comment on interagit avec le système pour récupérer les données et effectuer des traitements
+    - Gest
+      - Possibilité de récupérer les données via un export de la BDD
+      - Sinon possibilité de se connecter directement au broker pour récupérer les données en temps réel
+        - Mickaël a un script python qui fait ça
+  - Prochaines étapes
+    - Continuer à me former sur la partie Fog
+    - Et découvrir SmartSense
+      - Consulter les documents d'architectures dans 3Douest/Documents
+      - Consulter le script python permettant en local de consulter les données remontées par SmartSense
+      - Consulter le projet CO2 pour creuser plus loin
+    - En parallèle, Mickaël voit comment setup l'environnement de dev pour SmartSense
+      - Et m'apportera le matériel nécessaire
+    - Une fois l'environnement mis en place, première étape sera probablement de mettre en place une communication WiFi
+      - Puis d'ajouter des traitements en local sur le capteur
 ** Semaine du <2024-01-03 Wed> au <2024-01-05 Fri>
 *** Planned
 **** DONE Installer logiciels
