@@ -29,12 +29,28 @@ CLOSED: [2024-01-11 Thu 17:01]
 - Renvoie à la page suivante :
   - https://minikube.sigs.k8s.io/docs/tutorials/volume_snapshots_and_csi/
 - Voir si le problème est toujours d'actualité et si c'est bien la solution conseillée
-**** IN-PROGRESS Prendre en main Kubernetes
+**** DONE Prendre en main Kubernetes
+CLOSED: [2024-01-12 Fri 13:15]
 - J'ai atteint la partie du cours de Guillaume présentant Kubernetes
 - Voir maintenant pour expérimenter avec histoire de creuser l'outil
 - Ressources disponibles :
   - Le TP du cours de Guillaume : [[file:~/Documents/sct-m1info/support/pdf/tp08.orchestration.pdf]]
   - Le tuto de Digital Ocean sur faire fonctionner Kubernetes en local : https://www.digitalocean.com/community/tutorials/how-to-use-minikube-for-local-kubernetes-development-and-testing
+**** IN-PROGRESS Déployer une application complexe avec k8s
+- Les tutos que je suis pour le moment se contentent de déployer des applications simples
+  - I.e. Un pod faisant tourner un nginx
+- Pour apprendre correctement k8s, serait intéressant de déployer une application composée de
+  - Serveurs d'applications, répliqués
+    - Avec un load balancer pour répartir la charge
+  - Interagissant avec une BDD
+    - Elle aussi répliquée ?
+- Cela permettrait de creuser
+  - La configuration et le déploiement de pods différents
+  - Les interactions entre ces pods, potentiellement sur des noeuds différents
+  - L'utilisation de volumes
+  - L'utilisation de fichiers de description
+- Exemple
+  - *Deployment of multiple apps on Kubernetes cluster — Walkthrough* : https://wkrzywiec.medium.com/deployment-of-multiple-apps-on-kubernetes-cluster-walkthrough-e05d37ed63d1
 *** Done
 - Suivre cours de Guillaume sur les technologies cloud
   - CM5 - Services cloud réseau
@@ -611,6 +627,86 @@ CLOSED: [2024-01-11 Thu 17:01]
       - Et m'apportera le matériel nécessaire
     - Une fois l'environnement mis en place, première étape sera probablement de mettre en place une communication WiFi
       - Puis d'ajouter des traitements en local sur le capteur
+- Déployer une application complexe avec k8s
+  - Plusieurs points à creuser au préalable
+    - Gestion des volumes
+      - On ne créé pas directement les volumes
+      - Les abstractions Persistent Volume et Persistent Volume Claim sont là pour permettre de découpler les volumes des cloud providers
+      - Indique via une Claim les caractéristiques du volume que l'on souhaite obtenir/mis à disposition de notre application
+      - k8s se charge d'allouer un volume fittant ces critères
+      - Et on indique dans la specification d'un pod le ou les volumes qui doivent être montés
+      - Comment ça se passe si on re-déploie l'application ?
+        - Comment garantir que le même volume soit alloué à la même claim ?
+          - Est-ce que k8s gère ça de son côté ?
+        - On associe un nom de volume à une claim dans la specification du deployment
+    - Gestion des services
+      - Lors de la création d'un service, plusieurs données sont récupérées
+        - L'adresse IP du service
+        - Le port sur lequel il accepte les connexions
+      - Ses données sont accessibles aux pods par le biais de variables d'env
+        - <NAME>_SERVICE_HOST/PORT
+      - Mais ces variables d'env ne seront set que pour les pods créés après le service
+      - Recommandé donc de créer les services avant les deployments correspondants
+      - Comment on fait ce mapping service/deployment dans le fichier de config ?
+        - Via les labels ?
+        - Le nom plus probablement
+      - Utiliser le nom du service ou les variables d'env définies du coup ?
+    - Configuration et secrets
+      - Possible de définir un fichier de configuration où centraliser les informations
+      - e.g. mot de passe de la BDD
+      - Quelle est la bonne pratique vis-à-vis de ces fichiers ?
+        - Si une donnée est utilisée plusieurs fois dans le/les fichiers de description, la déplacer dans le fichier de configuration ?
+    - Gestion des labels et selectors
+      - Les fichiers de config que je rencontre renseignent régulièrement des métadonnées pour chaque objet k8s
+        - labels
+        - selectors
+          - matchLabels
+          - app
+          - tier
+      - Quelle est la liste de ces métadonnées ?
+      - Quelle est leur rôle respectif ?
+    - Organisation du fichier de description
+      - Possible de faire un fichier de description par entité k8s
+        - service, deployment, etc
+      - Un peu lourd et peu pratique
+      - Possible de regrouper plusieurs descriptions dans un même fichier
+        - En séparant les descriptions respectives par des ---
+    - Possible de lier les fichiers entre eux ?
+      - Avoir un fichier index en quelque sorte
+      - Ou ce n'est pas la bonne pratique ?
+  - J'ai suivi le tuto suivant *Example: Deploying WordPress and MySQL with Persistent Volumes*
+    - Dispo ici : https://kubernetes.io/docs/tutorials/stateful-application/mysql-wordpress-persistent-volume/
+    - Définit un Secret pour indiquer le mot de passe de la BDD
+    - Définit des fichiers de description distincts pour
+      - L'instance de MySQL et les composants associés
+        - PVC, Service, Deployment
+      - L'instance de WordPress et les composants associés
+        - PVC, Service, Deployment
+    - Regroupe la description du système par le biais du fichier Kustomization
+    - Déploie le système via la commande suivante
+      - kubetcl apply -k ./
+      - Warning : option -k et non pas -f vu qu'on passe par un objet Kustomization
+    - Fonctionne nickel
+      - A pu administrer et modifier le site par défaut proposé par WordPress
+        - Création d'une page
+        - Ajout d'une image uploadée
+  - J'ai voulu répliquer ensuite l'instance de WordPress
+    - kubetcl scale replicas=3 deployment wordpress
+  - Obtient un pod correspondant sur chaque noeud
+  - J'ai alors rencontré les problèmes évoqués par Guillaume
+    - Déconnexions intempestives
+      - Si on est dirigé vers une instance autre que celle qui a issue notre cookie d'authentification
+      - Ce dernier est invalidé
+      - Besoin de se reconnecter
+      - Mais ne dure que si on continue d'interagir par chance avec la même instance
+    - Contenu indisponible
+      - Les pages sont bien partagées entre instances
+      - Puisqu'elles doivent être décrites en BDD
+        - Qui elle est commune à l'ensemble des instances
+      - Par contre, l'image uploadée est elle indisponible régulièrement
+      - Doit être conservée que par une des instances de WordPress
+      - Le volume n'est donc pas partagé par l'ensemble des noeuds
+  - Comment les corriger ?
 ** Semaine du <2024-01-03 Wed> au <2024-01-05 Fri>
 *** Planned
 **** DONE Installer logiciels
@@ -935,21 +1031,6 @@ CLOSED: [2024-01-05 Fri 07:57]
 *** TODO Lire *OZCAR: The French Network of Critical Zone Observatories*
 - Ammar m'a recommandé cet article pour en apprendre plus sur les observatoires et leurs buts
 - Le consulter
-*** TODO Déployer une application complexe avec k8s
-- Les tutos que je suis pour le moment se contentent de déployer des applications simples
-  - I.e. Un pod faisant tourner un nginx
-- Pour apprendre correctement k8s, serait intéressant de déployer une application composée de
-  - Serveurs d'applications, répliqués
-    - Avec un load balancer pour répartir la charge
-  - Interagissant avec une BDD
-    - Elle aussi répliquée ?
-- Cela permettrait de creuser
-  - La configuration et le déploiement de pods différents
-  - Les interactions entre ces pods, potentiellement sur des noeuds différents
-  - L'utilisation de volumes
-  - L'utilisation de fichiers de description
-- Exemple
-  - *Deployment of multiple apps on Kubernetes cluster — Walkthrough* : https://wkrzywiec.medium.com/deployment-of-multiple-apps-on-kubernetes-cluster-walkthrough-e05d37ed63d1
 *** TODO Se familiariser avec le concept d'Infrastructure as Code (IAC)
 - Plutôt que de setup manuellement Kubernetes sur ses machines
 - Semblerait que la pratique soit d'automatiser son setup
