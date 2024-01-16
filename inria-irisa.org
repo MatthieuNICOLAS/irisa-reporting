@@ -2,6 +2,122 @@
 #+ORG-IMAGE-ACTUAL-WIDTH: 500px
 
 * Journal de bord
+** Semaine du <2024-01-15 Mon> au <2024-01-19 Fri>
+*** Planned
+**** DONE Prendre en main le script de connexion aux brokers MQTT
+CLOSED: [2024-01-16 Tue 13:38]
+- Mickaël m'a partagé son script de test
+- Voir pour l'essayer et le comprendre
+**** IN-PROGRESS Résoudre problème d'accès aux fichiers sur WordPress
+- Lorsque je réplique mon serveur d'application WordPress, je constate que WordPress rencontre régulièrement un problème pour afficher les images
+  - Les fichiers que j'ai uploadé moi-même pour créer la page
+- Probablement dû au fait que le volume qui stocke ces images n'est pas partagé par l'ensemble des instances
+- Étudier comment faire évoluer l'application pour corriger cela
+**** IN-PROGRESS Résoudre problème d'authentification sur WordPress
+- Lorsque je réplique mon serveur d'application WordPress, je me retrouve à devoir me reconnecter à chaque changement de page
+- Probablement dû au fait que mon cookie d'auth est valide pour une instance donnée, et est invalidé par les autres
+- Étudier comment faire évoluer l'application pour corriger cela
+**** TODO Se familiariser avec le concept d'Infrastructure as Code (IAC)
+- Plutôt que de setup manuellement Kubernetes sur ses machines
+- Semblerait que la pratique soit d'automatiser son setup
+- Process connu comme l'Infrastructure as Code
+- Se renseigner et documenter à ce sujet
+- Ressources rapides
+  - https://learn.microsoft.com/en-us/devops/deliver/what-is-infrastructure-as-code
+  - https://aws.amazon.com/what-is/iac/
+- Guillaume mentionnait notamment l'outil Vagrant
+  - https://www.vagrantup.com
+*** Done
+- Résoudre problème d'accès aux fichiers sur WordPress
+  - Plusieurs pistes possibles
+  - Modification de la config du volume dans la description de l'application
+    - La configuration que j'ai utilisé précise que le volume persistant est en ReadWriteOnce
+    - i.e. qu'un seul noeud peut l'utiliser en mode RW
+    - Cohérent avec le problème constaté
+    - L'option ReadWriteMany permet de spécifier qu'il sera utilisé par plusieurs noeuds
+      - Permettrait ainsi de rendre accessible les fichiers à tous les noeuds en ayant besoin
+      - Solution limitée cependant
+        - En interne, fonctionne avec un NFS d'après ce que m'explique Guillaume
+        - Les performances sont donc pas adaptées à une charge conséquente
+    - A testé avec cette configuration, sans succès
+      - L'image, de nouveau, n'est pas chargée régulièrement lors de l'affichage de la page
+    - La raison m'échappe
+    - Je commence à avoir un doute sur le fait que le volume soit correctement partagé par les noeuds
+    - En explorant les containers, j'ai observé des différences
+      - kubetcl exec -it <container> -- /bin/bash
+      - Seul un container possède le fichier uploadé
+      - Un fichier créé manuellement dans un container n'apparait pas dans l'arborescence des autres
+    - En creusant, j'ai remarqué que la configuration pour la gestion des volumes pour un cluster avait été perdue
+    - En réactivant cette config, cela fonctionne
+      - Fichier uploadé bien disponible sur l'ensemble des instances
+      - Modifications manuelles sont bien observables sur l'ensemble des instances
+    - Effet de bord intéressant mais intriguant : corrige aussi le problème d'authentification
+      - Comprend pas la logique derrière
+  - Ajout d'un service de sync des volumes
+    - Je suis surpris de ne pas trouver d'articles qui présentent cette solution et détaillent comment la mettre en place
+    - Ni de trouver un outil/composant qui assumerait ce rôle
+    - Les gens reposent sur des solutions customs à base de rsync ?
+    - Tombé sur *VolSync*, un système de réplication async entre volumes dans ou entre clusters
+      - Disponible ici : https://github.com/backube/volsync
+      - Projet Red Hat
+      - Pas sûr que l'outil soit adapté pour répliquer des fichiers en temps réel vu les cas d'usages présentés
+        - Plutôt  l'impression que c'est pour propager des données à terme, pour résilience ou traitements à posteriori sur les données
+        - cf. https://next.redhat.com/2021/08/23/introducing-volsync-your-data-anywhere/
+    - Demander des précisions sur le service mentionné par Guillaume
+  - Est-il sinon possible d'override le fonctionnement de WordPress pour héberger les fichiers ?
+    - Plutôt que d'essayer de retomber sur nos pattes en ajoutant des rustines
+      - Partager un même volume entre pods
+      - Sync les volumes de nos pods
+    - Serait-il pas mieux et possible de faire déléguer à WordPress la gestion des fichiers à un service tiers, dédié à cela ?
+      - Je suppose que WordPress est assez flexible pour cela
+- Résoudre problème d'authentification sur WordPress
+  - Comme évoqué précédemment, partager un même volume entre les instances WordPress a pour effet de bord de résoudre ce problème
+    - D'une manière que je ne comprends pas
+    - Quoique
+    - Cela s'explique si le serveur ne conserve aucune donnée en mémoire entre 2 requêtes
+    - Et recréé l'état, e.g. de la session, à partir des infos fournies par la requête, e.g. cookies, et de fichiers
+    - Une rapide recherche confirme ce mode de fonctionnement
+  - Donc c'est une approche pour résoudre le problème des sessions, mais p-e pas la plus adaptée/conseillée
+  - Guillaume m'a conseillé de regarder du côté des sessions PHP partagées
+- Formation SED - Bonnes Pratiques du Dev Logiciel
+  - Dans toute équipe de recherche, y a correspondant SED pour entrer en contact
+  - Existe un GitLab pour projets avec données confidentielles
+    - https://gitlab-int.inria.fr
+  - Tests et intégration continue
+    - Tests métiers
+      - Vérifier que son logiciel est compris et utilisé par les personnes devant l'utiliser
+    - Analyse statique
+      - Mettre en place linter/convention de codage
+      - Utiliser des outils de vérification de la qualité du code
+        - e.g. sonarqube
+        - Voir si facilement pluggable/hookable au gitlab
+    - Documentation
+      - Existe gitlab-pages
+      - Recommandations sur comment écrire la doc : https://smartbear.com/blog/13-things-people-hate-about-your-open-source-docs/
+  - Licences conseillées
+    - MIT
+    - GPL/LGPL
+    - BSD
+- Prendre en main le script de connexion aux brokers MQTT
+  - Dépendance
+    - Ce script nécessite pour fonctionner l'installation d'une librairie pour instancier un client MQTT
+      - pip install paho-mqtt
+  - Ce script se connecte à ou plusieurs brokers MQTT de la plateforme SmartSense
+    - Choix codé en dur
+  - Il récupère les messages postés sur le topic, les décode et les affiche
+  - S'interrompt au bout d'une minute
+  - Fonctionne
+  - Particulier au niveau de la connexion aux topics
+    - Tous les topics n'ont pas l'air d'utiliser la même configuration
+    - Notamment au niveau du port utilisé
+      - Pourquoi ?
+  - Semble associer un port différent à chaque zone
+    - Plusieurs zones à Lannion, plusieurs à Rennes
+  - Semble retrouver cette information directement dans l'URL d'un topic
+    - e.g. "event/p/production/Rennes/0/E/..." indique un topic d'un capteur situé à Rennes, dans le secteur 0
+    - Si j'ai bien pigé
+    - Un peu confus sur la signification du champ suivant
+      - Vaut 3 ou E en fonction des topics présentés
 ** Semaine du <2024-01-08 Mon> au <2024-01-12 Fri>
 *** Planned
 **** DONE Régulariser situation du 02/01
@@ -36,7 +152,8 @@ CLOSED: [2024-01-12 Fri 13:15]
 - Ressources disponibles :
   - Le TP du cours de Guillaume : [[file:~/Documents/sct-m1info/support/pdf/tp08.orchestration.pdf]]
   - Le tuto de Digital Ocean sur faire fonctionner Kubernetes en local : https://www.digitalocean.com/community/tutorials/how-to-use-minikube-for-local-kubernetes-development-and-testing
-**** IN-PROGRESS Déployer une application complexe avec k8s
+**** DONE Déployer une application complexe avec k8s
+CLOSED: [2024-01-15 Mon 08:45]
 - Les tutos que je suis pour le moment se contentent de déployer des applications simples
   - I.e. Un pod faisant tourner un nginx
 - Pour apprendre correctement k8s, serait intéressant de déployer une application composée de
@@ -1031,16 +1148,6 @@ CLOSED: [2024-01-05 Fri 07:57]
 *** TODO Lire *OZCAR: The French Network of Critical Zone Observatories*
 - Ammar m'a recommandé cet article pour en apprendre plus sur les observatoires et leurs buts
 - Le consulter
-*** TODO Se familiariser avec le concept d'Infrastructure as Code (IAC)
-- Plutôt que de setup manuellement Kubernetes sur ses machines
-- Semblerait que la pratique soit d'automatiser son setup
-- Process connu comme l'Infrastructure as Code
-- Se renseigner et documenter à ce sujet
-- Ressources rapides
-  - https://learn.microsoft.com/en-us/devops/deliver/what-is-infrastructure-as-code
-  - https://aws.amazon.com/what-is/iac/
-- Guillaume mentionnait notamment l'outil Vagrant
-  - https://www.vagrantup.com/
 * Autres
 ** Commandes utiles
 - Mettre à jour paquets
