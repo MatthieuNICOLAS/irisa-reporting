@@ -8,16 +8,18 @@
 CLOSED: [2024-01-16 Tue 13:38]
 - Mickaël m'a partagé son script de test
 - Voir pour l'essayer et le comprendre
-**** IN-PROGRESS Résoudre problème d'accès aux fichiers sur WordPress
+**** DONE Résoudre problème d'accès aux fichiers sur WordPress
+CLOSED: [2024-01-18 Thu 10:25]
 - Lorsque je réplique mon serveur d'application WordPress, je constate que WordPress rencontre régulièrement un problème pour afficher les images
   - Les fichiers que j'ai uploadé moi-même pour créer la page
 - Probablement dû au fait que le volume qui stocke ces images n'est pas partagé par l'ensemble des instances
 - Étudier comment faire évoluer l'application pour corriger cela
-**** IN-PROGRESS Résoudre problème d'authentification sur WordPress
+**** DONE Résoudre problème d'authentification sur WordPress
+CLOSED: [2024-01-18 Thu 10:25]
 - Lorsque je réplique mon serveur d'application WordPress, je me retrouve à devoir me reconnecter à chaque changement de page
 - Probablement dû au fait que mon cookie d'auth est valide pour une instance donnée, et est invalidé par les autres
 - Étudier comment faire évoluer l'application pour corriger cela
-**** TODO Se familiariser avec le concept d'Infrastructure as Code (IAC)
+**** IN-PROGRESS Se familiariser avec le concept d'Infrastructure as Code (IaC)
 - Plutôt que de setup manuellement Kubernetes sur ses machines
 - Semblerait que la pratique soit d'automatiser son setup
 - Process connu comme l'Infrastructure as Code
@@ -27,6 +29,20 @@ CLOSED: [2024-01-16 Tue 13:38]
   - https://aws.amazon.com/what-is/iac/
 - Guillaume mentionnait notamment l'outil Vagrant
   - https://www.vagrantup.com
+**** IN-PROGRESS Automatiser la création d'un cluster de Raspberry virtualisé
+- Plutôt que de travailler avec le cluster physique
+- Serait intéressant d'apprendre à provisionner un cluster virtuel de Raspberry
+- Permettrait de pouvoir créer un environnement pour dev et effectuer des tests
+  - Notamment comment setup k8s ou équivalent sur un tel système
+**** TODO Automatiser le setup de k3s sur un cluster de Raspberry
+- Permettrait de graduate de minikube
+  - Et d'apprendre ainsi tout ce qu'il gère pour moi automatiquement
+- Et d'aller plus loin dans notre mise en place automatique d'environnements de dev et de test
+- Ressources
+  - Blogpost: https://medium.com/@stevenhoang/step-by-step-guide-installing-k3s-on-a-raspberry-pi-4-cluster-8c12243800b9
+**** TODO Déployer WordPress sur un cluster de Raspberry
+- Permettrait de valider le résultat obtenu dans les étapes précédentes
+- Et de rencontrer les problèmes éventuels liés aux architectures processeurs
 *** Done
 - Résoudre problème d'accès aux fichiers sur WordPress
   - Plusieurs pistes possibles
@@ -70,6 +86,7 @@ CLOSED: [2024-01-16 Tue 13:38]
       - Sync les volumes de nos pods
     - Serait-il pas mieux et possible de faire déléguer à WordPress la gestion des fichiers à un service tiers, dédié à cela ?
       - Je suppose que WordPress est assez flexible pour cela
+    - Genre mettre en place son propre CDN
 - Résoudre problème d'authentification sur WordPress
   - Comme évoqué précédemment, partager un même volume entre les instances WordPress a pour effet de bord de résoudre ce problème
     - D'une manière que je ne comprends pas
@@ -118,6 +135,55 @@ CLOSED: [2024-01-16 Tue 13:38]
     - Si j'ai bien pigé
     - Un peu confus sur la signification du champ suivant
       - Vaut 3 ou E en fonction des topics présentés
+    - D'après la doc, indique le sous-secteur
+      - Doc dispo ici, page 8 : https://gitlab.inria.fr/smartsense/3douest/documents/conception/-/blob/master/CDC-20190806-Design%20MQTT%20et%20InfluxDB-V1.4.pdf
+- Se familiariser avec le concept d'Infrastructure as Code (IaC)
+  - Un peu de mal à piger si Vagrant est adapté à notre use-case
+    - Outil permettant de déployer des environnements
+      - Instancie des VMs selon la configuration donnée
+      - Exécute le/les scripts fournis
+      - Copie une partie du FS dans la VM
+    - On a probablement pas envie de déployer notre application à même les raspberry du serveur
+    - Mais voulons-nous utiliser des VMs pour autant ?
+    - Préférions-nous pas utiliser simplement des conteneurs ?
+      - Installer k8s (ou plutôt k3s probablement) sur les raspberry
+      - Configurer le cluster pour définir les noeuds et leurs rôles
+      - Déployer l'application
+  - A un intérêt donc, mais plutôt pour la partie dev/testing IMO
+    - Pour provisionner/recréer le cluster de raspberry localement
+  - Est-ce que son rôle s'arrête là ?
+    - i.e. utiliser un autre outil pour setup le cluster k8s ?
+      - Ansible ?
+  - Serait intéressant de voir avec Khaled ce qu'il fait dans le cadre de ses expériences
+    - Est-ce qu'il simule des raspberry ?
+    - Quels outils il utilise ?
+      - Pour provisionner les machines virtuelles
+    - Est-ce qu'il a mis ses ressources, configurations et scripts à disposition ?
+      - Genre dans son article
+  - Il m'a donné accès à son repo avec tout les scripts pour son setup experimental
+    - Dispo ici : https://gitlab.inria.fr/stream-processing-autoscaling/scalehub
+  - De ce que j'ai compris
+    - Réserve des noeuds sur g5k
+    - En utilisant les IPs des machines attribuées, lance un script Ansible qui les préparent à la configuration
+      - Setup SSH
+    - Puis exécute un script Ansible qui installe k3s sur les noeuds
+      - A rencontré des problèmes pour setup k3s, mais ne se souvient plus quoi
+      - A commencé à creuser l'alternative mini-k0s
+      - Mais a résolu son problème sur k3s
+    - À partir de là, fait tout par le biais de k3s
+      - Déploie des services supplémentaires en fonction de ses besoins
+      - Prometheus, Grafana, Kafka, Flink
+  - Par contre, ne fait aucune virtualisation des machines
+    - Va falloir que je me débrouille pour cette partie là
+  - Parcours le livre *Infrastructure as Code* de Kief Morris
+- Automatiser la création d'un cluster de Raspberry virtualisé
+  - Ressources :
+    - Tuto suivant a l'air plutôt complet sur comment virtualiser une Raspberry : https://linuxconfig.org/how-to-run-the-raspberry-pi-os-in-a-virtual-machine-with-qemu-and-kvmi
+    - Celui-ci a l'air plus d'actualité : https://interrupt.memfault.com/blog/emulating-raspberry-pi-in-qemu
+    - Ou celui-ci : https://brettops.io/blog/custom-raspberry-pi-image-no-hardware/
+  - Pose la question de l'outil VM à utiliser
+    - Souhaite émuler du ARM
+    - Est-ce une bonne idée ?
 ** Semaine du <2024-01-08 Mon> au <2024-01-12 Fri>
 *** Planned
 **** DONE Régulariser situation du 02/01
