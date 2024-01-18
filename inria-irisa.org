@@ -178,12 +178,25 @@ CLOSED: [2024-01-18 Thu 10:25]
   - Parcours le livre *Infrastructure as Code* de Kief Morris
 - Automatiser la création d'un cluster de Raspberry virtualisé
   - Ressources :
-    - Tuto suivant a l'air plutôt complet sur comment virtualiser une Raspberry : https://linuxconfig.org/how-to-run-the-raspberry-pi-os-in-a-virtual-machine-with-qemu-and-kvmi
+    - Tuto suivant a l'air plutôt complet sur comment virtualiser une Raspberry : https://linuxconfig.org/how-to-run-the-raspberry-pi-os-in-a-virtual-machine-with-qemu-and-kvm
     - Celui-ci a l'air plus d'actualité : https://interrupt.memfault.com/blog/emulating-raspberry-pi-in-qemu
     - Ou celui-ci : https://brettops.io/blog/custom-raspberry-pi-image-no-hardware/
   - Pose la question de l'outil VM à utiliser
     - Souhaite émuler du ARM
     - Est-ce une bonne idée ?
+  - Essayons, on jugera à l'essai
+  - Pars donc sur l'émulation d'une Raspberry à l'aide de QEMU
+  - Suivi du tuto https://interrupt.memfault.com/blog/emulating-raspberry-pi-in-qemu
+  - Erreur rencontrée avec la dernière image de Raspberry OS
+    - OS : https://downloads.raspberrypi.com/raspios_lite_arm64/images/raspios_lite_arm64-2023-12-11/2023-12-11-raspios-bookworm-arm64-lite.img.xz
+    - usbnet: failed control transaction: request 0x8006 value 0x600 index 0x0 length 0xa
+    - Aucun autre message ne s'affiche dans le terminal, qui ne répond plus
+  - J'ai re-essayé en utilisant cette fois-ci la version précédente de l'OS
+    - OS : https://downloads.raspberrypi.com/raspios_oldstable_lite_arm64/images/raspios_oldstable_lite_arm64-2023-12-06/2023-12-05-raspios-bullseye-arm64-lite.img.xz
+    - Cette fois-ci, la Raspberry a l'air de se lancer
+      - Retrouve l'erreur parmi les logs, mais n'a pas l'air bloquante
+    - Pu in fine me logger au système
+  - Ok, comment on instrumentalise ça avec Vagrant maintenant ?
 ** Semaine du <2024-01-08 Mon> au <2024-01-12 Fri>
 *** Planned
 **** DONE Régulariser situation du 02/01
