@@ -34,6 +34,19 @@ CLOSED: [2024-01-18 Thu 10:25]
 - Serait intéressant d'apprendre à provisionner un cluster virtuel de Raspberry
 - Permettrait de pouvoir créer un environnement pour dev et effectuer des tests
   - Notamment comment setup k8s ou équivalent sur un tel système
+**** IN-PROGRESS S'approprier SmartSense/smartsense-node-app
+- On est en train de revoir les priorités avec l'arrêt maladie de Guillaume
+- Serait préférable que je passe sur SmartSense en attendant son retour
+- Les différentes tâches identifiées concernent principalement le capteur SmartSense
+  - Ajout d'une couche réseau WiFi
+  - Ajout de traitements en local des données collectées
+    - i.e. sur le capteur
+  - Correction des bugs rencontrés lors de l'utilisation de la BDD en local
+    - Dans la version du capteur pour un fonctionnement autonome
+    - Le capteur fait tourner une instance de la BD, InfluxDB, en local
+    - Mais lors de leurs expériences, ont constaté des crashs de la BDD
+      - Parfois au bout de plusieurs heures
+- Il serait donc intéressant que je rentre rapidement dans ce projet
 **** TODO Automatiser le setup de k3s sur un cluster de Raspberry
 - Permettrait de graduate de minikube
   - Et d'apprendre ainsi tout ce qu'il gère pour moi automatiquement
@@ -197,6 +210,109 @@ CLOSED: [2024-01-18 Thu 10:25]
       - Retrouve l'erreur parmi les logs, mais n'a pas l'air bloquante
     - Pu in fine me logger au système
   - Ok, comment on instrumentalise ça avec Vagrant maintenant ?
+  - Plutôt voir déjà comment on automatise le lancement de VMs avec Vagrant
+  - Suivi le tuto : https://developer.hashicorp.com/vagrant/tutorials/getting-started
+    - Étrangement, n'utilise pas virtualbox en provider par défaut
+      - Je ne l'avais pas installé au moment où j'ai installé vagrant, probablement pour cela
+      - Utilise donc libvirt à la place
+      - Sauf que libvirt n'a pas l'air compatible avec toutes les boxes
+        - Genre, celle du tuto
+      - J'ai set la variable d'env
+        - VAGRANT_DEFAULT_PROVIDER="virtualbox"
+      - Mais n'a aucun impact à la création d'un env
+    - Doit donc spécifier le provider au démarrage
+      - vagrant up --provider="virtualbox"
+    - A pu démarrer la VM, une Ubuntu 18.04.3, et s'y connecter en SSH
+      - vagrant ssh
+  - Maintenant, comment on lance plusieurs VMs avec Vagrant ?
+  - Ça se fait bien, suffit d'en définir plusieurs dans le fichier de config
+    - https://gitlab.inria.fr/mnicolas/vagrant-getting-started/-/blob/382bfe988d13dfbe450cb0b5e3ee459bfd70cdbd/Vagrantfile
+  - Temps de s'intéresser à la partie réseau maintenant
+  - Notamment comment SSH une VM depuis l'autre, et inversement
+- S'approprier SmartSense/smartsense-node-app
+  - Point d'entrée est mainApp
+    - Instancie les différents composants logiciels du capteur
+  - Pour le moment, identifie les composants suivants
+    - ClientMQQT & PublisherMQQT
+    - INAManager
+    - USBManager
+    - NTPManager
+    - RpiGpioManager
+    - FirmwareUpdateManager
+    - TLCManager
+    - Syncer
+  - MQQT
+    - Système de message brokers
+    - Permet au noeud de communiquer avec le serveur
+      - Remonter les données collectées
+      - Mais aussi de recevoir des instructions
+        - e.g. changement de configuration
+  - NTPManager
+    - Système de synchronisation d'horloges du noeud avec le serveur central
+    - Du sens si on utilise une timeseries database
+  - RpiGpioManager
+    - Gère l'alimentation des ports GPIO de la Raspberry
+    - À quoi correspondent ces ports ?
+    - Dans le code, on retrouve la mention de
+      - Sensor Board
+      - Ext1 et Ext2
+    - Peut supposer que la sensor board est la carte sur laquelle sont branchés les différents capteurs
+    - Tandis que Ext1 et Ext2 correspondent aux ports disponibles pour brancher des extensions supplémentaires
+      - cf. https://gitlab.inria.fr/smartsense/3douest/documents/conception/-/blob/master/SMARTSENSE-Module%20d'extension%20pour%20noeud.pdf
+  - mainApp
+    - Instancie l'ensemble des composants
+    - Met en place les processus de contrôle périodique du bon fonctionnement du capteur
+    - Sync son horloge
+    - Alimente les différents capteurs du noeud
+    - Démarre le process mqttManagerCmdProvisioning
+      - Lit en boucle la Queue donnée en entrée en quête de messages
+      - Dès qu'un message est détecté, le publie au MQTT Broker
+    - Pas sûr de comprendre les lignes suivantes
+      - https://gitlab.inria.fr/smartsense/3douest/node-app/smartsense-node-app/-/blob/main/mainApp.py?ref_type=heads#L378-381
+      - Envoie par le biais du message broker un message au serveur
+      - Mais dans quel but ? Que signifie provisioning dans ce contexte ?
+  - Plusieurs réflexions sur le code et projet
+    - Absence d'un gestionnaire de dépendances
+    - Absence de tests
+      - Pose la question de comment développer et tester
+      - Est-ce que développe à même le capteur ?
+      - Ou fait tourner le programme dans une VM pour tester ?
+      - Est-ce que l'architecture différente ARM implique des étapes supplémentaires ?
+      - Globalement, qu'est-ce qu'il faudrait faire pour mettre en place un process de CI ?
+    - Absence de linter
+    - Quelle méthodologie de travail ?
+      - Si je veux faire des modifs
+    - Absence de doc
+  - Réflexions sur mainApp
+    - startProcess()
+      - Pourrait utiliser un enum plutôt que des chaines de caractères pour spécifier le process à démarrer
+        - cf. https://docs.python.org/3/library/enum.html
+      - À l'exception de usbBoardManager, la logique est la même pour chaque process
+        - Seul l'instanciation du process change
+        - Pourrait factoriser le code
+  - Réflexions sur MqttInterface
+    - run()
+      - Pourquoi while True and self.stopLoop is False ?
+        - Et non pas while not self.stopLoop ?
+      - Pourquoi une attente active sur la Queue ?
+        - Pas possible d'utiliser de l'event-based ?
+        - Semblerait que non, d'après l'API
+          - cf. https://docs.python.org/3/library/multiprocessing.html
+      - Pourquoi le type Queue ?
+        - Permet de passer des messages
+        - Canal de diffusion avec plusieurs producers et subscribers possibles
+          - cf. https://docs.python.org/3/library/multiprocessing.html#pipes-and-queues
+        - Mais à messages à usage unique
+          - i.e. lire un message le consomme
+        - Ne supporte pas le pattern fan out du coup
+        - Pas le plus pratique si on veut déclencher plusieurs traitements pour un même message
+          - e.g. stocker en local et diffuser sur le réseau
+        - L'utilisation que j'en vois pour le moment est d'un composant à un autre
+          - De mainApp à mqqtInterface par exemple
+        - Voir si c'est la structure de données la plus adaptée à notre use case finalement
+      - Pourquoi prend en paramètre queueDataIn et queueDataOut ?
+        - Puisque n'utilise pas queueDataOut de toute la méthode
+        - Ne pourrait-on pas passer ces attributs au constructeur plutôt ?
 ** Semaine du <2024-01-08 Mon> au <2024-01-12 Fri>
 *** Planned
 **** DONE Régulariser situation du 02/01
