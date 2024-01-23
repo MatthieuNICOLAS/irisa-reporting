@@ -2,6 +2,139 @@
 #+ORG-IMAGE-ACTUAL-WIDTH: 500px
 
 * Journal de bord
+** Backlog
+*** IN-PROGRESS Automatiser la création d'un cluster de Raspberry virtualisé
+- Plutôt que de travailler avec le cluster physique
+- Serait intéressant d'apprendre à provisionner un cluster virtuel de Raspberry
+- Permettrait de pouvoir créer un environnement pour dev et effectuer des tests
+  - Notamment comment setup k8s ou équivalent sur un tel système
+*** TODO Automatiser le setup de k3s sur un cluster de Raspberry
+- Permettrait de graduate de minikube
+  - Et d'apprendre ainsi tout ce qu'il gère pour moi automatiquement
+- Et d'aller plus loin dans notre mise en place automatique d'environnements de dev et de test
+- Ressources
+  - Blogpost: https://medium.com/@stevenhoang/step-by-step-guide-installing-k3s-on-a-raspberry-pi-4-cluster-8c12243800b9
+*** TODO Déployer WordPress sur un cluster de Raspberry
+- Permettrait de valider le résultat obtenu dans les étapes précédentes
+- Et de rencontrer les problèmes éventuels liés aux architectures processeurs
+*** TODO Lire *OZCAR: The French Network of Critical Zone Observatories*
+- Ammar m'a recommandé cet article pour en apprendre plus sur les observatoires et leurs buts
+- Le consulter
+** Semaine du <2024-01-22 Mon> au <2024-01-26 Fri>
+*** Planned
+**** IN-PROGRESS S'approprier SmartSense/smartsense-node-app
+- On est en train de revoir les priorités avec l'arrêt maladie de Guillaume
+- Serait préférable que je passe sur SmartSense en attendant son retour
+- Les différentes tâches identifiées concernent principalement le capteur SmartSense
+  - Ajout d'une couche réseau WiFi
+  - Ajout de traitements en local des données collectées
+    - i.e. sur le capteur
+  - Correction des bugs rencontrés lors de l'utilisation de la BDD en local
+    - Dans la version du capteur pour un fonctionnement autonome
+    - Le capteur fait tourner une instance de la BD, InfluxDB, en local
+    - Mais lors de leurs expériences, ont constaté des crashs de la BDD
+      - Parfois au bout de plusieurs heures
+- Il serait donc intéressant que je rentre rapidement dans ce projet
+*** Done
+- S'approprier SmartSense/smartsense-node-app
+  - Pistes de travail
+    - Identifier les dépendances
+    - Mettre en place un gestionnaire de dépendances
+      - Poetry est un bon candidat
+    - Mettre en place un linter
+      - pylint : https://www.pylint.org/
+      - Ruff : https://astral.sh/ruff
+    - Setup un task runner
+      - poethepoet : https://github.com/nat-n/poethepoet
+    - Automatiser le déclenchement des outils
+      - Hook pré-commit
+      - Config VSCode
+    - Mettre en place un autoformatter
+      - Ruff : https://astral.sh/ruff
+      - Black : https://github.com/psf/black
+      - isort: https://github.com/PyCQA/isort
+    - Mettre en place un outil d'analyse des types
+      - mypy : https://www.mypy-lang.org/
+      - pyright : https://github.com/microsoft/pyright
+  - Getting started
+    - pipx install poetry
+    - pipx install poethepoet
+    - poetry add --group dev pylint
+    - poetry add --group dev ruff
+    - poetry add --group dev isort
+  - Dépendances identifiées
+    - influxdb
+      - https://pypi.org/project/influxdb/
+    - intelhex
+      - https://pypi.org/project/intelhex/
+    - ntplib
+      - https://pypi.org/project/ntplib/
+    - paho-mqqt
+      - https://pypi.org/project/paho-mqtt/
+    - pi-ina219
+      - https://pypi.org/project/pi-ina219/
+    - pyftdi
+      - https://pypi.org/project/pyftdi/
+    - pyserial
+      - https://pyserial.readthedocs.io/en/latest/pyserial.html
+    - RPi.GPIO
+      - https://pypi.org/project/RPi.GPIO/
+    - smbus2
+      - https://pypi.org/project/smbus2/
+    - spiflash
+      - https://pypi.org/project/pyspiflash/
+      - A pour dépendance pyftdi et pyserial
+  - Rencontre une erreur lors de l'installation de
+    - pi-ina219
+    - RPi.GPIO
+  - Une brève recherche m'informe que c'est parce qu'il me manquait une dépendance système
+    - sudo dnf install python3-devel
+  - J'ai pu installer les dépendances restantes
+  - Obtient les erreurs suivantes
+    - Module RPi.GPIO has no setmode/BCM/setup/.../OUT member
+    - No name 'SMBusWrapper' in module 'smbus2'
+  - SMBusWrapper
+    - Le changelog de la librairie indique la suppression de la classe SMBusWrapper au profit de SMBus
+    - Voir https://github.com/kplindegaard/smbus2/blob/master/CHANGELOG.md#040---2020-12-05
+    - Remplacer toutes les occurrences de SMBusWrapper par SMBus corrige l'erreur relevée par pylint
+  - RPi.GPIO
+    - A tenté de lancer l'interpréteur python pour jouer avec ce module et voir ce qui pouvait poser problème
+      - poetry shell
+      - python3
+      - import RPi.GPIO as GPIO
+    - Mais rencontre l'erreur suivante
+      - RuntimeError: This module can only be run on a Raspberry Pi!
+    - Ce qui peut p-e expliquer l'erreur rencontrée
+      - Le linter rencontre p-e des difficultés à gérer le module, si ne peut pas importer ce dernier
+  - Comment résoudre ça ?
+    - Dev sur raspberry/VM ?
+  - J'ai tenté d'émuler la raspberry et de déployer l'environnement de dev dessus, histoire de tenter le coup
+    - Setup la raspberry et les deps de dev
+      - sudo apt update; sudo apt full-upgrade
+      - sudo apt install python3-pip
+      - python3 -m pip install --user pipx
+      - python3 -m pipx ensurepath
+      - source ~/.bashrc
+      - pipx install poetry
+    - Transférer le projet sur la raspberry emulée
+      - scp -P 2222 -r . pi@localhost:/home/pi/smartsense-node
+  - Mais lors de l'install de poetry, j'ai rencontré un problème de stockage
+    - La raspberry émulée ne dispose que de 1.7Go de stockage, et il ne m'en restait que 20Mo à ce stade
+  - Comment allouer plus d'espace à la machine ?
+    - Création d'une image à partir de l'image raspbian
+      - qemu-img dd -f raw -O qcow2 if=2023-12-05-raspios-bullseye-arm64-lite.img of=rpi-bullseye.qcow2
+      - qemu-img resize rpi-bullseye.qcow2 8G
+    - Resize de la partition / une fois le système démarré
+      - Suivi le tuto : https://raspberrypi.stackexchange.com/questions/499/how-can-i-resize-my-root-partition
+      - Commandes
+        - sudo fdisk /dev/mmcblk0
+        - Suppression de la partition / (d)
+        - Création d'une nouvelle partition / (n)
+          - Bien préciser comme start number le start number de la partition existant précédemment
+        - sudo reboot
+        - sudo resize2fs /dev/mmcblk0p2 (p2 correspondant à la partition /)
+        - sudo reboot
+        - df -h (pour vérifier le résultat)
 ** Semaine du <2024-01-15 Mon> au <2024-01-19 Fri>
 *** Planned
 **** DONE Prendre en main le script de connexion aux brokers MQTT
@@ -19,7 +152,8 @@ CLOSED: [2024-01-18 Thu 10:25]
 - Lorsque je réplique mon serveur d'application WordPress, je me retrouve à devoir me reconnecter à chaque changement de page
 - Probablement dû au fait que mon cookie d'auth est valide pour une instance donnée, et est invalidé par les autres
 - Étudier comment faire évoluer l'application pour corriger cela
-**** IN-PROGRESS Se familiariser avec le concept d'Infrastructure as Code (IaC)
+**** DONE Se familiariser avec le concept d'Infrastructure as Code (IaC)
+CLOSED: [2024-01-22 Mon 09:11]
 - Plutôt que de setup manuellement Kubernetes sur ses machines
 - Semblerait que la pratique soit d'automatiser son setup
 - Process connu comme l'Infrastructure as Code
@@ -47,15 +181,6 @@ CLOSED: [2024-01-18 Thu 10:25]
     - Mais lors de leurs expériences, ont constaté des crashs de la BDD
       - Parfois au bout de plusieurs heures
 - Il serait donc intéressant que je rentre rapidement dans ce projet
-**** TODO Automatiser le setup de k3s sur un cluster de Raspberry
-- Permettrait de graduate de minikube
-  - Et d'apprendre ainsi tout ce qu'il gère pour moi automatiquement
-- Et d'aller plus loin dans notre mise en place automatique d'environnements de dev et de test
-- Ressources
-  - Blogpost: https://medium.com/@stevenhoang/step-by-step-guide-installing-k3s-on-a-raspberry-pi-4-cluster-8c12243800b9
-**** TODO Déployer WordPress sur un cluster de Raspberry
-- Permettrait de valider le résultat obtenu dans les étapes précédentes
-- Et de rencontrer les problèmes éventuels liés aux architectures processeurs
 *** Done
 - Résoudre problème d'accès aux fichiers sur WordPress
   - Plusieurs pistes possibles
@@ -1339,10 +1464,6 @@ CLOSED: [2024-01-05 Fri 07:57]
         - Certains ont accès à la 4G, au réseau électrique
       - Tous ne nous intéressent pas dans le cadre de ce projet
       - But du questionnaire est d'identifier les observatoires auxquels nous pouvons apporter quelque chose
-** Backlog
-*** TODO Lire *OZCAR: The French Network of Critical Zone Observatories*
-- Ammar m'a recommandé cet article pour en apprendre plus sur les observatoires et leurs buts
-- Le consulter
 * Autres
 ** Commandes utiles
 - Mettre à jour paquets
