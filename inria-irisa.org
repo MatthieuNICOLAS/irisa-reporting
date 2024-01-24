@@ -35,6 +35,14 @@
     - Mais lors de leurs expériences, ont constaté des crashs de la BDD
       - Parfois au bout de plusieurs heures
 - Il serait donc intéressant que je rentre rapidement dans ce projet
+**** IN-PROGRESS Mettre en place des tests pour MQTTInterface
+- Pistes de tests possibles
+  - Se connecte bien au broker
+    - Variante not subscriber
+  - Si je fournis un message valide à l'instance MQTTInterface, il est bien publié sur le broker
+    - Variante avec message invalide
+  - Si je fournis un message valide au broker, il est bien récupéré par l'instance MQTTInterface
+    - Variante avec message invalide
 *** Done
 - S'approprier SmartSense/smartsense-node-app
   - Pistes de travail
@@ -112,10 +120,13 @@
     - Setup la raspberry et les deps de dev
       - sudo apt update; sudo apt full-upgrade
       - sudo apt install python3-pip
+      - sudo apt install python3-venv
       - python3 -m pip install --user pipx
       - python3 -m pipx ensurepath
       - source ~/.bashrc
       - pipx install poetry
+      - pipx install poethepoet
+      - poetry install --no-root --with dev
     - Transférer le projet sur la raspberry emulée
       - scp -P 2222 -r . pi@localhost:/home/pi/smartsense-node
   - Mais lors de l'install de poetry, j'ai rencontré un problème de stockage
@@ -135,6 +146,87 @@
         - sudo resize2fs /dev/mmcblk0p2 (p2 correspondant à la partition /)
         - sudo reboot
         - df -h (pour vérifier le résultat)
+  - J'ai pu exécuter le linter sur la raspberry emulée
+  - Malheureusement, rencontre la même erreur que sur ma machine
+    - En démarrant l'interpréteur python et en essayant d'importer le module RPi.GPIO, retrouve le même message d'erreur
+    - i.e. "Module can only be run on a Raspberry Pi!"
+  - Pose la question de la librairie utilisée/à utiliser
+    - Projet utilise : https://sourceforge.net/projects/raspberry-gpio-python/
+      - Mais qui n'a pas l'air fonctionnel sur un autre système que RPi
+        - Et encore, n'a pas l'air de fonctionner dans mon env virtuel
+      - Dernier commit date de février 2022
+      - Mais projet a l'air encore d'actualité
+        - Des issues sont encore crées et attribuées au maintainer
+        - Notamment pour dev en dehors de l'env RPi
+    - Existe RPIO : https://github.com/metachris/RPIO
+      - Une alternative à RPi.GPIO
+        - Peut être utilisée à sa place sans modifications
+      - Mais plus maintenue depuis fin 2022
+      - 'Fin, repo archivé depuis fin 2022
+      - Le dernier commit date de 2013
+      - Est-ce compatible avec les modèles de RPi utilisés ?
+    - Des posts abordent la question des différentes librairies
+      - e.g. https://raspberrypi.stackexchange.com/questions/58820/compare-and-contrast-python-gpio-apis
+    - Voir si on peut s'en sortir avec RPi.GPIO, i.e. dev facilement sur un autre env que RPi
+    - Ou s'il est préférable de remplacer la librairie utilisée pour une plus adaptée à un process de CI
+  - Suis tombé sur la librairie Mock.GPIO : https://github.com/codenio/mock.gpio
+    - Via ce post https://stackoverflow.com/questions/51879185/how-to-mock-rpi-gpio-in-python
+  - Permet de résoudre le problème posé par RPi.GPIO
+  - J'ai expliqué à Mickaël ce que j'ai fait et que j'aimerais poursuivre par l'ajout de tests
+    - Semble d'accord
+    - Souhaite juste limiter le temps passé à faire des tests
+  - Pour le moment, j'ai fait une branche regroupant mes changements et ouvert une MR
+  - Ok maintenant, que faire ?
+  - Serait intéressant de retravailler mainApp et MQTTInterface
+  - MQTTInterface
+    - A trop de responsabilité IMO
+      - Permet au noeud d'interagir avec le broker MQTT
+        - Établir la connexion, publier les données collectées sur le broker, gérer les messages reçus via le broker et gérer les déconnexions
+      - Permet au noeud d'interagir avec la base de données InfluxDB
+        - Instancie le composant se connectant avec la DB et permettant d'y enregistrer les données collectées
+      - Détermine à quel endpoint transmettre les données en fonction de sa config
+        - Si mqttEnabled, envoie les données au broker
+        - Sinon si influxDbEmbedded et subscriber, i.e. si influxDbEmbedded and subscriber and not mqttEnabled, envoie les données à influxDB
+      - Gère aussi la config des capteurs dans le cas où le noeud est en mode autonome, i.e. il n'y a pas de communication via le broker pour indiquer les settings du noeud
+    - IMO, devrait juste permettre l'interaction avec le broker MQTT
+    - L'interaction avec la BDD devrait se faire via un autre composant
+    - Et la config du noeud en mode autonome devrait être gérée par mainApp
+  - mainApp
+    - Pourquoi instancie deux MQTTInterface ?
+      - Une subscriber, l'autre non
+      - L'instance subscriber permet d'envoyer les messages ayant trait au provisioning
+        - Donc utile qu'en mode connecté
+        - Ah non, permet dans le cas du mode autonome de simuler une réponse du serveur
+      - Les autres messages sont diffusés via l'instance not subscriber
+        - Concerne le mode connecté et le mode autonome
+    - Y a-t-il un intérêt à conserver ces deux instances ?
+      - Permet d'avoir des threads séparés pour les types de message
+      - Est-ce nécessaire ?
+    - Pourquoi ce n'est pas lui qui instancie le composant pour interagir avec la BDD ?
+    - Et qui détermine où sont propagées les données ?
+  - Comment procéder ?
+    - Avant de modifier le code et sa logique, je voudrais bien mettre en place des tests
+  - Qu'est-ce que je veux tester ?
+    - MQTTInterface
+      - Se connecte bien au broker
+        - Variante not subscriber
+      - Si je fournis un message valide à l'instance MQTTInterface, il est bien publié sur le broker
+        - Variante avec message invalide
+      - Si je fournis un message valide au broker, il est bien récupéré par l'instance MQTTInterface
+        - Variante avec message invalide
+- Mettre en place des tests pour MQTTInterface
+  - Peut faire les questions réponses dans un même test
+    - i.e. demander à MQTTInterface d'envoyer un message sur un topic donné
+    - M'être abonné au préalable à ce topic
+    - Et ainsi vérifier que j'ai bien reçu le message
+    - Et inversement
+  - J'ai réussi à mettre en place un test simple
+    - Créé un client MQTT
+    - L'abonne à un topic
+    - Publie un message sur ce topic via le helper de la librairie
+    - Assert si mon client a bien reçu le message
+  - Par contre, un test n'échoue pas par défaut si aucun assert n'est exécuté
+    - Voir si on peut modifier ce comportement dans la config
 ** Semaine du <2024-01-15 Mon> au <2024-01-19 Fri>
 *** Planned
 **** DONE Prendre en main le script de connexion aux brokers MQTT
