@@ -227,6 +227,38 @@
     - Assert si mon client a bien reçu le message
   - Par contre, un test n'échoue pas par défaut si aucun assert n'est exécuté
     - Voir si on peut modifier ce comportement dans la config
+  - [X] Ajout test publier sur le broker
+    - But est de tester que si je fournis un message dans la Queue de l'instance MqttInterface, celui-ci est bien envoyé au broker
+  - [X] Ajout test lire depuis le broker
+    - But est de tester que si je poste un message sur le broker, MqttInterface transmet bien ce message à l'application via la Queue
+    - Juste un problème pour publier le message sur le broker à temps
+    - Si l'envoie dès que possible, MqttInterface loupe le message car n'a pas encore subscribe
+    - Peut pas déclencher l'envoi du message en utilisant on_subscribe() de MqttInterface
+      - Rencontre une erreur lorsque j'essaie de set on_subscribe()
+      - Semble lié au fait que MqttInterface n'appelle jamais le constructeur de Client
+      - Et ne dispose pas de tous les attributs qu'il est censé posséder
+    - Workaround pour le moment en ajoutant une attente avant la publication du message
+    - À corriger dans MqttInterface
+  - [ ] Ajout test publier dans InfluxDB
+    - But est de tester que si je fournis un message dans la Queue de l'instance MqqtInterface, celui-ci est bien envoyé à la BDD
+    - Plusieurs détails à gérer
+    - Tous les messages ne sont pas envoyés à la BDD
+      - Un filtre est effectué pour ne stocker que les données intéressantes/pertinentes
+      - Reste à comprendre les données attendues et les topics associés
+    - L'écriture en BDD ne se fait pas à chaque donnée, mais une fois que le buffer dépasse un certain seuil
+      - Doit donc procéder à l'envoi de suffisamment de données pour déclencher une écriture
+      - Le seuil a l'air d'être 100 messages
+      - P-e rendre paramètrisable cette donnée de façon à simplifier la validation des tests
+    - Pour procéder par étapes, je vais déjà ajouter des tests sur DataToLocalInfluxDB
+      - Composant chargé d'interagir avec InfluxDB, de formater la trame MQTT en une trame InfluxDB et de gérer l'écriture en BD des données
+  - [X] Ajout test création de DB
+    - But est de tester que DataToLocalInfluxDB créé bien une base de données à son instanciation
+  - [X] Ajout test parseMqtt
+    - But est de tester que DataToLocalInfluxDB transforme bien une trame MQTT en une trame InfluxDB
+  - [X] Ajout test sendPointsToInfluxDB
+    - But est de tester que DataToLocalInfluxDB écrit bien les données en BDD
+      - Doit par contre atteindre la taille minimum pour déclencher une écriture
+      - En attendant, données bufferisées
 ** Semaine du <2024-01-15 Mon> au <2024-01-19 Fri>
 *** Planned
 **** DONE Prendre en main le script de connexion aux brokers MQTT
