@@ -17,12 +17,64 @@
 *** TODO Déployer WordPress sur un cluster de Raspberry
 - Permettrait de valider le résultat obtenu dans les étapes précédentes
 - Et de rencontrer les problèmes éventuels liés aux architectures processeurs
+*** TODO SmartSense: Étudier la migration vers une nouvelle version d'InfluxDB
+- Le projet utilise pour le moment la version 1.6.4 d'InfluxDB
+- On en est actuellement à la version 2.7.5
+- Voir si y a un intérêt à migrer à cette nouvelle version
+  - Features, performances
+- Voir surtout si ça peut tourner sur la rpi qui équipe le noeud SmartSense
 *** TODO Lire *OZCAR: The French Network of Critical Zone Observatories*
 - Ammar m'a recommandé cet article pour en apprendre plus sur les observatoires et leurs buts
 - Le consulter
+** Semaine du <2024-01-29 Mon> au <2024-02-02 Fri>
+*** Planned
+**** TODO Smartsense: Intégrer les modifications effectuées à la branche *main*
+- J'ai fini de mettre en place une première série de tests
+- Avant d'aller plus loin et d'effectuer de nouvelles modifs
+- Serait bien de me poser avec Mickaël pour reviewer mes branches et discuter de ce que j'ai fait
+**** TODO Smartsense: Intégrer la branche *autonomous-node* à la branche *main*
+- Cette branche a l'air d'apporter des workarounds pour les problèmes constatés lors de l'utilisation du noeud SmartSense en mode autonome
+- Notamment, exporte et reset la DB périodiquement pour éviter le mécanisme de compression des shards
+  - Qui a l'air d'être trop couteux pour tourner sur le noeud
+- Améliore aussi la lisibilité du code
+**** TODO Smartsense: Rechercher outil pour refactorer le code du projet vis-à-vis des conventions Python
+- Pas mal de retours de Pylint sur le code correspondent à un non-respect des conventions Python
+  - Noms de modules, de fonctions et de méthodes
+- Voir si un outil permet d'automatiser ce type de correctifs
+**** TODO Smartsense: Nettoyer *mainApp*
+- Déplacer le code du scope global du module dans une fonction /main()/
+- Factoriser le code de /startProcess()/
+- Décomposer en fonctions /routeIncomingMqttMessages()/
+**** TODO Smartsense: Refactor *MqttInterface*
+- Ne plus hériter de *mqtt.Client*
+  - Actuellement composant dans un état bizarre
+  - Hérite des méthodes mais pas des attributs car n'appelle jamais le constructeur de *Mqtt.Client*
+  - Déclenche des warnings et même erreurs si on manipule un peu trop le composant
+    - e.g. ne peut pas surcharger /on_subscribe()/
+- Mettre en place un Enum pour gérer le niveau de QoS des messages
+  - Passe directement les valeurs 0, 1 et 2 pour le moment
+  - MQTT n'offre pas du tout les mêmes garanties en fonction du niveau choisi
+  - 0: At most once
+  - 1: At least once
+  - 2: Exactly once
+  - Serait plus parlant d'utiliser un type qui précise cela
+- Refactor /processDataForInfluxDBEmbedded()/
+  - Décomposer en fonctions
+  - Ne fait rien si /not self.subscriber/
+    - Vérifier que c'est un comportement souhaité
+    - Me parait error-prone perso
+- Séparer l'interface avec le broker MQTT avec l'interface avec la BDD InfluxDB
+  - IMO *MqttInterface* devrait servir à interagir avec le broker MQTT
+  - L'interaction avec la BDD InfluxDB devrait être géré par un autre composant spécialisé
+    - Qui plus est, l'interaction avec la BDD est plus limitée, i.e. write-only
+  - Permettrait ainsi de rendre plus clair le code
+  - E.g. composant n'interagit pas avec la BDD si le flag /mqttEnabled/ est activé
+    - Même dans le cas où le flag /influxDbEmbedded/ est lui aussi activé
+*** Done
 ** Semaine du <2024-01-22 Mon> au <2024-01-26 Fri>
 *** Planned
-**** IN-PROGRESS S'approprier SmartSense/smartsense-node-app
+**** DONE S'approprier SmartSense/smartsense-node-app
+CLOSED: [2024-01-29 Mon 10:33]
 - On est en train de revoir les priorités avec l'arrêt maladie de Guillaume
 - Serait préférable que je passe sur SmartSense en attendant son retour
 - Les différentes tâches identifiées concernent principalement le capteur SmartSense
@@ -35,7 +87,8 @@
     - Mais lors de leurs expériences, ont constaté des crashs de la BDD
       - Parfois au bout de plusieurs heures
 - Il serait donc intéressant que je rentre rapidement dans ce projet
-**** IN-PROGRESS Mettre en place des tests pour MQTTInterface
+**** DONE Mettre en place des tests pour MQTTInterface
+CLOSED: [2024-01-29 Mon 10:33]
 - Pistes de tests possibles
   - Se connecte bien au broker
     - Variante not subscriber
