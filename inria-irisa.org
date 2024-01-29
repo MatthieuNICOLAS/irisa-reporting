@@ -28,24 +28,21 @@
 - Le consulter
 ** Semaine du <2024-01-29 Mon> au <2024-02-02 Fri>
 *** Planned
-**** TODO Smartsense: Intégrer les modifications effectuées à la branche *main*
+**** DONE SmartSense: Rechercher outil pour refactorer le code du projet vis-à-vis des conventions Python
+CLOSED: [2024-01-29 Mon 17:00]
+- Pas mal de retours de Pylint sur le code correspondent à un non-respect des conventions Python
+  - Noms de modules, de fonctions et de méthodes
+- Voir si un outil permet d'automatiser ce type de correctifs
+**** IN-PROGRESS SmartSense: Intégrer les modifications effectuées à la branche *main*
 - J'ai fini de mettre en place une première série de tests
 - Avant d'aller plus loin et d'effectuer de nouvelles modifs
 - Serait bien de me poser avec Mickaël pour reviewer mes branches et discuter de ce que j'ai fait
-**** TODO Smartsense: Intégrer la branche *autonomous-node* à la branche *main*
+**** IN-PROGRESS SmartSense: Intégrer la branche *autonomous-node* à la branche *main*
 - Cette branche a l'air d'apporter des workarounds pour les problèmes constatés lors de l'utilisation du noeud SmartSense en mode autonome
 - Notamment, exporte et reset la DB périodiquement pour éviter le mécanisme de compression des shards
   - Qui a l'air d'être trop couteux pour tourner sur le noeud
 - Améliore aussi la lisibilité du code
-**** TODO Smartsense: Rechercher outil pour refactorer le code du projet vis-à-vis des conventions Python
-- Pas mal de retours de Pylint sur le code correspondent à un non-respect des conventions Python
-  - Noms de modules, de fonctions et de méthodes
-- Voir si un outil permet d'automatiser ce type de correctifs
-**** TODO Smartsense: Nettoyer *mainApp*
-- Déplacer le code du scope global du module dans une fonction /main()/
-- Factoriser le code de /startProcess()/
-- Décomposer en fonctions /routeIncomingMqttMessages()/
-**** TODO Smartsense: Refactor *MqttInterface*
+**** IN-PROGRESS SmartSense: Refactor *MqttInterface*
 - Ne plus hériter de *mqtt.Client*
   - Actuellement composant dans un état bizarre
   - Hérite des méthodes mais pas des attributs car n'appelle jamais le constructeur de *Mqtt.Client*
@@ -70,7 +67,43 @@
   - Permettrait ainsi de rendre plus clair le code
   - E.g. composant n'interagit pas avec la BDD si le flag /mqttEnabled/ est activé
     - Même dans le cas où le flag /influxDbEmbedded/ est lui aussi activé
+**** TODO SmartSense: Nettoyer *mainApp*
+- Déplacer le code du scope global du module dans une fonction /main()/
+- Factoriser le code de /startProcess()/
+- Décomposer en fonctions /routeIncomingMqttMessages()/
 *** Done
+- SmartSense: Intégrer les modifications effectuées à la branche *main*
+  - J'ai notifié Mickaël que j'ai push mes modifications
+  - Et lui ai précisé que j'aimerais une validation
+- SmartSense: Intégrer la branche *autonomous-node* à la branche *main*
+  - J'ai rebase ma branche *add-tests* sur la branche *autonomous-node*
+  - Notamment en modifiant les commits impactés par les modifications de cette branche, i.e.
+    - feat(formatter): add ruff
+    - test(dataToLocalInfluxDB): edit test to verify buffering mechanism
+  - Pushé cette branche sur le repo
+  - Ouvert une MR décrivant les modifs globales de la branche
+- SmartSense: Rechercher outil pour refactorer le code du projet vis-à-vis des conventions Python
+  - Pas trouvé d'outils qui fait cela
+  - Le plus proche que j'ai vu est : https://github.com/hhatto/autopep8
+  - Mais ne fait que des transformations autour des whitespaces
+    - A un mode aggressif
+    - Mais ne propose d'autofix que les règles E711 et E712
+    - Moi c'est la C0103 qui m'intéresse
+  - Je pense que je suis bon pour faire ça "à la main"
+- SmartSense: Refactor *MqttInterface*
+  - [/] Séparer l'interface avec le broker MQTT avec l'interface avec la BDD InfluxDB
+    - Déplacement de /processDataForInfluxDBEmbedded()/ dans son propre module
+    - Permet de simplifier les deux composants
+      - Pas de mode "subscriber" pour *influxdb_interface*
+      - Plus de mode "mqttEnabled" et "influxDbEmbedded" pour *MqttInterface*
+    - Pose plusieurs questions cependant
+      - Où déplacer/comment retravailler le code simulant une réponse du service de provisioning ?
+        - Permettrait de se débarrasser de la *Queue* dans le sens *influxdb_interface* -> *mainApp*
+        - Nécessite de comprendre le but de ce morceau de code
+      - Où instancier et dans quelles conditions instancier *influxdb_interface* ?
+        - Liée à cette question de provisioning
+      - Nécessite aussi de savoir s'il est possible de cumuler un broker MQTT et une base de données locale InfluxDB
+      - I.e. doit-on découpler le provisioning (setup?) du noeud du broker MQTT ?
 ** Semaine du <2024-01-22 Mon> au <2024-01-26 Fri>
 *** Planned
 **** DONE S'approprier SmartSense/smartsense-node-app
