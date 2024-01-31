@@ -33,16 +33,8 @@ CLOSED: [2024-01-29 Mon 17:00]
 - Pas mal de retours de Pylint sur le code correspondent à un non-respect des conventions Python
   - Noms de modules, de fonctions et de méthodes
 - Voir si un outil permet d'automatiser ce type de correctifs
-**** IN-PROGRESS SmartSense: Intégrer les modifications effectuées à la branche *main*
-- J'ai fini de mettre en place une première série de tests
-- Avant d'aller plus loin et d'effectuer de nouvelles modifs
-- Serait bien de me poser avec Mickaël pour reviewer mes branches et discuter de ce que j'ai fait
-**** IN-PROGRESS SmartSense: Intégrer la branche *autonomous-node* à la branche *main*
-- Cette branche a l'air d'apporter des workarounds pour les problèmes constatés lors de l'utilisation du noeud SmartSense en mode autonome
-- Notamment, exporte et reset la DB périodiquement pour éviter le mécanisme de compression des shards
-  - Qui a l'air d'être trop couteux pour tourner sur le noeud
-- Améliore aussi la lisibilité du code
-**** IN-PROGRESS SmartSense: Refactor *MqttInterface*
+**** DONE SmartSense: Refactor *MqttInterface*
+CLOSED: [2024-01-31 Wed 10:26]
 - Ne plus hériter de *mqtt.Client*
   - Actuellement composant dans un état bizarre
   - Hérite des méthodes mais pas des attributs car n'appelle jamais le constructeur de *Mqtt.Client*
@@ -67,6 +59,15 @@ CLOSED: [2024-01-29 Mon 17:00]
   - Permettrait ainsi de rendre plus clair le code
   - E.g. composant n'interagit pas avec la BDD si le flag /mqttEnabled/ est activé
     - Même dans le cas où le flag /influxDbEmbedded/ est lui aussi activé
+**** IN-PROGRESS SmartSense: Intégrer les modifications effectuées à la branche *main*
+- J'ai fini de mettre en place une première série de tests
+- Avant d'aller plus loin et d'effectuer de nouvelles modifs
+- Serait bien de me poser avec Mickaël pour reviewer mes branches et discuter de ce que j'ai fait
+**** IN-PROGRESS SmartSense: Intégrer la branche *autonomous-node* à la branche *main*
+- Cette branche a l'air d'apporter des workarounds pour les problèmes constatés lors de l'utilisation du noeud SmartSense en mode autonome
+- Notamment, exporte et reset la DB périodiquement pour éviter le mécanisme de compression des shards
+  - Qui a l'air d'être trop couteux pour tourner sur le noeud
+- Améliore aussi la lisibilité du code
 **** TODO SmartSense: Nettoyer *mainApp*
 - Déplacer le code du scope global du module dans une fonction /main()/
 - Factoriser le code de /startProcess()/
@@ -82,6 +83,7 @@ CLOSED: [2024-01-29 Mon 17:00]
     - test(dataToLocalInfluxDB): edit test to verify buffering mechanism
   - Pushé cette branche sur le repo
   - Ouvert une MR décrivant les modifs globales de la branche
+  - Ai demandé à Mickaël de valider cette MR
 - SmartSense: Rechercher outil pour refactorer le code du projet vis-à-vis des conventions Python
   - Pas trouvé d'outils qui fait cela
   - Le plus proche que j'ai vu est : https://github.com/hhatto/autopep8
@@ -91,19 +93,80 @@ CLOSED: [2024-01-29 Mon 17:00]
     - Moi c'est la C0103 qui m'intéresse
   - Je pense que je suis bon pour faire ça "à la main"
 - SmartSense: Refactor *MqttInterface*
-  - [/] Séparer l'interface avec le broker MQTT avec l'interface avec la BDD InfluxDB
-    - Déplacement de /processDataForInfluxDBEmbedded()/ dans son propre module
-    - Permet de simplifier les deux composants
-      - Pas de mode "subscriber" pour *influxdb_interface*
-      - Plus de mode "mqttEnabled" et "influxDbEmbedded" pour *MqttInterface*
-    - Pose plusieurs questions cependant
-      - Où déplacer/comment retravailler le code simulant une réponse du service de provisioning ?
-        - Permettrait de se débarrasser de la *Queue* dans le sens *influxdb_interface* -> *mainApp*
-        - Nécessite de comprendre le but de ce morceau de code
-      - Où instancier et dans quelles conditions instancier *influxdb_interface* ?
-        - Liée à cette question de provisioning
-      - Nécessite aussi de savoir s'il est possible de cumuler un broker MQTT et une base de données locale InfluxDB
-      - I.e. doit-on découpler le provisioning (setup?) du noeud du broker MQTT ?
+  - [X] Séparer l'interface avec le broker MQTT avec l'interface avec la BDD InfluxDB
+    - [X] Déplacement de /processDataForInfluxDBEmbedded()/ dans son propre module
+      - Permet de simplifier les deux composants
+        - Pas de mode "subscriber" pour *influxdb_interface*
+        - Plus de mode "mqttEnabled" et "influxDbEmbedded" pour *MqttInterface*
+      - Pose plusieurs questions cependant
+        - Où déplacer/comment retravailler le code simulant une réponse du service de provisioning ?
+          - Permettrait de se débarrasser de la *Queue* dans le sens *influxdb_interface* -> *mainApp*
+          - Nécessite de comprendre le but de ce morceau de code
+        - Où instancier et dans quelles conditions instancier *influxdb_interface* ?
+          - Liée à cette question de provisioning
+        - Nécessite aussi de savoir s'il est possible de cumuler un broker MQTT et une base de données locale InfluxDB
+        - I.e. doit-on découpler le provisioning (setup?) du noeud du broker MQTT ?
+    - Concernant le provisioning
+      - Plusieurs messages concernent le provisioning
+      - Le message sur le topic "provisioning/{self.currentSite}/node/{self.id}"
+        - Permet de set les valeurs requises pour générer les topics
+          - mode, location, secteur, sous-secteur
+        - Et de préciser le port du broker MQTT lié au secteur
+          - Y a plusieurs brokers ?
+        - Dans le cas du mode autonome, utilise une valeur dummy (0) comme port pour le broker MQTT
+      - Les messages sur les topics "provisioning/p/{MyApp.locationPath}/{MyApp.id}/rpiBoard/{ina}/consumption"
+        - Plusieurs devices INA
+          - Poe
+          - Rpi
+          - Sensor
+          - Ext1
+          - Ext2
+        - Chacun va être à l'origine d'un message de provisioning sur son topic dédié
+        - Permet d'obtenir la fréquence d'échantillonnage à utiliser si je pige bien
+      - Les messages sur les topics "provisioning/a/{MyApp.locationPath}/{MyApp.id}/{tcl}"
+        - Semble être conçu pour supporter plusieurs devices
+        - En pratique, y en a qu'un seul pour le moment
+          - Et donc qu'un seul suffixe pour le topic : "rpiBoard/TLC59108/leds"
+        - De même, semble concerner la fréquence d'échantillonnage
+    - [X] Découplage du self provisioning et de *MQTT/InfluxDBInterface*
+      - Ajout d'un flag isProvisioningViaMQTT
+      - Spécifie si le noeud doit se provisionner via MQTT
+        - Dans ce cas envoie le 1er message
+          - Sur le topic "provisioning/{self.currentSite}/node/{self.id}"
+        - Et attend la réponse avant de passer à la suite
+      - Sinon utilise d'emblée les valeurs dummy pour la génération de topics et le broker du secteur
+      - Et intercepte les messages des modules *InaManager* et *TclManager* concernant le provisioning
+        - Simule lui-même les réponses au lieu de déléguer au module *MQTT/InfluxDBInterface*
+  - [X] Mettre en place un Enum pour gérer le niveau de QoS des messages
+  - [X] Ne plus hériter de *mqtt.Client*
+    - J'en ai profité pour refactorer le code et virer le code inutilisé
+      - Par exemple /setCallbackOnMessage()/
+    - Un cas particulier est celui du paramètre /protocol/ du constructeur
+    - Dans la version d'origine de *MqttInterface*, s'agit à la fois
+      - D'une propriété de la classe héritée de *mqtt.Client*, qui a pour valeurs possibles MQTTv31, MQTTv311 ou MQTTv5
+        - Constantes fournies par *mqtt*
+      - D'un flag pour déterminer la valeur d'une autre propriété, /transport/, qui a pour valeurs possibles "tcp" et "websocket"
+    - Sauf que /protocol/ n'est jamais spécifié dans le moindre appel au constructeur de *MqttInterface*
+      - Donc inutilisé et on repose donc sur la valeur par défaut de /transport/ : "tcp"
+    - A donc supprimé le paramètre /protocol/
+      - Voir si cela pose un problème
+    - Rencontré quelques difficultés à faire fonctionner les tests
+      - La connexion au broker se faisait correctement
+      - L'envoi de messages aussi
+      - Mais la réception, via *MqttInterface* ou *mqtt.Client* directement, ne se produisait pas
+      - C'est tombé en marche, mais sans que je n'arrive à identifier le problème exactement
+      - Trouvé, il s'agissait d'une erreur dans la callback /on_connect()/
+      - Essayais d'accéder à /self.nodeId/, qui correspond à cet instant à /client.nodeId/ et non à /mqttInterface.nodeId/
+        - Propriété non définie
+      - Étrangement, fait planter silencieusement le client MQTT
+      - De plus, utilisais dans tous mes tests une instance de *MqttInterface* en mode subscriber
+        - Et donc exécutant les lignes de code problématiques
+    - A pu en profiter pour rework le test "receive_msg_from_broker"
+      - Surcharge callback /on_subscribe()/ pour déclencher l'envoi du message de test
+      - Au lieu d'utiliser le workaround non-déterministe "j'attends un peu que l'instance *MqttInterface* se soit connectée au broker"
+  - J'ai mes différentes modifs prêtes sous la forme de branches
+  - Reste plus qu'à les faire valider
+    - En profiter pour voir ce paramètre étrange /protocol/ et son impact sur /transport/
 ** Semaine du <2024-01-22 Mon> au <2024-01-26 Fri>
 *** Planned
 **** DONE S'approprier SmartSense/smartsense-node-app
