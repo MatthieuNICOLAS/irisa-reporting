@@ -17,6 +17,14 @@
 *** TODO Déployer WordPress sur un cluster de Raspberry
 - Permettrait de valider le résultat obtenu dans les étapes précédentes
 - Et de rencontrer les problèmes éventuels liés aux architectures processeurs
+*** TODO SmartSense: Étudier la mise en place d'un schéma de fichier de config
+- L'initialisation des noeuds reposent sur un fichier config.ini
+- Pour le moment, je le retro-ingénérie pour identifier les différentes options possibles
+  - Et leurs valeurs respectives
+- Serait intéressant d'avoir un schéma précisant son format
+  - Qui pourrait s'accompagner d'un outil de validation de fichier de config
+  - Et p-e d'Enums utilisable dans le code Python
+    - Plutôt que des chaînes de caractères error-prones
 *** TODO SmartSense: Étudier la migration vers une nouvelle version d'InfluxDB
 - Le projet utilise pour le moment la version 1.6.4 d'InfluxDB
 - On en est actuellement à la version 2.7.5
@@ -59,6 +67,10 @@ CLOSED: [2024-01-31 Wed 10:26]
   - Permettrait ainsi de rendre plus clair le code
   - E.g. composant n'interagit pas avec la BDD si le flag /mqttEnabled/ est activé
     - Même dans le cas où le flag /influxDbEmbedded/ est lui aussi activé
+**** IN-PROGRESS SmartSense: Nettoyer *mainApp*
+- Déplacer le code du scope global du module dans une fonction /main()/
+- Factoriser le code de /startProcess()/
+- Décomposer en fonctions /routeIncomingMqttMessages()/
 **** IN-PROGRESS SmartSense: Intégrer les modifications effectuées à la branche *main*
 - J'ai fini de mettre en place une première série de tests
 - Avant d'aller plus loin et d'effectuer de nouvelles modifs
@@ -68,10 +80,6 @@ CLOSED: [2024-01-31 Wed 10:26]
 - Notamment, exporte et reset la DB périodiquement pour éviter le mécanisme de compression des shards
   - Qui a l'air d'être trop couteux pour tourner sur le noeud
 - Améliore aussi la lisibilité du code
-**** TODO SmartSense: Nettoyer *mainApp*
-- Déplacer le code du scope global du module dans une fonction /main()/
-- Factoriser le code de /startProcess()/
-- Décomposer en fonctions /routeIncomingMqttMessages()/
 *** Done
 - SmartSense: Intégrer les modifications effectuées à la branche *main*
   - J'ai notifié Mickaël que j'ai push mes modifications
@@ -167,6 +175,27 @@ CLOSED: [2024-01-31 Wed 10:26]
   - J'ai mes différentes modifs prêtes sous la forme de branches
   - Reste plus qu'à les faire valider
     - En profiter pour voir ce paramètre étrange /protocol/ et son impact sur /transport/
+- SmartSense: Refactor *mainApp*
+  - [X] Déplacer le code du scope global du module dans une fonction /main()/
+  - [X] Utilisation de f-strings
+  - [X] Rendre l'instanciation des *MqttInterface* dépendantes de la config
+  - [X] Ajout d'une vérification de la config
+    - Stop l'application si les sorties MQTT et InfluxDB sont toutes deux désactivées
+    - Quel intérêt dans ce cas là ?
+  - [X] Ajout d'un Enum pour représenter les différents noms de process
+    - Permet l'utilisation de strings codées en dur
+    - Et les erreurs que ça peut engendrait
+  - [X] Utilisation de match/case au lieu de if/elif
+- SmartSense: Réflexions
+  - Est-ce vraiment InfluxDB qu'on veut utiliser dans le cas du mode autonome ?
+    - À voir les traitements que l'on va effectuer
+    - Et les données qu'ils requièrent
+    - Mais plusieurs questions se posent
+    - Est-ce que la dimension temporelle va être très importante ?
+    - Est-ce qu'on ne peut pas reproduire cette dimension temporelle avec une fenêtre glissante des entrées ?
+    - Grosso modo, va-t-on à un moment query la BDD locale ?
+    - Pour quelles raisons le choix s'est porté sur InfluxDB pour le SGBD embarqué lors de la conception du mode autonome ?
+      - Si c'est juste une question de compatibilité/d'export avec la BDD qui tourne sur le serveur, est-ce qu'un fichier ne suffit pas ?
 ** Semaine du <2024-01-22 Mon> au <2024-01-26 Fri>
 *** Planned
 **** DONE S'approprier SmartSense/smartsense-node-app
