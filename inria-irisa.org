@@ -25,6 +25,15 @@
   - Qui pourrait s'accompagner d'un outil de validation de fichier de config
   - Et p-e d'Enums utilisable dans le code Python
     - Plutôt que des chaînes de caractères error-prones
+*** TODO SmartSense : Étudier la mise en place d'un protocole de messages
+- Les différents composants de l'application s'échangent des messages pour communiquer des données et commandes
+  - Noeud <-> Serveur
+  - Mais aussi entre les différents modules d'un même composant
+    - e.g. *InaManager* et *MainApp* du noeud
+- A l'air d'utiliser pour le moment des chaînes de caractères codées en dur
+- Error prone et peu lisible
+- Voir si des outils permettent de décrire le schéma de communication
+- Et de générer du code permettant guidant la création ou la lecture de messages
 *** TODO SmartSense: Étudier la migration vers une nouvelle version d'InfluxDB
 - Le projet utilise pour le moment la version 1.6.4 d'InfluxDB
 - On en est actuellement à la version 2.7.5
@@ -67,7 +76,8 @@ CLOSED: [2024-01-31 Wed 10:26]
   - Permettrait ainsi de rendre plus clair le code
   - E.g. composant n'interagit pas avec la BDD si le flag /mqttEnabled/ est activé
     - Même dans le cas où le flag /influxDbEmbedded/ est lui aussi activé
-**** IN-PROGRESS SmartSense: Nettoyer *mainApp*
+**** DONE SmartSense: Nettoyer *mainApp*
+CLOSED: [2024-02-01 Thu 14:39]
 - Déplacer le code du scope global du module dans une fonction /main()/
 - Factoriser le code de /startProcess()/
 - Décomposer en fonctions /routeIncomingMqttMessages()/
@@ -186,7 +196,57 @@ CLOSED: [2024-01-31 Wed 10:26]
     - Permet l'utilisation de strings codées en dur
     - Et les erreurs que ça peut engendrait
   - [X] Utilisation de match/case au lieu de if/elif
+  - [X] Factorisation du code de /startProcess()/
+    - Mise en place d'une méthode /startAndRegisterProcess()/ qui se charge de créer, démarrer et enregistrer le process
+    - Utilisation de cette méthode dans /startProcess()/
+  - [X] Décomposition de /routeIncomingMqttMessages()/
+    - Identifie 2 types de messages
+      - provisioning
+      - cmd
+    - Provisioning
+      - Pas bien conséquent, peut faire l'objet d'une fonction
+    - Cmd
+      - Là par contre, y a de multiples cas à gérer
+      - À décomposer en sous-fonctions
+    - Par contre, remarque un détail étrange
+      - Certains messages peuvent déclencher plusieurs réactions
+      - Par exemple, un même message peut déclencher les bouts de code suivants
+        - https://gitlab.inria.fr/smartsense/3douest/node-app/smartsense-node-app/-/blob/main/mainApp.py?ref_type=heads#L144-147
+        - https://gitlab.inria.fr/smartsense/3douest/node-app/smartsense-node-app/-/blob/main/mainApp.py?ref_type=heads#L194-205
+      - Est-ce volontaire ?
+    - Autre point étrange
+      - Pour certains messages, le topic n'a aucun rôle
+      - E.g. https://gitlab.inria.fr/smartsense/3douest/node-app/smartsense-node-app/-/blob/main/mainApp.py?ref_type=heads#L218-240
+        - Le seul requirement au niveau du topic est sa taille, i.e. >=8
+        - Mais le reste, osef
+      - En fait, je pense que c'est bien ça : on s'en fout du topic
+      - Le check de la taille du topic ne sert qu'à se protéger d'une erreur lors de la récupération de la target
+    - Interrogation supplémentaire
+      - Les commandes ne ciblent pas des noeuds spécifiques ?
+      - À aucun moment on ne fait un filtre sur le topic par rapport à l'identifiant du noeud
+      - Ah si, c'est implicite
+      - Puisque le noeud s'abonne qu'aux topics avec son nodeId, ne reçoit que les messages le concernant
 - SmartSense: Réflexions
+  - Comment mettre en place et maintenir un protocole de communication ?
+    - SmartSense utilise des messages pour communiquer à la fois entre les noeuds et le serveur
+    - Mais aussi entre les différents modules du noeud
+      - e.g. via les topics et payload
+    - Pour le moment, ces messages sont construits et parsés à la main à différents endroits du code
+      - Les modules tels que *InaManager* créent les messages
+      - Les transmettent à *MainApp* qui les parse pour les router
+      - Ou se self-provision
+      - Idem pour les messages du serveur que *MainApp* reçoit via le client MQTT
+    - Approche me parait error-prone
+      - Quid de quand on décide de modifier le topic utilisé pour un type de message ?
+        - E.g. pourquoi les messages provenant du module INA sont marqués comme niveau public ?
+        - Et les messages du module TLC sont marqués comme niveau admin ?
+        - Uniformiser ?
+      - Comment vérifier que l'on a traité tous les cas ?
+    - Et peu lisible
+      - Détermine le message reçu en checkant des morceaux de ce dernier
+      - Et déclenche des actions en réaction
+      - Mais sans vraiment nommer/expliciter ce qui est fait
+      - Au lecteur de recoller les morceaux
   - Est-ce vraiment InfluxDB qu'on veut utiliser dans le cas du mode autonome ?
     - À voir les traitements que l'on va effectuer
     - Et les données qu'ils requièrent
