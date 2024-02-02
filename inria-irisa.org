@@ -25,7 +25,7 @@
   - Qui pourrait s'accompagner d'un outil de validation de fichier de config
   - Et p-e d'Enums utilisable dans le code Python
     - Plutôt que des chaînes de caractères error-prones
-*** TODO SmartSense : Étudier la mise en place d'un protocole de messages
+*** TODO SmartSense: Étudier la mise en place d'un protocole de messages
 - Les différents composants de l'application s'échangent des messages pour communiquer des données et commandes
   - Noeud <-> Serveur
   - Mais aussi entre les différents modules d'un même composant
@@ -40,6 +40,37 @@
 - Voir si y a un intérêt à migrer à cette nouvelle version
   - Features, performances
 - Voir surtout si ça peut tourner sur la rpi qui équipe le noeud SmartSense
+  - Tourne sur un Compute Module 3 : https://www.raspberrypi.com/products/compute-module-3/
+*** TODO SmartSense: Étudier la désactivation de la compaction des shards pour la base InfluxDB embarqué
+- Le workaround implémenté pour éviter les crashs de la DB embarqué pointe du doigt le mécanisme de compression des shards d'InfluxDB
+  - Trop coûteux à exécuter
+- Une alternative possible au workaround possible est de tout simplement désactiver ce mécanisme
+  - Cette PR semble confirmer que c'est possible : https://github.com/influxdata/influxdb/pull/19691
+- Voir ce qu'est exactement ce mécanisme
+  - Pourquoi il se déclenche ?
+  - Quel est son rôle ?
+  - Quel est l'impact sur InfluxDB si on le désactive ?
+- Et voir si le désactiver met fin aux crashs
+*** TODO SmartSense: Étudier l'intérêt de l'utilisation d'InfluxDB pour un noeud en mode autonome
+- En mode autonome, un noeud SmartSense enregistre les données collectées dans sa BD InfluxDB embarquée
+- Pourquoi ce SGBD ?
+- On a besoin de stocker les données
+- Mais a-t-on besoin d'une time series database ?
+- Identifier l'utilisation que l'on va faire de la BD locale
+- Et vérifier qu'une time series database est la plus appropriée pour répondre aux besoins correspondants
+*** TODO SmartSense: Ajouter des tests pour l'instanciation de *DataToLocalInfluxDB*
+- Comment se comporte l'objet si la base de données est inaccessible ?
+*** TODO SmartSense: Ajouter des tests pour l'instanciation de *MqttInterface*
+- Comment se comporte l'objet si le message broker est inaccessible ?
+*** TODO SmartSense: Ajouter des tests pour *MainApp.handleProvisioningMsg()*
+- Vérifier le bon fonctionnement de cette méthode
+- Me paraît un bon point d'entrée pour mettre en place des tests pour *MainApp*
+*** TODO SmartSense: Ajouter un test *provisioningViaMqtt* pour *MainApp*
+- Mettre en place un test qui vérifie que si on démarre *MainApp* avec le flag /mqttEnabled/, on a bien
+  - Envoi d'une requête de provisioning via *MqttInterface*
+  - Que lorsqu'on répond via *MqttInterface*, ça conduise bien à un appel de *setProvisioning()* avec les bonnes valeurs
+- Mocker *MqttInterface* ?
+- Ou en faire un test d'intégration ?
 *** TODO Lire *OZCAR: The French Network of Critical Zone Observatories*
 - Ammar m'a recommandé cet article pour en apprendre plus sur les observatoires et leurs buts
 - Le consulter
@@ -81,6 +112,13 @@ CLOSED: [2024-02-01 Thu 14:39]
 - Déplacer le code du scope global du module dans une fonction /main()/
 - Factoriser le code de /startProcess()/
 - Décomposer en fonctions /routeIncomingMqttMessages()/
+**** IN-PROGRESS SmartSense: Ajouter des tests pour *DataToLocalInfluxDB.parseMqtt()*
+- J'ai atteint la limite du refactoring que je peux faire dans le projet en ayant à peu près confiance
+- Et n'ayant pas de précisions sur les évolutions à apporter
+- Serait préférable de consolider les tests pour le moment
+- Pour le moment, vérifie le bon fonctionnement de *parseMqtt()* avec un payload correct
+- Vérifier pour d'autres payloads corrects
+- Vérifier pour payload invalide
 **** IN-PROGRESS SmartSense: Intégrer les modifications effectuées à la branche *main*
 - J'ai fini de mettre en place une première série de tests
 - Avant d'aller plus loin et d'effectuer de nouvelles modifs
@@ -226,6 +264,16 @@ CLOSED: [2024-02-01 Thu 14:39]
       - À aucun moment on ne fait un filtre sur le topic par rapport à l'identifiant du noeud
       - Ah si, c'est implicite
       - Puisque le noeud s'abonne qu'aux topics avec son nodeId, ne reçoit que les messages le concernant
+- SmartSense : Ajouter des tests pour *DataToLocalInfluxDB.parseMqtt()*
+  - Pensais juste ajouter des topics à liste des valeurs possibles que peut retourner /getTopic()/
+  - Mais vu que j'utilise cet helper à plusieurs reprises, doit faire gaffe aux valeurs proposées
+  - Peut pas proposer des topics concernant
+    - Le provisioning
+    - Des cmd
+    - Étant dans un autre mode que production
+  - Donc reste des events
+  - /getTopic()/ est utilisé conjointement avec /getPayload()/
+    - Les fusionner ?
 - SmartSense: Réflexions
   - Comment mettre en place et maintenir un protocole de communication ?
     - SmartSense utilise des messages pour communiquer à la fois entre les noeuds et le serveur
@@ -256,6 +304,52 @@ CLOSED: [2024-02-01 Thu 14:39]
     - Grosso modo, va-t-on à un moment query la BDD locale ?
     - Pour quelles raisons le choix s'est porté sur InfluxDB pour le SGBD embarqué lors de la conception du mode autonome ?
       - Si c'est juste une question de compatibilité/d'export avec la BDD qui tourne sur le serveur, est-ce qu'un fichier ne suffit pas ?
+- SmartSense: Compréhension du code
+  - *TlcManager*
+    - Gère les leds du noeud SmartSense
+    - Reçoit des commandes pour paramétrer les leds
+    - Envoie ses données meta au provisioning puis lors d'une commande ("cmd/.../nodeId", "action=get *")
+  - *InaManager*
+    - Monitore l'alimentation des différents ports de la raspberry
+      - poe: Power Over Ethernet ?
+      - rpi: Pourquoi il y a aussi la rpi elle-même dans la liste ?
+    - Reçoit des commandes pour
+      - get sa configuration
+      - set sa période
+    - À l'issue d'une période, envoie les données meta de la conso électrique de chaque port
+  - *UsbBoardManager*
+    - Gère les différentes sondes du capteur
+    - Reçoit des commandes pour interagir avec les sondes
+      - Démarrer ou stop les sondes
+      - Lire les métas des sondes
+      - Transmettre les commandes aux sondes
+      - Aussi une commande "timestamp"
+        - Permet de décaler les timestamps sur les mesures futures
+        - Soit à partir d'un offset fourni
+        - Soit à partir d'un timestamp calculé sur le coup
+        - Comprends pas trop comment cela fonctionne
+    - Envoie dès que possible les données collectées par les sondes
+  - *RpiGpioManager*
+    - Deux instances
+      - Une de *MainApp*
+      - Une de *UsbBoardManager*
+      - Safe ?
+    - Gère l'alimentation des différents ports de la raspberry
+      - SensorBoard
+      - Ext1 et Ext2
+      - GlobalSync ?
+  - *SensorBoardManager*
+    - N'est plus utilisé actuellement
+    - Ancêtre de *UsbBoardManager* ?
+    - Lui ressemble beaucoup en tout cas
+  - *Syncer*
+    - Étant donné un timestamp, attends que celui-ci arrive
+    - Utilisé par *MainApp.syncAll()*
+    - Pige pas trop son fonctionnement
+      - Instancie un *RpiGpioManager* avant de se mettre en attente
+      - Utilise *RpiGpioManager.globalSync()* une fois le timestamp arrivé
+      - Comment cet appel peut-il aider à synchro les différentes sondes ?
+      - Sert p-e plutôt à synchroniser les différents noeuds
 ** Semaine du <2024-01-22 Mon> au <2024-01-26 Fri>
 *** Planned
 **** DONE S'approprier SmartSense/smartsense-node-app
