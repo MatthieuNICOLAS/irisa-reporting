@@ -58,13 +58,6 @@
 - Mais a-t-on besoin d'une time series database ?
 - Identifier l'utilisation que l'on va faire de la BD locale
 - Et vérifier qu'une time series database est la plus appropriée pour répondre aux besoins correspondants
-*** TODO SmartSense: Ajouter des tests pour l'instanciation de *DataToLocalInfluxDB*
-- Comment se comporte l'objet si la base de données est inaccessible ?
-*** TODO SmartSense: Ajouter des tests pour l'instanciation de *MqttInterface*
-- Comment se comporte l'objet si le message broker est inaccessible ?
-*** TODO SmartSense: Ajouter des tests pour *MainApp.handleProvisioningMsg()*
-- Vérifier le bon fonctionnement de cette méthode
-- Me paraît un bon point d'entrée pour mettre en place des tests pour *MainApp*
 *** TODO SmartSense: Ajouter un test *provisioningViaMqtt* pour *MainApp*
 - Mettre en place un test qui vérifie que si on démarre *MainApp* avec le flag /mqttEnabled/, on a bien
   - Envoi d'une requête de provisioning via *MqttInterface*
@@ -74,6 +67,71 @@
 *** TODO Lire *OZCAR: The French Network of Critical Zone Observatories*
 - Ammar m'a recommandé cet article pour en apprendre plus sur les observatoires et leurs buts
 - Le consulter
+** Semaine du <2024-02-05 Mon> au <2024-02-09 Fri>
+*** Planned
+**** DONE SmartSense: Ajouter des tests pour *DataToLocalInfluxDB.parseMqtt()*
+CLOSED: [2024-02-05 Mon 13:58]
+- J'ai atteint la limite du refactoring que je peux faire dans le projet en ayant à peu près confiance
+- Et n'ayant pas de précisions sur les évolutions à apporter
+- Serait préférable de consolider les tests pour le moment
+- Pour le moment, vérifie le bon fonctionnement de *parseMqtt()* avec un payload correct
+- Vérifier pour d'autres payloads corrects
+- Vérifier pour payload invalide
+**** DONE SmartSense: Ajouter des tests pour l'instanciation de *DataToLocalInfluxDB*
+CLOSED: [2024-02-05 Mon 14:35]
+- Comment se comporte l'objet si la base de données est inaccessible ?
+**** DONE SmartSense: Ajouter des tests pour l'instanciation de *MqttInterface*
+CLOSED: [2024-02-05 Mon 15:13]
+- Comment se comporte l'objet si le message broker est inaccessible ?
+**** IN-PROGRESS SmartSense: Ajouter des tests pour *MainApp.handleProvisioningMsg()*
+- Vérifier le bon fonctionnement de cette méthode
+- Me paraît un bon point d'entrée pour mettre en place des tests pour *MainApp*
+**** IN-PROGRESS SmartSense: Intégrer les modifications effectuées à la branche *main*
+- J'ai fini de mettre en place une première série de tests
+- Avant d'aller plus loin et d'effectuer de nouvelles modifs
+- Serait bien de me poser avec Mickaël pour reviewer mes branches et discuter de ce que j'ai fait
+**** IN-PROGRESS SmartSense: Intégrer la branche *autonomous-node* à la branche *main*
+- Cette branche a l'air d'apporter des workarounds pour les problèmes constatés lors de l'utilisation du noeud SmartSense en mode autonome
+- Notamment, exporte et reset la DB périodiquement pour éviter le mécanisme de compression des shards
+  - Qui a l'air d'être trop couteux pour tourner sur le noeud
+- Améliore aussi la lisibilité du code
+*** Done
+- SmartSense: Ajouter des tests pour l'instanciation de *DataToLocalInfluxDB*
+  - Déclenche l'exception *requests.exceptions.ConnectionError* lorsque le SGBD est non-disponible
+  - Voir comment le process se comporte lorsque l'erreur est levée
+    - Est-ce qu'il s'arrête ?
+    - Ou tombe dans un état zombie ?
+  - Si le SGBD ne répond pas, doit-on stopper *MainApp* ?
+- SmartSense: Ajouter des tests pour l'instanciation de *MqttInterface*
+  - Même constat que pour *DataToLocalInfluxDB*
+  - Juste un problème pour déterminer l'exception levée
+    - Obtient un message *ConnectionRefusedError*
+    - Mais n'arrive pas à importer de type correspondant
+    - Le plus proche que je trouve est *MqttException*
+      - https://github.com/eclipse/paho.mqtt.python/blob/47ab9b94d9d1408abd8717e6c2d052ca329d549b/src/paho/mqtt/__init__.py#L4
+    - Mais l'utiliser en catch pas l'exception
+- SmartSense: Ajouter des tests pour *MainApp.handleProvisioningMsg()*
+  - Nécessite plusieurs modifications en amont
+  - *handleProvisioningMsg* instancie et démarre le process publiant les données sur le broker une fois le message de provisioning reçu
+    - Serait p-e préférable de découpler cette action de la réception du message
+    - Et de démarrer ce process en même temps que les autres, i.e. dans *main()* après avoir été provisionné
+  - Le constructeur de *MainApp* repose sur une config
+    - Celle-ci doit se trouver à un emplacement spécifique
+    - Peut facilement modifier le code pour qu'on passe le path de la config en paramètre
+    - Mais rencontre la même erreur pour les autres modules
+    - Ce qui mène au problème suivant
+  - *MainApp* instancie beaucoup d'objets
+    - Certains reposent sur la même config
+      - Doit donc transmettre le path de la config
+      - Mais pourquoi réinstancier la config à chaque fois ?
+      - Et non pas partager l'objet de *MainApp* ?
+    - Certains dépendent de services potentiellement pas en ligne
+      - e.g. *NPTManager*, *OpenOCDManager* qui utilise Telnet
+    - Quelle est la bonne approche pour tester *MainApp* ?
+      - Rendre optionnel ces différents composants ?
+        - En fonction de la config, instancier ou non les composants
+      - Mocker ces différents composants ?
+      - Décomposer *MainApp* en différents modules, chacun séparément facilement testable ?
 ** Semaine du <2024-01-29 Mon> au <2024-02-02 Fri>
 *** Planned
 **** DONE SmartSense: Rechercher outil pour refactorer le code du projet vis-à-vis des conventions Python
