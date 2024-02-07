@@ -87,6 +87,17 @@ CLOSED: [2024-02-05 Mon 15:13]
 CLOSED: [2024-02-07 Wed 08:21]
 - J'ai récupéré via Guillermo le noeud autonome que m'a setup Mickaël
 - Le brancher et se connecter dessus pour mieux comprendre son fonctionnement
+**** DONE SmartSense: Intégrer les modifications effectuées à la branche *main*
+CLOSED: [2024-02-07 Wed 16:52]
+- J'ai fini de mettre en place une première série de tests
+- Avant d'aller plus loin et d'effectuer de nouvelles modifs
+- Serait bien de me poser avec Mickaël pour reviewer mes branches et discuter de ce que j'ai fait
+**** DONE SmartSense: Intégrer la branche *autonomous-node* à la branche *main*
+CLOSED: [2024-02-07 Wed 16:53]
+- Cette branche a l'air d'apporter des workarounds pour les problèmes constatés lors de l'utilisation du noeud SmartSense en mode autonome
+- Notamment, exporte et reset la DB périodiquement pour éviter le mécanisme de compression des shards
+  - Qui a l'air d'être trop couteux pour tourner sur le noeud
+- Améliore aussi la lisibilité du code
 **** IN-PROGRESS SmartSense: Explorer les données collectées par le noeud
 - Maintenant que j'ai un noeud avec l'application en route dessus
 - Peut voir concrètement des samples de données collectées
@@ -94,15 +105,11 @@ CLOSED: [2024-02-07 Wed 08:21]
 **** IN-PROGRESS SmartSense: Ajouter des tests pour *MainApp.handleProvisioningMsg()*
 - Vérifier le bon fonctionnement de cette méthode
 - Me paraît un bon point d'entrée pour mettre en place des tests pour *MainApp*
-**** IN-PROGRESS SmartSense: Intégrer les modifications effectuées à la branche *main*
-- J'ai fini de mettre en place une première série de tests
-- Avant d'aller plus loin et d'effectuer de nouvelles modifs
-- Serait bien de me poser avec Mickaël pour reviewer mes branches et discuter de ce que j'ai fait
-**** IN-PROGRESS SmartSense: Intégrer la branche *autonomous-node* à la branche *main*
-- Cette branche a l'air d'apporter des workarounds pour les problèmes constatés lors de l'utilisation du noeud SmartSense en mode autonome
-- Notamment, exporte et reset la DB périodiquement pour éviter le mécanisme de compression des shards
-  - Qui a l'air d'être trop couteux pour tourner sur le noeud
-- Améliore aussi la lisibilité du code
+**** IN-PROGRESS SmartSense: Intégrer la branche *refactor/split-mqtt-interface*
+- Maintenant que la branche *feat/autonomous-node-and-add-tools* a été intégrée
+- Peut commencer à intégrer les modifications dans mon backlog
+- MàJ la branche *refactor/split-mqtt-interface* par rapport à *main*
+- Faire la MR
 *** Done
 - SmartSense: Ajouter des tests pour l'instanciation de *DataToLocalInfluxDB*
   - Déclenche l'exception *requests.exceptions.ConnectionError* lorsque le SGBD est non-disponible
@@ -759,7 +766,6 @@ users_value
       - Qui n'ont pas d'avoir leurs propres events
   - Plusieurs questions
     - Qu'est-ce asx340 ?
-      - Un mcu sans enfant, qui ne se sync pas
       - Quel est son rôle ?
     - Qu'est-ce que cc1310 ?
       - Un mcu sans enfant, qui ne se sync pas
@@ -772,6 +778,39 @@ users_value
       - Les mcu esensor et sensor ont l'air de proposer le même ensemble de capteurs
       - Sauf que sensor est sous une vitre de plexiglas, donc quid de la pertinence des données sur l'air, la luminosité ?
       - Mickaël m'a répondu que désactiver ces capteurs lors du fonctionnement en mode autonome fait partie des choses à faire
+  - asx340
+    - S'agit d'un capteur d'image
+  - cc1310
+    - Est censé avoir un enfant rfSubGiga
+    - Donc un module radio émettant sur des fréquences < 1GHz ?
+    - Un module similaire à cc2650/rfGiga je suppose
+  - uwb
+    - Semble être un module de communication
+    - Certains champs de ses messages meta font mention d'antennes d'après la doc
+    - Ultra-Wideband (UWB)
+  - On retrouve donc plusieurs modules liés aux communications
+    - rfGiga
+    - rfSubGiga
+    - uwb
+    - Aucun n'a jamais été utilisé ?
+- SmartSense: Intégrer les modifications effectuées à la branche *main*
+  - Mickaël a validé la MR, mais a fait plusieurs retours
+  - Faudrait soit
+    - Y répondre
+    - Créer des issues qui correspondent
+      - Histoire d'en conserver une trace
+      - Et de lister les tâches restantes
+  - [X] Problème de crash d'InfluxDB
+    - Création d'une issue
+  - [X] Ajout de tests pour la réception et le traitement de commandes
+    - Création d'une issue
+  - [X] Ajout de tests pour la BD "collectd"
+    - Pas trop sûr de quoi ajouter comme tests
+    - À part check l'existence de la BD
+  - [X] Correction du secteur, sous-secteur et nodeId pour les topics de test
+- SmartSense: Intégrer la branche *refactor/split-mqtt-interface*
+  - [X] Rebase sur *main*
+  - [X] Ouvrir la MR
 ** Semaine du <2024-01-29 Mon> au <2024-02-02 Fri>
 *** Planned
 **** DONE SmartSense: Rechercher outil pour refactorer le code du projet vis-à-vis des conventions Python
