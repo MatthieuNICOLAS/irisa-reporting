@@ -83,6 +83,14 @@ CLOSED: [2024-02-05 Mon 14:35]
 **** DONE SmartSense: Ajouter des tests pour l'instanciation de *MqttInterface*
 CLOSED: [2024-02-05 Mon 15:13]
 - Comment se comporte l'objet si le message broker est inaccessible ?
+**** DONE SmartSense: Prendre en main le noeud SmartSense
+CLOSED: [2024-02-07 Wed 08:21]
+- J'ai récupéré via Guillermo le noeud autonome que m'a setup Mickaël
+- Le brancher et se connecter dessus pour mieux comprendre son fonctionnement
+**** IN-PROGRESS SmartSense: Explorer les données collectées par le noeud
+- Maintenant que j'ai un noeud avec l'application en route dessus
+- Peut voir concrètement des samples de données collectées
+- Peut m'aider à créer mon jeu d'essai pour les tests unitaires
 **** IN-PROGRESS SmartSense: Ajouter des tests pour *MainApp.handleProvisioningMsg()*
 - Vérifier le bon fonctionnement de cette méthode
 - Me paraît un bon point d'entrée pour mettre en place des tests pour *MainApp*
@@ -132,6 +140,638 @@ CLOSED: [2024-02-05 Mon 15:13]
         - En fonction de la config, instancier ou non les composants
       - Mocker ces différents composants ?
       - Décomposer *MainApp* en différents modules, chacun séparément facilement testable ?
+- SmartSense: Prendre en main le noeud SmartSense
+  - Plusieurs services s'occupent de faire fonctionner l'application
+    #+BEGIN_PLAIN
+UNIT                         LOAD   ACTIVE SUB     DESCRIPTION
+alsa-state.service           loaded active running Manage Sound Card State (restore and store)
+avahi-daemon.service         loaded active running Avahi mDNS/DNS-SD Stack
+collectd.service             loaded active running Statistics collection and monitoring daemon
+cron.service                 loaded active running Regular background program processing daemon
+dbus.service                 loaded active running D-Bus System Message Bus
+dnsmasq.service              loaded active running dnsmasq - A lightweight DHCP and caching DNS server
+getty@tty1.service           loaded active running Getty on tty1
+grafana-server.service       loaded active running Grafana instance
+influxdb.service             loaded active running InfluxDB is an open-source, distributed, time series database
+mainApp.service              loaded active running Smartsense Python App
+rng-tools.service            loaded active running rng-tools.service
+rsyslog.service              loaded active running System Logging Service
+serial-getty@ttyAMA0.service loaded active running Serial Getty on ttyAMA0
+ssh.service                  loaded active running OpenBSD Secure Shell server
+systemd-journald.service     loaded active running Journal Service
+systemd-logind.service       loaded active running Login Service
+systemd-udevd.service        loaded active running udev Kernel Device Manager
+triggerhappy.service         loaded active running triggerhappy global hotkey daemon
+user@1000.service            loaded active running User Manager for UID 1000
+wpa_supplicant.service       loaded active running WPA supplicant
+    #+END_PLAIN
+  - mainApp.service
+    - Décrit dans /etc/systemd/system/mainApp.service
+    - Concrètement, execute la commande suivante : cd /home/root/App; python3 mainApp.py
+  - collectd.service
+    - Pas de description du service
+    - Retrouve sa configuration dans le fichier /etc/collectd/collectd.conf
+      #+BEGIN_PLAIN
+FQDNLookup true
+LoadPlugin syslog
+<Plugin syslog>
+	LogLevel info
+</Plugin>
+LoadPlugin battery
+LoadPlugin cpu
+LoadPlugin df
+LoadPlugin disk
+LoadPlugin entropy
+LoadPlugin interface
+LoadPlugin irq
+LoadPlugin load
+LoadPlugin memory
+LoadPlugin network
+LoadPlugin processes
+LoadPlugin swap
+LoadPlugin users
+<Plugin df>
+	FSType rootfs
+	FSType sysfs
+	FSType proc
+	FSType devtmpfs
+	FSType devpts
+	FSType tmpfs
+	FSType fusectl
+	FSType cgroup
+	IgnoreSelected true
+</Plugin>
+<Plugin network>
+	Server "127.0.0.1"
+</Plugin>
+<Include "/etc/collectd/collectd.conf.d">
+	Filter "*.conf"
+</Include>
+      #+END_PLAIN
+    - Collecte des métriques sur l'état du système
+  - influxd.service
+    - Décrit dans /etc/systemd/system/influxd.service
+    - Lance influxd avec comme fichier de config /etc/influxdb/influxdb.conf
+      #+BEGIN_PLAIN
+reporting-enabled = false
+[meta]
+  dir = "/data/influxdb/meta"
+[data]
+  dir = "/data/influxdb/data"
+  wal-dir = "/data/influxdb/wal"
+  index-version = "tsi1"
+[coordinator]
+[retention]
+[shard-precreation]
+[monitor]
+[http]
+  auth-enabled = true
+[ifql]
+[logging]
+[subscriber]
+[[graphite]]
+[[collectd]]
+  enabled = true
+  bind-address = ":25826"
+  database = "collectd"
+  typesdb = "/usr/share/collectd"
+[[opentsdb]]
+[[udp]]
+[continuous_queries]
+[tls]
+      #+END_PLAIN
+    - Important : c'est la config d'influxdb qui active l'enregistrement des données collectées par collectd dans influxdb
+      - Cf. https://docs.influxdata.com/influxdb/v1/supported_protocols/collectd/
+    - Ça vaudra p-e le coup néanmoins de se pencher sur cette config
+      - Peut-on désactiver le mécanisme de shard compression incriminé pour les crashs ?
+      - La partie concernant collectd insiste sur le fait de mettre en place une bufferisation, y en a-t-il une par défaut ?
+  - grafana-server.service
+    - Instance disponible à : http://192.168.1.2:3000
+    - Config disponible dans /etc/grafana/grafana.ini
+    - Configuration par défaut
+    - Mais disposait déjà de deux dashboards
+      - Hardware Monitoring
+        - Présente les métriques systèmes récupérées par collectd
+      - Sensor Data
+        - Présente les données récupérées par l'application
+  - dnsmasq.service
+    - D'après sa description, sert de DHCP
+    - Suppose que c'est ce service qui permet au noeud de mettre en place le réseau local
+  - Pose la question de comment est setup le noeud
+    - De la façon dont Mickaël m'a présenté les choses, j'ai l'impression que c'est un setup manuel
+    - Ne vois pas de repo avec un script Ansible ou bash pour installer et configurer le noeud
+    - Serait intéressant de documenter la procédure de mise en place et de l'automatiser
+    - Pose aussi la question d'installer les différentes applications à même le noeud
+    - Ou de conteneuriser l'application
+- SmartSense: Explorer les données collectées par le noeud
+  - SensorData
+    - Measurements
+      #+BEGIN_PLAIN
+> SHOW MEASUREMENTS
+name: measurements
+name
+----
+event_accelerometer
+event_airInfo
+event_asx340
+event_audio
+event_bf707
+event_cc2650
+event_consumption
+event_esensor
+event_gyroscope
+event_magnetometer
+event_rfGiga
+event_rgbwLuminosity
+event_sensor
+event_stream
+event_telemeter
+event_thermal
+event_thermalImgHd
+event_thermalImgLd
+event_uvLuminosity
+event_uwb
+meta_accelerometer
+meta_airInfo
+meta_airQuality
+meta_asx340
+meta_audio
+meta_bf707
+meta_cc1310
+meta_cc2650
+meta_consumption
+meta_esensor
+meta_gyroscope
+meta_leds
+meta_magnetometer
+meta_rfGiga
+meta_rgbwLuminosity
+meta_sensor
+meta_stream
+meta_telemeter
+meta_thermal
+meta_thermalImgHd
+meta_thermalImgLd
+meta_uvLuminosity
+meta_uwb
+meta_uwbCfg
+meta_uwbData
+      #+END_PLAIN
+    - event
+      - accelerometer
+        #+BEGIN_PLAIN
+    > SELECT * FROM event_accelerometer LIMIT 10
+    name: event_accelerometer
+    time                admin board          location mcu     mode       node              sector subsector x   y   z
+    ----                ----- -----          -------- ---     ----       ----              ------ --------- -   -   -
+    1683307383833892224 p     sensorBoard    External sensor  production b8:27:eb:8c:67:48 1      1         -5  -34 977
+    1683307384111892224 p     externalBoard2 External esensor production b8:27:eb:8c:67:48 1      1         -12 480 872
+    1683307384814892224 p     sensorBoard    External sensor  production b8:27:eb:8c:67:48 1      1         -2  -37 976
+    1683307385102892224 p     externalBoard2 External esensor production b8:27:eb:8c:67:48 1      1         -12 479 874
+    1683307385798892224 p     sensorBoard    External sensor  production b8:27:eb:8c:67:48 1      1         -4  -32 977
+    1683307386094892224 p     externalBoard2 External esensor production b8:27:eb:8c:67:48 1      1         -11 477 874
+    1683307386777892224 p     sensorBoard    External sensor  production b8:27:eb:8c:67:48 1      1         -4  -36 977
+    1683307387086892224 p     externalBoard2 External esensor production b8:27:eb:8c:67:48 1      1         -10 479 874
+    1683307387758892224 p     sensorBoard    External sensor  production b8:27:eb:8c:67:48 1      1         -2  -35 975
+    1683307388082892224 p     externalBoard2 External esensor production b8:27:eb:8c:67:48 1      1         -12 478 872
+        #+END_PLAIN
+      - airInfo
+        #+BEGIN_PLAIN
+    > SELECT * FROM event_airInfo LIMIT 10
+    name: event_airInfo
+    time                admin board          humidity location mcu     mode       node              pressure  sector subsector temperature
+    ----                ----- -----          -------- -------- ---     ----       ----              --------  ------ --------- -----------
+    1683307383266892224 p     sensorBoard    34.86    External sensor  production b8:27:eb:8c:67:48 101613.41 1      1         33.71
+    1683307383716892224 p     externalBoard2 34.24    External esensor production b8:27:eb:8c:67:48 101450.65 1      1         26.01
+    1683307384259892224 p     sensorBoard    34.86    External sensor  production b8:27:eb:8c:67:48 101610.69 1      1         33.71
+    1683307384708892224 p     externalBoard2 34.24    External esensor production b8:27:eb:8c:67:48 101451.36 1      1         26.03
+    1683307385240892224 p     sensorBoard    34.86    External sensor  production b8:27:eb:8c:67:48 101612.33 1      1         33.72
+    1683307385703892224 p     externalBoard2 34.25    External esensor production b8:27:eb:8c:67:48 101453.19 1      1         26.03
+    1683307386221892224 p     sensorBoard    34.87    External sensor  production b8:27:eb:8c:67:48 101612.33 1      1         33.72
+    1683307386694892224 p     externalBoard2 34.23    External esensor production b8:27:eb:8c:67:48 101456    1      1         26.01
+    1683307387201892224 p     sensorBoard    34.86    External sensor  production b8:27:eb:8c:67:48 101605.24 1      1         33.71
+    1683307387686892224 p     externalBoard2 34.23    External esensor production b8:27:eb:8c:67:48 101457.83 1      1         26.01
+        #+END_PLAIN
+      - airQuality
+        #+BEGIN_PLAIN
+    > SELECT * FROM event_airQuality LIMIT 10
+    name: event_airQuality
+    time                admin board          co2  location mcu     mode       node              resistance sector subsector tvoc
+    ----                ----- -----          ---  -------- ---     ----       ----              ---------- ------ --------- ----
+    1683307383428892224 p     externalBoard2 450  External esensor production b8:27:eb:8c:67:48 197033     1      1         125
+    1683307383970892224 p     sensorBoard    3699 External sensor  production b8:27:eb:8c:67:48 89100      1      1         1020
+    1683307384419892224 p     externalBoard2 450  External esensor production b8:27:eb:8c:67:48 196837     1      1         125
+    1683307384951892224 p     sensorBoard    3699 External sensor  production b8:27:eb:8c:67:48 89100      1      1         1020
+    1683307385411892224 p     externalBoard2 450  External esensor production b8:27:eb:8c:67:48 196837     1      1         125
+    1683307385931892224 p     sensorBoard    3699 External sensor  production b8:27:eb:8c:67:48 89100      1      1         1020
+    1683307386403892224 p     externalBoard2 450  External esensor production b8:27:eb:8c:67:48 196837     1      1         125
+    1683307386913892224 p     sensorBoard    3699 External sensor  production b8:27:eb:8c:67:48 89100      1      1         1020
+    1683307387395892224 p     externalBoard2 450  External esensor production b8:27:eb:8c:67:48 197033     1      1         125
+    1683307387894892224 p     sensorBoard    3699 External sensor  production b8:27:eb:8c:67:48 89100      1      1         1020
+        #+END_PLAIN
+      - asx340
+        #+BEGIN_PLAIN
+> SELECT * FROM event_asx340 LIMIT 10
+name: event_asx340
+time                admin board       energy estimation estimation_max estimation_min image_sub                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         location mcu   mean   mode       node              occupation sector subsector variance
+----                ----- -----       ------ ---------- -------------- -------------- ---------                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         -------- ---   ----   ----       ----              ---------- ------ --------- --------
+1683318911060120064 p     sensorBoard 6133   0          0              0              @AAAABIgABEQACEAAAAQAAAAABAAABEQABAAABEAABAAAAAABRAAAAAAABIAABEQAAAQABEAAAAAABAAABAQAAAAAAEAEAEQAAAAAAAABAAAABEAAAAQAAEQAAEQABAAABEQAAEQAAEQABMAAAEAAAAAAAgQAEIAABAAAAEAAAIQABAQABEAABAQABAQAB8QAAAAABAQABEQAAAAAAcAAAAQACAAAAEQAAEAAAAAAAAAAAAAABAAAAEAABEAAAAAABAAAAAAAAAQABMAAAEQABEQABAAABEAAAAQABAAAAAAAAEQAAAAACIQABEwAGEAABEAAAEQABAQABAAAAAQABAQAAAAABAQAAAAABEAACEAARkCBBAQABEQAAEQABAAAAEQAAAQAAAQABEAABAAAAAQABAAABAQAXIhHAIgDCEAAAEQABEQAAAQAAEQAAAAABEAABAQAAEQABEAAAEQAK8QAAEQAAEAACEgABAAAAAQAAAQAAAAABEAAAEQAAAQABEAAAEQAAEAAAAQAAEAABEAABEQAAEQAAQQABAAAAEAABEAAAAAAAAAAAEAAAAQAAEQAAEAABAQABEQACEAABAQAAEQABEQABAQABEAAAEAABEAAAEQABEQABEAABAQAAAQABEQABAAAAAAAAAAAAAAAAEAABEAAAAQABAAABAQAAEAABAQABEAABAQAAAQABAQABEAAAEAABEAAAEAABAQAAAAAAAAAAEAABAAABAAAAEQAAAQAEAQABAQABEAAAAAABAQAAAQAAAAABEAAAAQABAQAAEQABEQABAQABAQABEQCAAQAAEQABAQABAAADEQAAEAABEAAAEAABAAABEAABEAABEQABAQABAAAAAQAAEAAAAQAAAAAAEAABEAAAEAAAEAABEAABIQABEQAAEQAAEQAAAQAAEAAAEQAAEAAAAAABEAABEwAAcgABAAABEQAAEQAAEQABEQABEAAAEAAAEQAAAAAAAAABEAAAAQAAAAAAAQABEAAAEQAAEQAAAQAAAAAAAAAAAQAAAQAAAAAAEAAAAAABEAACAAAAggABEQABEAAAQgABEAAAAAAAAQABAAAAAQAAMAAAAAAAAAAAAQAAEAAAIAAAAAABAAAAEQAAEQAAEQAAAAAAAAAAAAAAAAABAAAAAAAAEQABEgAAEAAAAAABAAAAAQAAAAAAEAAAAAAAEAAAAAAAAAAAAAAAEQABAAABEQAAEAABAQAAAQABEAAAAAABEAAAAQAAAAAAAAAAAAAAAAAAEAAAEQABAQABEAABAQABAAAAAAAAAAAAAAAAAAAAAAABAAABAAAAAAABEAABEAAAAQABEAAAEAAAAAABAAAAAQAAEAAAEAABQAAAEAABAAABEAABEQAAEgABEAABEQABEQAAEQAAAAAAEAAAAAAAEAABAAAAEAAAAQABAAABEQAAEQABAAABAAAAEQAAAAABAQAAAAAAEAABAAAAAAABAAABAgABAgABAQABAAABAQABEQAAAAAAAQABEQAAAAABEQABEAAAEAABAAAAAAABEQABAQAAAQABAAABEAAAAAAAAQABAQAAAAAAAQAAEAAAAAA External bf707 0.7099 production b8:27:eb:8c:67:48 1          1      1         4.5959
+1683319143060120064 p     sensorBoard 25922  0          0              0              @AAAABAAAAEAABAAABAAAAAAAAAQAAAQAAAQAAAAABEAABAAAAEQAAAAABAAAAAQAFAAAAAAAAAAABAQABAAAAAAAAAQAAAQAAAAAAAAAAAAEBAAABAAAAEAAAEAAAEAAAEAABAAABEAAAEQAAAAAAAAAAAQABEQAAAAABAQAAAQAAAAAAAAAAAAABAAAAEAABEAAAAAAAAAABAAAAAAQAAQAAAQAAAAAAEAABAAABEAAAAQAAAAAAEQABAQAAAAAAEQAAAQAAAwDAAQAAEAAAEAAAAAAAAAAAAAAAAQABAAAAAQAAAAABAQAAEwAAAQAAAAAAAQAAEAAAAQAAAAABAAABEAAAAQAAAQAAAAACEAAQkCBAAQAAEABBEAAAAAAAAAAAAAABAAAAEAAAAAAAEQAAAQABEQAWAhHAEADBAAABEAAAEAABAAAAAQAAAAAAEAAAAAAAEAABEQABEAAJ4QAAAQAAAAABEAAAAAAAEAABAAAAEAAAAAABAAAAAQAAAAAAAAAAAQAAAAAAAQAAEQABAQABEAABEQAAAAAAAQAAEAAAAAABAAAAEAAAAAAAAAAAAAAAAAAAAQAAEQAAAAAAEAAAAAAAEAABAAAAAQAAAAAAAAAAAAAAAQAAAAAAAAAAEQAAAAAAAAABEAAAAAAAAQABAQAAEAAAAAAAEAAAAAAAAAABAAAAAQAAEAAAAAAAAAABAAAAAAABAAAAEAAAIAAAIAAAEQAAAAABAAABEAABEAABEQAAEAABAAABEAAAEAAAAAAAAQABAQAAEAAAAAAAAAABEAAAEAAAAAAAEQAAAQAAAQAAEAAAAAAAAQAQAQAAAQBBAQAAAQAAEAAAAAAAAAABEAAAEQAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAQAAAQABAAAAAAAAEAAAEAAAAAAAAQABAAAAAQABAAABEQAAAAAAgwABAQAAEAAAEQABAAAAAQAAEAAAAAAAAAAAAAAAAQAAAQAAAABAAQAB8nAAAAAAAQAAEQAAAQAAAAAAAAABAAAAAAAAAAAAAAABAAAAAAACAAAAgQAAAAAAEAAAEAAAAAAAAAAAAQAAEQAAAAAAEAAEAAAAAQABAAAKAAAAEQAAAgAAAAAAAQAAAQABEQAAEQBAAQABAAAAEAAAAAAAAAAAEAABEAAAEQAAAQABAQAAAAAAAAABAAABAAACAAAAEAAAAAAAAAAAEAABAQAAEAAAAAAAAQAAAAAAEAAAAAAAAAAAAAAAAAAAEAABAAAAAABAAQACAAABEAAAAAAAAAAAEQAAAAAAAAABEAAAEQAAAgAAAABAQAAAAAAAAQAAAQAAAQABAAABEQAAEQAAAQAAAAABAAAAAAABQQAAAAABAQAAAAAAAAABAAAAAAAAAQAAAAAAEAAAAAAAAAAAgQADEAABAAAAEAABAAABAQAAAAAAAQAAAAAAAAAAAAABEQAAAAAAAAAAAAAAEACAAAAAAAABEQABEAAAAAAAAAAAAQAAAAAAEQAEAAACAAAAAAAAAgAAAQAAAAABAQABEAAAAAAAEAAAAAAAEQAAAQAAAQAAEAABAAAAEAABAAAAAAAAAAA External bf707 0.69   production b8:27:eb:8c:67:48 1          1      1         21.1238
+        #+END_PLAIN
+      - audio
+         #+BEGIN_PLAIN
+> SELECT * FROM event_audio LIMIT 10
+name: event_audio
+time                admin board       location mode       node              sector subsector synchronize
+----                ----- -----       -------- ----       ----              ------ --------- -----------
+1683318692060120064 p     sensorBoard External production b8:27:eb:8c:67:48 1      1         OK
+        #+END_PLAIN
+      - bf707
+        #+BEGIN_PLAIN
+> SELECT * FROM event_bf707 LIMIT 10
+name: event_bf707
+time                admin board       location mode       node              sector subsector synchronize
+----                ----- -----       -------- ----       ----              ------ --------- -----------
+1683318691060120064 p     sensorBoard External production b8:27:eb:8c:67:48 1      1         OK
+        #+END_PLAIN
+      - cc2650
+        #+BEGIN_PLAIN
+> SELECT * FROM event_cc2650 LIMIT 10
+name: event_cc2650
+time                admin board       location mode       node              sector subsector synchronize
+----                ----- -----       -------- ----       ----              ------ --------- -----------
+1683318691060120064 p     sensorBoard External production b8:27:eb:8c:67:48 1      1         OK
+        #+END_PLAIN
+      - consumption
+        #+BEGIN_PLAIN
+    > SELECT * FROM event_consumption LIMIT 10
+    name: event_consumption
+    time                A       V      W        admin board    location mcu       mode       node              sector subsector
+    ----                -       -      -        ----- -----    -------- ---       ----       ----              ------ ---------
+    1683307383096313088 8.5     5      43.126   p     rpiBoard External inaExt1   production b8:27:eb:8c:67:48 1      1
+    1683307383197403904 106.003 5      530.641  p     rpiBoard External inaExt2   production b8:27:eb:8c:67:48 1      1
+    1683307383399406848 669.989 3.288  2168.816 p     rpiBoard External inaRpi    production b8:27:eb:8c:67:48 1      1
+    1683307383601250048 722.491 11.712 8212.751 p     rpiBoard External inaPoe    production b8:27:eb:8c:67:48 1      1
+    1683307384004352000 755.492 4.988  3738.864 p     rpiBoard External inaSensor production b8:27:eb:8c:67:48 1      1
+    1683307384105933824 8       5.004  43.126   p     rpiBoard External inaExt1   production b8:27:eb:8c:67:48 1      1
+    1683307384207138048 102.003 5.004  525.641  p     rpiBoard External inaExt2   production b8:27:eb:8c:67:48 1      1
+    1683307384409869056 588.987 3.292  1831.931 p     rpiBoard External inaRpi    production b8:27:eb:8c:67:48 1      1
+    1683307384611720192 661.489 11.748 7800.238 p     rpiBoard External inaPoe    production b8:27:eb:8c:67:48 1      1
+    1683307385014542080 752.492 4.992  3766.365 p     rpiBoard External inaSensor production b8:27:eb:8c:67:48 1      1
+        #+END_PLAIN
+      - esensor
+        #+BEGIN_PLAIN
+> SELECT * FROM event_esensor LIMIT 10
+name: event_esensor
+time                admin board          location mode       node              sector subsector synchronize
+----                ----- -----          -------- ----       ----              ------ --------- -----------
+1683318691060120064 p     externalBoard2 External production b8:27:eb:8c:67:48 1      1         OK
+        #+END_PLAIN
+      - gyroscope
+        #+BEGIN_PLAIN
+    > SELECT * FROM event_gyroscope LIMIT 10
+    name: event_gyroscope
+    time                admin board          location mcu     mode       node              sector subsector x  y  z
+    ----                ----- -----          -------- ---     ----       ----              ------ --------- -  -  -
+    1683309474180892224 p     sensorBoard    External sensor  production b8:27:eb:8c:67:48 1      1         0  -1 -1
+    1683309474502892224 p     externalBoard2 External esensor production b8:27:eb:8c:67:48 1      1         0  0  0
+    1683309475161892224 p     sensorBoard    External sensor  production b8:27:eb:8c:67:48 1      1         0  -1 -1
+    1683309475493892224 p     externalBoard2 External esensor production b8:27:eb:8c:67:48 1      1         -1 0  0
+    1683309476143892224 p     sensorBoard    External sensor  production b8:27:eb:8c:67:48 1      1         0  0  0
+    1683309476484892224 p     externalBoard2 External esensor production b8:27:eb:8c:67:48 1      1         -1 0  0
+    1683309477125892224 p     sensorBoard    External sensor  production b8:27:eb:8c:67:48 1      1         -1 0  0
+    1683309477476892224 p     externalBoard2 External esensor production b8:27:eb:8c:67:48 1      1         0  0  0
+    1683309478106892224 p     sensorBoard    External sensor  production b8:27:eb:8c:67:48 1      1         0  -1 -1
+    1683309478468892224 p     externalBoard2 External esensor production b8:27:eb:8c:67:48 1      1         0  -1 0
+        #+END_PLAIN
+      - magnetometer
+        #+BEGIN_PLAIN
+    > SELECT * FROM event_magnetometer LIMIT 10
+    name: event_magnetometer
+    time                admin board          location mcu     mode       node              sector subsector x   y  z
+    ----                ----- -----          -------- ---     ----       ----              ------ --------- -   -  -
+    1683309474181892224 p     sensorBoard    External sensor  production b8:27:eb:8c:67:48 1      1         8   48 26
+    1683309474335892224 p     externalBoard2 External esensor production b8:27:eb:8c:67:48 1      1         -25 -3 -72
+    1683309475161892224 p     sensorBoard    External sensor  production b8:27:eb:8c:67:48 1      1         10  48 26
+    1683309475327892224 p     externalBoard2 External esensor production b8:27:eb:8c:67:48 1      1         -24 -3 -73
+    1683309476143892224 p     sensorBoard    External sensor  production b8:27:eb:8c:67:48 1      1         10  48 26
+    1683309476318892224 p     externalBoard2 External esensor production b8:27:eb:8c:67:48 1      1         -25 -3 -73
+    1683309477125892224 p     sensorBoard    External sensor  production b8:27:eb:8c:67:48 1      1         8   47 26
+    1683309477310892224 p     externalBoard2 External esensor production b8:27:eb:8c:67:48 1      1         -24 -3 -73
+    1683309478106892224 p     sensorBoard    External sensor  production b8:27:eb:8c:67:48 1      1         9   47 26
+    1683309478301892224 p     externalBoard2 External esensor production b8:27:eb:8c:67:48 1      1         -25 -3 -73
+        #+END_PLAIN
+      - rfGiga
+        #+BEGIN_PLAIN
+    > SELECT * FROM event_rfGiga LIMIT 5
+    name: event_rfGiga
+    time                admin board       location mcu    mode       node              rssi1                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             sector subsector
+    ----                ----- -----       -------- ---    ----       ----              -----                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             ------ ---------
+    1683309474101892224 p     sensorBoard External cc2650 production b8:27:eb:8c:67:48 @nmqpb25nbuJnYWJmWWJmYOJoYWJmYOplVWZlVWpmTK5lmiplVOJkVK5lXiZlTKJmSWJmWWZlSWplTm5jTWZlWOpkYa5kVaZlkO5lWeZlVaplVOJkTOpkTiplWW5kVWpkVOplViZlYWZlXO5krWZltKpkVOplSC5jVCpkTWpkSWZlWOZlTyokWiZlXOZlTOJkWepkT+YlWW5kTialWa5kTaZlVm5kVO5jT25kTC5kVK5kVeZlXCpoQaZlSO5kVW5jQW5kPKZlSO5kcKplTy4lVWpmVKZlWCZlTW5kSOZlSOpkWC5kSKZlVOplYOpkWOZlTWJkSWZlPOpkTWZlVWpkPK5kWa5kZWJmVeZlXi5nSO5kSWZlPC5kQKZlVWZlfuZlWOZlWWplVKZnVW5kTWZlT+olTa5kTWpkSWpkVCJkQWpkVWZlYKpkQWplTO5kVepmTWpkVC5kVO5lTKZlSW5kW+YlTaZlVWpkSCpkVOplVOpkTOplVWZlVWpkSOJmTK5kVWJmTCpkSOZlVWZlZa5kVOpkTWZlT+YlX+IkSOJkV+olSO5kQO5kWWZlWaJmVW5lTWZlVWpkSa5kVaZlVKJmVO5kVWZlWaplSaZlnOplTOpkSWJmTO5kZWZlYO5kQW5lWyqlVa5jWiplWWZlSO5jPOZlSW5kT+YlVeZmYeJmXKpkWuZlYKJmQaZlVy4kViZpWepmWi5naiKrVuZlQO5kV2ZnamZnYi5kWmpmZiJmWqJmYqJnVqJmYyZlYWJmZi5lSO5mWWZlVWZlYOpkTaZlPOpkVWZlYC5kTWZmSiZlSOZlVOZlTW5kTWZlVqJmVKZlZW5mWaJmWaZlWa5muWplXOZlQaZlbe5jW25lXiJmZ2ZmYWZlVqpmWO5kVipmYWpl 1      1
+    1683309475955892224 p     sensorBoard External cc2650 production b8:27:eb:8c:67:48 @lm6pZuJoai5mba5mVaJmYiJmYu5lbWZmaqZnaiJmcuJmdyJmbiZmVipmauJnZqJmYiZnZqJnYq5mai5mcyJnZqpmYmZlXepmVm5nbaZnWuZmZqplZiJmVW5lWKZlSa5kZOZlnO5kYiZlYiZlVmJmYK5kVq5kYWZlWyZlYCZlVeZlWWplVqpkWq5nWi5mZiJmTiJmYq5lbq5mZiqkWeZmTWZlXuJkTOZlSK5lWapkVyYlaiJmRK5lQO5jWWZlOWZlV+YmVWZlTOZlca5kYeZlTWJmVKZlSe5kQqJkQO5kTKplRK5kTW5kZGalVWZlViZlTupkVK5kVOJkSW5kYqZlWK5mTO5kWaJmVi5mXKplbWZlVa5kVeZlVaZlVy5jQaplVOZlYmJoQa5lVeJmdOZlT6pmWaZlYW5kYW5lVaJmVmZlWO5lTi5kVWpkWq6jWOZlWeZlgWJmSWZmVaJmVCplSiplPW5jTKZlTOplSmplYapkaa5kTaJmWW5jViplWaZmTKZlYmJmTWJnbu5lQW5kYaplWi5lTq5kYaZlVOplT+4kZW5kWa5jViJmXOZlbu5mQaZlZqJmbqJmSKplVOplPW5mW25lYaplYW5kmWZlai5kaa5lSW5kSmJmWWpmW25oWi5lSaZlWaJkWaZlSm5kVK5kSKZlWi5kXapkYmZlTKJmXiJmWOplTiJmdK5kQWpkVWplYWZlVW5lVWZlYmplZW5lV+YlTmplTWpkZaZlTWZlVuJmVWZmSaZlTaZlWWZlVaZmVOplVWZlYOZlXiZlVapmYO5kaiZlXWZlVO5kTWZlSWZlVa5kYW5kYipmVaZlWeplVmZlVOJmVa5kSeplUq5kXW5jYipkVuJmTeZlVeJmWqZmVi5lXa5kSiJmXaZm 1      1
+    1683309477809892224 p     sensorBoard External cc2650 production b8:27:eb:8c:67:48 @mi6pd+ZocuZmYiZnYa5kYW5mXaZnTmJmZiJmXWZlWW5kVWJmTOpkZeZlWaJmVm5lWi5mayJmWi5lWiplVWplXqplgipkWWplVi5lYaZlYaplTeJmWiJmPi5lVeJmWiZlYqplYipmVKZlZaJmVWJmWm5kTOplWeplSOZlZipkYq5mVWJmaqJnbqJmceZmYWZmaWZlbWJmXOZmVealViplbqZlYypmdiJmSW5kY2ZlZW5kVm5lSaJmZipkYOplVKJmWWZmSWJmVOZleiZlYmZlXi5mXm5mYWpmVi5mYCpkViJmWOZlVa5lVW5lSmZmViZmViplYe5maqJmZiplZqJnZaZlZiJmbuJmYe5mZi5lbWJmWeplYipmXq5lauZmYmpmauZma2ZmciJmZWJmYipmYaJmaqJmXmJmZipmhuplcaZmYiJnXi5mai5mbaZmYWJmTiJmZOJmbepmXuZmZaJnYipmhiZmZiJmamJmYupmbqZmaupmZapoYq5maqJmauZmau5mZm5mcqpmdmZnbm5lY2plbqpmZqpmYyZmTqJmbqplYmrmYiJmXeJnaeJmdm5maC6mYuZmZqpmYiZmXm5maqpmau5mXKZmWuplnyJmZa5mZuJmauJmWe5mauZnYu5lampmcmpmYuZmaipkZe5maapmbiZlYq5lYipmZupmZmKmYapmYeJmZiZmYeZmWmJmViZmaWZmam5mSaZmYmJmWeplcqZmTqZlaiJmbiJmaiJnXiJmZiJmYaZmZiJmYaplYmZnZqplZaplamJmZiZmYmJmZi5lbWZmZu5lbmJmYiJmYWJmYiJmcmJmZiJnaqqmVWZmbepmWiZmTipmYWpmXaZmYWJmeiplXuJndipmaqJmdi5mVi5mam5mai5lXu5m 1      1
+    1683309479663892224 p     sensorBoard External cc2650 production b8:27:eb:8c:67:48 @mqKpeK6ofq5meuJnbqJmduJncuJmb2JnaqJnZqJme2JnbypmYiZmdypmZyJncqZmYyZnXuZldqpmbiZlbqplcupma25lbqJmaiplduJmbepmcqZmaeZmYiZmYipmYupmdypmamZnai5mYy5mZqpmbupmamJmbiJncmJmaiZnYiJmjyZmXu5mV25mZmZmWaZmciZlWiZlauZmZeqmaqpmbiJmcqZmbyZmZepmZqJmamJmYq5maupmWmJmae5lXupmWeZnYu5maWZleapmai5mZi5mYipmZKplTq5mcuJnbq5mbyplWq5mdipmbmJnauJncaJnbmJmdi5lZWpmYqJmYi5mbeZnZyJtam5mcu5mYiplYiJmXq5kbqJnbuZmXiZlVm5lWqpmamJmYq5mWiJmbaJnZqpmZmpmW2plWm5mYiZmna5mYq5laOpmTeZmYWJmYWpmSe5lWqplZiZlZWJmYqJmXaZmamZlhWJmYmJmbi5lWWppYuZmaiJmWy5layZmYuZmYmplViJmYaJmYqpmXqJncupmce5lZe5maqJmbiJmZmJmciZlbeJmZyZnZuJmau5mZmJmaaplYiJmbq5mWeZmcm5lZipmYiJnmuJmZi5maaplXK6mWuplYmJmZe5mau5mY2JmZW5lYiZmWm5lampmYuJmaaJmZaplYq5mXm5lbmJmZuZmYmpmaepkYeZmYe5mYWpmYeZnampmZWZma+pmYi5lYmZmYqJmZaplYqZlam5laqplWm5lYWplViJmamJmVaJmViJmaa5lZWZmaipmamZlamJmaqplaepmVm5lVaJnWipmZaJmZqZmbi5mVWZmYqplYKqmbiJmWeZmaaJmXuZlYqpmcuJmaOJmZmZmaipmZupmauJmZmplYuZl 1      1
+    1683309481517892224 p     sensorBoard External cc2650 production b8:27:eb:8c:67:48 @nmapbC6ocWJnau5mdqJmaupmbapmYmZrZ2pmY2JmauJmeuJnYmZmWCamam5mYqpmYipmaiJnbmpmfqJmcqJnZmJma2Zmbm5lcipmZyZnY2ZmduJnVupmZq5mjipmba5mbuJnVqpmdq5mbuZnbmplYqJmYiZnYiJnb25mXyJmViKmYa5paqplbe5mau5ka2JnQqpmfqpmbipmceqmaWpldqJmaqJmZmpmaqJmYuJmcqZmZmJnZupmdupmZe5mamJmVyZnbuJmdmpmfi5mZWZnbiplaeJmai5mceZmaq5mYqJmZqpmXuZnYyZmauZnYqJmXypmYm5oXWpmZqZlYWZmVqJmWipmXi5mWqpmTuplauZmYipmYm5lamJmaeZmYa5mYuJmem5mYqZmYiZmWiplam5mZupldqZmamplYyJmZiZmbi5oZm5mZiZmbipmYOJmZm5mXWJmaqplaaZmbe5mWWpkXipmYiJmYmZmYq5lYmZmYiplbqpmZm5lY2JmVeplVa5mWKKmai5kYiJmWWpmZiJnYe5mZqZlYmZmZuJmQqZmSiJmWiJmZuZmZm5mcWJmYq5maipmWuplYqJmZiZmaeJnVy5laiJnbmpklq5mbqpmZi5mbupmYuJmZiJmZiJmduplXmJmZypmYuZmYu5laiplZeZmpqZmYiJmbqJmceZmWWJmYq5mYiplYiZmZiJmZiZlay5mWuZmZipkYOplYWJmWq5maiplYm5mYapmXiplaa5mXiplZiJmYaZlZiplYipmZi5lZmplYipmbmJmYipmXaJmeaZmXi5laiZmXqplZiJmZWZmYuJmYypmaiJmaqpmbq5mZm5mZepmYqJmYiJmYqJmYqpmcyZnZqpmXmZlWqZnau5lYiZmbq5lYqZn 1      1
+        #+END_PLAIN
+      - rgbwLuminosity
+        #+BEGIN_PLAIN
+    > SELECT * FROM event_rgbwLuminosity LIMIT 10
+    name: event_rgbwLuminosity
+    time                B    G    R    W    admin board          location mcu     mode       node              sector subsector
+    ----                -    -    -    -    ----- -----          -------- ---     ----       ----              ------ ---------
+    1683309473963892224 1783 3493 3645 6421 p     externalBoard2 External esensor production b8:27:eb:8c:67:48 1      1
+    1683309474514892224 1636 3749 3541 5868 p     sensorBoard    External sensor  production b8:27:eb:8c:67:48 1      1
+    1683309474955892224 1783 3488 3642 6418 p     externalBoard2 External esensor production b8:27:eb:8c:67:48 1      1
+    1683309475495892224 1637 3754 3545 5875 p     sensorBoard    External sensor  production b8:27:eb:8c:67:48 1      1
+    1683309475947892224 1785 3496 3645 6426 p     externalBoard2 External esensor production b8:27:eb:8c:67:48 1      1
+    1683309476476892224 1637 3751 3543 5872 p     sensorBoard    External sensor  production b8:27:eb:8c:67:48 1      1
+    1683309476938892224 1785 3498 3646 6427 p     externalBoard2 External esensor production b8:27:eb:8c:67:48 1      1
+    1683309477458892224 1639 3753 3544 5876 p     sensorBoard    External sensor  production b8:27:eb:8c:67:48 1      1
+    1683309477930892224 1786 3499 3647 6428 p     externalBoard2 External esensor production b8:27:eb:8c:67:48 1      1
+    1683309478440892224 1635 3747 3544 5874 p     sensorBoard    External sensor  production b8:27:eb:8c:67:48 1      1
+        #+END_PLAIN
+      - sensor
+        #+BEGIN_PLAIN
+> SELECT * FROM event_sensor LIMIT 10
+name: event_sensor
+time                admin board       location mode       node              sector subsector synchronize
+----                ----- -----       -------- ----       ----              ------ --------- -----------
+1683318692060120064 p     sensorBoard External production b8:27:eb:8c:67:48 1      1         OK
+        #+END_PLAIN
+      - stream
+        - Trop lourd
+      - telemeter
+        #+BEGIN_PLAIN
+    > SELECT * FROM event_telemeter LIMIT 10
+    name: event_telemeter
+    time                admin board          data location mcu     mode       node              sector subsector
+    ----                ----- -----          ---- -------- ---     ----       ----              ------ ---------
+    1683309473840892224 p     sensorBoard    3    External sensor  production b8:27:eb:8c:67:48 1      1
+    1683309473902892224 p     externalBoard2 1867 External esensor production b8:27:eb:8c:67:48 1      1
+    1683309474829892224 p     sensorBoard    3    External sensor  production b8:27:eb:8c:67:48 1      1
+    1683309474893892224 p     externalBoard2 1861 External esensor production b8:27:eb:8c:67:48 1      1
+    1683309475810892224 p     sensorBoard    4    External sensor  production b8:27:eb:8c:67:48 1      1
+    1683309475885892224 p     externalBoard2 1863 External esensor production b8:27:eb:8c:67:48 1      1
+    1683309476791892224 p     sensorBoard    4    External sensor  production b8:27:eb:8c:67:48 1      1
+    1683309476877892224 p     externalBoard2 1864 External esensor production b8:27:eb:8c:67:48 1      1
+    1683309477773892224 p     sensorBoard    3    External sensor  production b8:27:eb:8c:67:48 1      1
+    1683309477868892224 p     externalBoard2 1867 External esensor production b8:27:eb:8c:67:48 1      1
+        #+END_PLAIN
+      - thermalImgHd
+        - Trop lourd
+      - thermalImgLd
+        #+BEGIN_PLAIN
+    > SELECT * FROM event_thermalImgLd LIMIT 1
+    name: event_thermalImgLd
+    time                admin board       image                                                                                                                                                                         location mcu     mode       node              sector subsector thermistor
+    ----                ----- -----       -----                                                                                                                                                                         -------- ---     ----       ----              ------ --------- ----------
+    1683309474354892224 p     sensorBoard @PBATAsEASBgTAEFASBQVA4EAQBAUA8EAWBwUAsFANBgVA8EAQBQUAMFAYBQVAgFAPBQUA4EATBwTAMFAXBgVA8EAOBgTA8EATBwUAcFAQBwVA4EAQBwTAIFAUBQUAQFAPBwTAwEATBwTAQFAWBwUAQFAPBQUAAFAQBgVAIFAAAQV External thermal production b8:27:eb:8c:67:48 1      1         743
+        #+END_PLAIN
+      - uvLuminosity
+        #+BEGIN_PLAIN
+    > SELECT * FROM event_uvLuminosity LIMIT 10
+    name: event_uvLuminosity
+    time                UVA UVB UVCOMP1 UVCOMP2 admin board          location mcu     mode       node              sector subsector
+    ----                --- --- ------- ------- ----- -----          -------- ---     ----       ----              ------ ---------
+    1683309473552892224 32  39  9       0       p     externalBoard2 External esensor production b8:27:eb:8c:67:48 1      1
+    1683309473771892224 21  25  5       0       p     sensorBoard    External sensor  production b8:27:eb:8c:67:48 1      1
+    1683309474543892224 32  39  9       0       p     externalBoard2 External esensor production b8:27:eb:8c:67:48 1      1
+    1683309474752892224 20  25  5       0       p     sensorBoard    External sensor  production b8:27:eb:8c:67:48 1      1
+    1683309475535892224 32  39  9       0       p     externalBoard2 External esensor production b8:27:eb:8c:67:48 1      1
+    1683309475733892224 21  25  5       0       p     sensorBoard    External sensor  production b8:27:eb:8c:67:48 1      1
+    1683309476527892224 32  39  10      0       p     externalBoard2 External esensor production b8:27:eb:8c:67:48 1      1
+    1683309476715892224 21  25  5       0       p     sensorBoard    External sensor  production b8:27:eb:8c:67:48 1      1
+    1683309477518892224 32  39  10      0       p     externalBoard2 External esensor production b8:27:eb:8c:67:48 1      1
+    1683309477697892224 20  25  4       0       p     sensorBoard    External sensor  production b8:27:eb:8c:67:48 1      1
+        #+END_PLAIN
+      - uwb
+        #+BEGIN_PLAIN
+> SELECT * FROM event_uwb LIMIT 10
+name: event_uwb
+time                admin board       location mode       node              sector subsector synchronize
+----                ----- -----       -------- ----       ----              ------ --------- -----------
+1683318692060120064 p     sensorBoard External production b8:27:eb:8c:67:48 1      1         OK
+        #+END_PLAIN
+    - meta
+      - acceleremoter
+        #+BEGIN_PLAIN
+> SELECT * FROM meta_accelerometer LIMIT 5
+name: meta_accelerometer
+time                admin board          location mcu     mode       name          node              period revision sector status subsector
+----                ----- -----          -------- ---     ----       ----          ----              ------ -------- ------ ------ ---------
+1683318691204120064 p     externalBoard2 External esensor production accelerometer b8:27:eb:8c:67:48 1000   2.03.01  1      NOK    1
+1683318692193120064 p     sensorBoard    External sensor  production accelerometer b8:27:eb:8c:67:48 1000   2.03.01  1      NOK    1
+1683318692810120064 p     externalBoard2 External esensor production               b8:27:eb:8c:67:48                 1      OK     1
+1683318693670120064 p     sensorBoard    External sensor  production               b8:27:eb:8c:67:48                 1      OK     1
+        #+END_PLAIN
+      - airInfo
+        #+BEGIN_PLAIN
+> SELECT * FROM meta_airInfo LIMIT 5
+name: meta_airInfo
+time                admin board          location mcu     mode       name    node              period revision sector status subsector
+----                ----- -----          -------- ---     ----       ----    ----              ------ -------- ------ ------ ---------
+1683318691199120064 p     externalBoard2 External esensor production airInfo b8:27:eb:8c:67:48 1000   2.03.00  1      NOK    1
+1683318691952120064 p     externalBoard2 External esensor production         b8:27:eb:8c:67:48                 1      OK     1
+1683318692186120064 p     sensorBoard    External sensor  production airInfo b8:27:eb:8c:67:48 1000   2.03.00  1      NOK    1
+1683318692840120064 p     sensorBoard    External sensor  production         b8:27:eb:8c:67:48                 1      OK     1
+        #+END_PLAIN
+      - airQuality
+        #+BEGIN_PLAIN
+> SELECT * FROM meta_airQuality LIMIT 10
+name: meta_airQuality
+time                admin board          location mcu     mode       name       node              period revision sector status subsector
+----                ----- -----          -------- ---     ----       ----       ----              ------ -------- ------ ------ ---------
+1683318691200120064 p     externalBoard2 External esensor production airQuality b8:27:eb:8c:67:48 1000   2.04.00  1      NOK    1
+1683318692188120064 p     sensorBoard    External sensor  production airQuality b8:27:eb:8c:67:48 1000   2.03.00  1      INIT   1
+1683318692926120064 p     externalBoard2 External esensor production            b8:27:eb:8c:67:48                 1      INIT   1
+1683318704842120064 p     sensorBoard    External sensor  production            b8:27:eb:8c:67:48                 1      INIT   1
+1683318980604120064 p     sensorBoard    External sensor  production            b8:27:eb:8c:67:48                 1      OK     1
+1683319006473120064 p     externalBoard2 External esensor production            b8:27:eb:8c:67:48                 1      OK     1
+        #+END_PLAIN
+      - asx340
+        #+BEGIN_PLAIN
+> SELECT * FROM meta_asx340 LIMIT 10
+name: meta_asx340
+time                admin board       capture_rate coasting_time columns decimation_factor detection_rate enable_decimation height_person location mcu   mode       name   node              occupancy_estimation period  revision rows sector status subsector width_person
+----                ----- -----       ------------ ------------- ------- ----------------- -------------- ----------------- ------------- -------- ---   ----       ----   ----              -------------------- ------  -------- ---- ------ ------ --------- ------------
+1683318691060120064 p     sensorBoard 30           30            40      4                 30             1                 80            External bf707 production asx340 b8:27:eb:8c:67:48 0                    1000000 1.02.02  30   1      OK     1         40
+        #+END_PLAIN
+      - audio
+        #+BEGIN_PLAIN
+> SELECT * FROM meta_audio LIMIT 10
+name: meta_audio
+time                admin board       child  enable location mode       name  node              revision sector subsector
+----                ----- -----       -----  ------ -------- ----       ----  ----              -------- ------ ---------
+1683318692166120064 p     sensorBoard stream 1      External production audio b8:27:eb:8c:67:48 3.00.00  1      1
+        #+END_PLAIN
+      - bf707
+        #+BEGIN_PLAIN
+> SELECT * FROM meta_bf707 LIMIT 10
+name: meta_bf707
+time                admin board       child  enable location mode       name  node              revision sector subsector
+----                ----- -----       -----  ------ -------- ----       ----  ----              -------- ------ ---------
+1683318691060120064 p     sensorBoard asx340 1      External production bf707 b8:27:eb:8c:67:48 1.02.02  1      1
+        #+END_PLAIN
+      - cc1310
+        #+BEGIN_PLAIN
+> SELECT * FROM meta_cc1310 LIMIT 10
+name: meta_cc1310
+time                admin board       enable location mode       name   node              revision sector subsector
+----                ----- -----       ------ -------- ----       ----   ----              -------- ------ ---------
+1683318691060120064 p     sensorBoard 1      External production cc1310 b8:27:eb:8c:67:48 1.01.00  1      1
+        #+END_PLAIN
+      - cc2650
+        #+BEGIN_PLAIN
+> SELECT * FROM meta_cc2650 LIMIT 10
+name: meta_cc2650
+time                admin board       child  enable location mode       name   node              revision sector subsector
+----                ----- -----       -----  ------ -------- ----       ----   ----              -------- ------ ---------
+1683318691167120064 p     sensorBoard rfGiga 1      External production cc2650 b8:27:eb:8c:67:48 1.01.00  1      1
+        #+END_PLAIN
+      - consumption
+        #+BEGIN_PLAIN
+> SELECT * FROM meta_consumption LIMIT 10
+name: meta_consumption
+time                admin board    location mcu       mode       node              period revision sector status subsector
+----                ----- -----    -------- ---       ----       ----              ------ -------- ------ ------ ---------
+1683318690630868992 p     rpiBoard External inaExt1   production b8:27:eb:8c:67:48 1000   1.0.0    1      OK     1
+1683318690631166976 p     rpiBoard External inaPoe    production b8:27:eb:8c:67:48 10000  1.0.0    1      OK     1
+1683318690631275008 p     rpiBoard External inaRpi    production b8:27:eb:8c:67:48 10000  1.0.0    1      OK     1
+1683318690631360000 p     rpiBoard External inaSensor production b8:27:eb:8c:67:48 10000  1.0.0    1      OK     1
+1683318690631442944 p     rpiBoard External inaExt2   production b8:27:eb:8c:67:48 10000  1.0.0    1      OK     1
+1683318690633387008 p     rpiBoard External inaExt1   production b8:27:eb:8c:67:48 1000   1.0.0    1      OK     1
+1683318690633591040 p     rpiBoard External inaPoe    production b8:27:eb:8c:67:48 1000   1.0.0    1      OK     1
+1683318690633684992 p     rpiBoard External inaRpi    production b8:27:eb:8c:67:48 10000  1.0.0    1      OK     1
+1683318690633766912 p     rpiBoard External inaSensor production b8:27:eb:8c:67:48 10000  1.0.0    1      OK     1
+1683318690633862912 p     rpiBoard External inaExt2   production b8:27:eb:8c:67:48 10000  1.0.0    1      OK     1
+        #+END_PLAIN
+      - esensor
+        #+BEGIN_PLAIN
+> SELECT * FROM meta_esensor LIMIT 10
+name: meta_esensor
+time                admin board          child                                                                                         enable location mode       name    node              revision sector subsector
+----                ----- -----          -----                                                                                         ------ -------- ----       ----    ----              -------- ------ ---------
+1683318691167120064 p     externalBoard2 airInfo;airQuality;rgbwLuminosity;uvLuminosity;telemeter;accelerometer;gyroscope;magnetometer 1      External production esensor b8:27:eb:8c:67:48 3.00.00  1      1
+        #+END_PLAIN
+      - gyroscope
+        #+BEGIN_PLAIN
+> SELECT * FROM meta_gyroscope LIMIT 10
+name: meta_gyroscope
+time                admin board          location mcu     mode       name      node              period revision sector status subsector
+----                ----- -----          -------- ---     ----       ----      ----              ------ -------- ------ ------ ---------
+1683318691206120064 p     externalBoard2 External esensor production gyroscope b8:27:eb:8c:67:48 1000   2.03.01  1      NOK    1
+1683318692195120064 p     sensorBoard    External sensor  production gyroscope b8:27:eb:8c:67:48 1000   2.03.01  1      NOK    1
+1683318692810120064 p     externalBoard2 External esensor production           b8:27:eb:8c:67:48                 1      OK     1
+1683318693670120064 p     sensorBoard    External sensor  production           b8:27:eb:8c:67:48                 1      OK     1
+        #+END_PLAIN
+      - leds
+        #+BEGIN_PLAIN
+> SELECT * FROM meta_leds LIMIT 10
+name: meta_leds
+time                B G R Y admin board    duty location mcu      mode       node              period               revision sector status subsector
+----                - - - - ----- -----    ---- -------- ---      ----       ----              ------               -------- ------ ------ ---------
+1683318690618007040 0 0 0 0 a     rpiBoard 0    External TLC59108 production b8:27:eb:8c:67:48 0.041666666666666664 1.0.0    1      OK     1
+        #+END_PLAIN
+      - uwb
+        #+BEGIN_PLAIN
+> SELECT * FROM meta_uwb LIMIT 10
+name: meta_uwb
+time                admin board       child          enable location mode       name node              revision sector subsector
+----                ----- -----       -----          ------ -------- ----       ---- ----              -------- ------ ---------
+1683318692166120064 p     sensorBoard uwbCfg;uwbData 1      External production uwb  b8:27:eb:8c:67:48 3.00.00  1      1
+        #+END_PLAIN
+      - uwbCfg
+        #+BEGIN_PLAIN
+> SELECT * FROM meta_uwbCfg LIMIT 10
+name: meta_uwbCfg
+time                address admin antdelayrx antdelaytx board       channel datarate location mcu mode   mode_1     name   node              nssfd pac panid power prf prflength revision sector status subsector trim
+----                ------- ----- ---------- ---------- -----       ------- -------- -------- --- ----   ------     ----   ----              ----- --- ----- ----- --- --------- -------- ------ ------ --------- ----
+1683318692181120064 2       p     0          0          sensorBoard 5       6800     External uwb normal production uwbCfg b8:27:eb:8c:67:48 0     8   1     255   64  128       2.04.00  1      INIT   1         15
+1683318692324120064         p                           sensorBoard                  External uwb        production        b8:27:eb:8c:67:48                                              1      OK     1
+        #+END_PLAIN
+      - uwbData
+        #+BEGIN_PLAIN
+> SELECT * FROM meta_uwbData LIMIT 10
+name: meta_uwbData
+time                admin board       location mcu mode       name    node              revision sector status subsector
+----                ----- -----       -------- --- ----       ----    ----              -------- ------ ------ ---------
+1683318692183120064 p     sensorBoard External uwb production uwbData b8:27:eb:8c:67:48 2.03.00  1      NOK    1
+1683318692324120064 p     sensorBoard External uwb production         b8:27:eb:8c:67:48          1      OK     1
+        #+END_PLAIN
+      - thermalImgHd
+        #+BEGIN_PLAIN
+  > SELECT * FROM meta_thermalImgHd LIMIT 10
+  name: meta_thermalImgHd
+  time                admin board       leptonVersion location mcu     mode       node              sector status subsector
+  ----                ----- -----       ------------- -------- ---     ----       ----              ------ ------ ---------
+  1683309571571892224 p     sensorBoard 2             External thermal production b8:27:eb:8c:67:48 1      OK     1
+        #+END_PLAIN
+  - collectd
+    - Measurements
+      #+BEGIN_PLAIN
+> SHOW MEASUREMENTS
+name: measurements
+name
+----
+cpu_value
+df_value
+disk_io_time
+disk_read
+disk_value
+disk_weighted_io_time
+disk_write
+entropy_value
+interface_rx
+interface_tx
+irq_value
+load_longterm
+load_midterm
+load_shortterm
+memory_value
+processes_value
+swap_value
+users_value
+      #+END_PLAIN
+  - En consultant le dashboard, observe qu'on a l'air de produire 1Mo de données par minute
+    - Donc 1Go toutes les 16h40
+    - Dispose de ~100Go d'espace de stockage
+    - Peut donc tourner ~70 jours avant de run out of space
+    - Donc pas le facteur le plus limitant du système
+  - Plusieurs measurements ne sont que peu utilisés en mode autonome
+    - Les measurements correspondants aux events des mcu ayant des children (audio, bf707, cc2650, esensor, sensor, uwb)
+      - Dans ce cas, n'a qu'un event pour indiquer que le mcu s'est sync
+    - event_asx340 a l'air à déclenchement unique
+      - Deux events enregistrés au même timestamp (au lancement?), depuis rien
+      - J'ai rien dit, les timestamps sont différents
+      - Vu sa période d'après les infos stockées dans meta, i.e. 1000000, ça a du sens
+        - Donc toutes les 16min40 si je me trompe pas
+    - Les measurements meta_
+      - Indiquent seulement la mise en route et la configuration initiale des capteurs
+  - Ces measurements disparaissent donc après la 1ère réinitialisation de la BD
+  - Les différentes entrées permettent de retrouver de quel mcu dépend chaque capteur
+    - audio gère stream
+    - bf707 gère asx340
+    - cc2650 gère rfGiga
+    - esensor gère airInfo;airQuality;rgbwLuminosity;uvLuminosity;telemeter;accelerometer;gyroscope;magnetometer
+    - sensor gère airInfo;airQuality;rgbwLuminosity;uvLuminosity;telemeter;accelerometer;gyroscope;magnetometer
+    - thermal gère thermalImgHd;thermalImgLd;
+    - uwb gère uwbCfg;uwbData
+      - Qui n'ont pas d'avoir leurs propres events
+  - Plusieurs questions
+    - Qu'est-ce asx340 ?
+      - Un mcu sans enfant, qui ne se sync pas
+      - Quel est son rôle ?
+    - Qu'est-ce que cc1310 ?
+      - Un mcu sans enfant, qui ne se sync pas
+      - Ne voit cependant pas d'entrées correspondantes
+      - Quel est son rôle ?
+    - Qu'est-ce que uwb ?
+      - Un mcu avec des enfants ? uwbCfg et uwbData me semblent pas être des capteurs
+      - Pas réussi à observer le moindre event de ce côté
+    - Pourquoi doubler une partie des capteurs ?
+      - Les mcu esensor et sensor ont l'air de proposer le même ensemble de capteurs
+      - Sauf que sensor est sous une vitre de plexiglas, donc quid de la pertinence des données sur l'air, la luminosité ?
+      - Mickaël m'a répondu que désactiver ces capteurs lors du fonctionnement en mode autonome fait partie des choses à faire
 ** Semaine du <2024-01-29 Mon> au <2024-02-02 Fri>
 *** Planned
 **** DONE SmartSense: Rechercher outil pour refactorer le code du projet vis-à-vis des conventions Python
@@ -1988,6 +2628,19 @@ CLOSED: [2024-01-05 Fri 07:57]
     - Créer un pod : kubectl create -f pod.yaml
     - Lister les pods existants : kubectl get pods
     - Inspecter un pod : kubectl describe pod mysmallpod
+- Noeud SmartSense
+  - Lister l'espace disque disponible : df -h
+  - Récupérer la liste des services en route : systemctl --type=service --state=running
+  - Se connecter à la DB : influx -username <username> -password <password> -database <database>
+  - Suivre les logs de l'application : tail -f /var/log/syslog
+  - Récupérer la conf d'un fichier, sans les commentaires : grep '^[[:blank:]]*[^[:blank:]#;]' <file>
+  - Arrêter le noeud : sudo shutdown -h now / sudo halt
+- Influx
+  - Lister les bases de données : SHOW DATABASES
+  - Utiliser une base de donneés : USE <database>
+  - Lister les measurements : SHOW MEASUREMENTS
+  - Récupérer les entrées d'un measurement : SELECT * FROM <measurement> LIMIT <nb>
+  - Quitter le shell InfluxDB : exit
 ** Raccourcis utiles
 *** Fedora
 - Se déplacer entre bureaux virtuels
