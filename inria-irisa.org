@@ -98,7 +98,14 @@ CLOSED: [2024-02-07 Wed 16:53]
 - Notamment, exporte et reset la DB périodiquement pour éviter le mécanisme de compression des shards
   - Qui a l'air d'être trop couteux pour tourner sur le noeud
 - Améliore aussi la lisibilité du code
-**** IN-PROGRESS SmartSense: Explorer les données collectées par le noeud
+**** DONE SmartSense: Préparer la branche *refactor/main-app* pour intégration
+CLOSED: [2024-02-08 Thu 11:03]
+- MàJ la branche par rapport à *refactor/split-mqtt-interface*
+- Review les différents commits
+  - Notamment l'instanciation de l'instance *MqttInterface* pour publier les données me semble incorrecte à la réflexion
+    - Effectuée avant de set *mainApp.sectorBrokerPort*
+**** DONE SmartSense: Explorer les données collectées par le noeud
+CLOSED: [2024-02-08 Thu 15:15]
 - Maintenant que j'ai un noeud avec l'application en route dessus
 - Peut voir concrètement des samples de données collectées
 - Peut m'aider à créer mon jeu d'essai pour les tests unitaires
@@ -147,6 +154,51 @@ CLOSED: [2024-02-07 Wed 16:53]
         - En fonction de la config, instancier ou non les composants
       - Mocker ces différents composants ?
       - Décomposer *MainApp* en différents modules, chacun séparément facilement testable ?
+    - Config
+      - Ne constate pas de raison particulière à ces multiples instances
+      - Modification du code pour en utiliser qu'une
+    - Instanciation de *MainApp*
+      - [ ] Sortir du constructeur l'instanciation des modules problématiques, i.e. les *Manager*
+        - Et les mettre dans une méthode appelée immédiatement dans *main()*
+        - Permet d'instancier *MainApp* dans les tests en s'en passant
+        - Cette approche me semble par contre error prone
+          - Faut savoir que *MainApp* n'est pas fonctionnelle à proprement parler tant que cette seconde méthode n'a pas été appelée
+        - Après on retrouve déjà un peu ça avec *MainApp.go()*
+        - Ou même que c'est *main()* qui sait faire fonctionner le module
+      - [ ] Mise en place d'un *MessageRouter*
+        - En soit, *MainApp* n'interagit pas directement avec les *Managers*
+        - Se contente de lire des messages qu'ils émettent et de les transmettre/d'y répondre
+        - Pourrait séparer la logique instanciation/utilisation
+          - *MainApp* instancie les objets
+          - Ainsi qu'un module en charge des messages
+          - Configure ce dernier
+          - Et le laisse ensuite gérer les messages
+        - Reste à voir comment fournir les *Managers* et *Queues* respectives à ce composant sans trop le coder en dur
+          - Après, c'est un trade-off qualité vs. complexité
+      - [ ] Suppression du routing par *MainApp*
+        - Une approche /Reactive Programming/ me paraitrait plus adaptée en fait
+          - Chaque module s'abonne au flux de messages et traite ceux qui le concerne
+        - Plus vraiment de routing à ce niveau là
+        - Permet de découpler les différents modules de *MainApp*
+          - Chorégraphie plutôt qu'orchestration
+        - Un peu curieux par contre sur les perfs d'un flux unique
+          - Et de la compatibilité avec une appli multi-process
+        - Et comment faire évoluer l'appli, i.e. ajouter des couches de traitement
+          - E.g. on parle de traiter les données collectées par un capteur
+          - Et de ne transmettre/stocker que le résultat de ce traitement
+            - Et non pas la donnée d'origine
+          - Comment achieve cela ?
+            - La couche publication qui filtre la donnée brute ?
+            - Le capteur qui marque non-publiable la donnée brute ?
+          - Dans tous les cas, me retrouve avec un couplage implicite
+            - Un des deux modules sait qu'il existe un module de traitement
+            - Même si on peut considérer que le couplage est faible
+            - Puisque ne pas avoir le module de traitement fait juste que la donnée brute est ignorée/inexploitée
+      - [ ] Mise en place de *Factories*
+        - Puisque c'est l'instanciation qui pose problème
+        - Serait p-e intéressant de voir si on peut mettre en place des *Factories*
+        - Et les injecter à *MainApp*
+        - De façon à pouvoir les mocker dans les tests
 - SmartSense: Prendre en main le noeud SmartSense
   - Plusieurs services s'occupent de faire fonctionner l'application
     #+BEGIN_PLAIN
@@ -679,6 +731,23 @@ time                B G R Y admin board    duty location mcu      mode       nod
 ----                - - - - ----- -----    ---- -------- ---      ----       ----              ------               -------- ------ ------ ---------
 1683318690618007040 0 0 0 0 a     rpiBoard 0    External TLC59108 production b8:27:eb:8c:67:48 0.041666666666666664 1.0.0    1      OK     1
         #+END_PLAIN
+      - sensor
+        #+BEGIN_PLAIN
+> SELECT * FROM meta_sensor LIMIT 10
+name: meta_sensor
+time                admin board       child                                                                                         enable location mode       name   node              revision sector subsector
+----                ----- -----       -----                                                                                         ------ -------- ----       ----   ----              -------- ------ ---------
+1683350298380319936 p     sensorBoard airInfo;airQuality;rgbwLuminosity;uvLuminosity;telemeter;accelerometer;gyroscope;magnetometer 1      External production sensor b8:27:eb:8c:67:48 3.00.00  1      1
+        #+END_PLAIN
+      - stream
+        #+BEGIN_PLAIN
+> SELECT * FROM meta_stream LIMIT 10
+name: meta_stream
+time                admin board       divider fs    location mcu   microphone mode       name   node              revision sector status subsector
+----                ----- -----       ------- --    -------- ---   ---------- ----       ----   ----              -------- ------ ------ ---------
+1683350298389319936 p     sensorBoard 2       48000 External audio 0          production stream b8:27:eb:8c:67:48 2.03.00  1      NOK    1
+1683350301129319936 p     sensorBoard               External audio            production        b8:27:eb:8c:67:48          1      OK     1
+        #+END_PLAIN
       - uwb
         #+BEGIN_PLAIN
 > SELECT * FROM meta_uwb LIMIT 10
@@ -811,6 +880,12 @@ users_value
 - SmartSense: Intégrer la branche *refactor/split-mqtt-interface*
   - [X] Rebase sur *main*
   - [X] Ouvrir la MR
+- SmartSense: Préparer la branche *refactor/main-app* pour intégration
+  - Rebase sur *refactor/split-mqtt-interface*
+  - En a profité pour
+    - Drop les commits équivalents
+    - Rework le commit rendant optionnelles les instances de *MqttInterface* au passage
+      - Préfère continuer à les instancier dans *mainApp.startProcess()*
 ** Semaine du <2024-01-29 Mon> au <2024-02-02 Fri>
 *** Planned
 **** DONE SmartSense: Rechercher outil pour refactorer le code du projet vis-à-vis des conventions Python
