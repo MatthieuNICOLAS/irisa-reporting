@@ -67,6 +67,65 @@
 *** TODO Lire *OZCAR: The French Network of Critical Zone Observatories*
 - Ammar m'a recommandé cet article pour en apprendre plus sur les observatoires et leurs buts
 - Le consulter
+** Semaine du <2024-02-12 Mon> au <2024-02-16 Fri>
+*** Planned
+**** IN-PROGRESS SmartSense: Rework *MainApp* pour permettre la mise en place de tests
+- En essayant de mettre en place des tests, j'ai rencontré le problème suivant
+- *MainApp* instancie tous les composants de l'application, notamment ceux qui interagissent avec le hardware
+- Empêche donc l'exécution de tests, même si c'est pour une méthode n'interagissant pas avec cette partie de l'application
+  - Au hasard, *MainApp.handleProvisioningMsg()*
+- Plusieurs pistes pour corriger ce problème
+  - Mise en place d'injections de dépendances
+    - Un framework à utiliser ?
+  - Décomposition de *MainApp* en modules
+    - Mais comment ?
+  - Combinaison des deux
+**** IN-PROGRESS SmartSense: Ajouter des tests pour *MainApp.handleProvisioningMsg()*
+- Vérifier le bon fonctionnement de cette méthode
+- Me paraît un bon point d'entrée pour mettre en place des tests pour *MainApp*
+**** IN-PROGRESS SmartSense: Intégrer la branche *refactor/split-mqtt-interface*
+- Maintenant que la branche *feat/autonomous-node-and-add-tools* a été intégrée
+- Peut commencer à intégrer les modifications dans mon backlog
+- MàJ la branche *refactor/split-mqtt-interface* par rapport à *main*
+- Faire la MR
+*** Done
+- SmartSense: Rework *MainApp* pour permettre la mise en place de tests
+  - Plusieurs tentatives de décomposition de *MainApp* en modules
+  - *MessageManager*
+    - À partir des queues de message des différents process
+      - In et Out
+    - Route les messages
+      - Récupère de *MainApp* les méthodes suivantes
+        - *route_incoming_message()*
+        - *read_msg()*, l'équivalent du main
+        - *publish_msg()*
+    - Difficultés
+      - Quid de *handle_cmd_msg()* ?
+        - Pour certaines commandes, on délègue au module correspondant, i.e. on forward le message au bon module
+        - Mais pour d'autres, on effectue directement des actions, e.g. la commande "restart"
+        - Cela nécessite d'interagir (appels de fonctions) directement avec le module concerné
+        - Comment gérer cela ?
+      - Quid du provisioning ?
+        - Est-ce qu'on déplace la logique du provisioning dans ce module ?
+        - D'un côté, me paraît pas trop déconnant vu qu'on utilise le locationPath pour router les messages notamment sortant
+        - Mais de l'autre, que ça soit le ce module qui soit à l'initiative du message de provisioning et qui intègre une logique d'attente me paraît étrange
+  - *ProcessManager*
+  - Idées
+    - Ajout d'un module *NodeManager*
+      - Pour le moment, le comportement du noeud et de *Main* sont confondus
+      - D'où le fait que le *MessageManager* doive effectuer des actions lorsqu'il s'aperçoit qu'un message, e.g. une commande, lui est destiné
+      - Et qu'il communique à la fois par le biais de messages et d'appels de fonction avec ces objets
+      - Ajouter un module dédié permettrait de découpler cette logique
+      - *NodeManager* pourrait être en charge de
+        - Se provisionner
+        - Exécuter les commandes concernant le noeud, ou une board mais nécessitant un niveau d'indirection supplémentaire
+        - La synchronisation des modules
+      - Permettrait de découpler instanciation des différents modules et fonctionnement du noeud itself
+    - Self-provisioning de chacun des modules
+      - Pourquoi seul le noeud sait qu'il doit se self-provision ?
+      - Et qu'on se retrouve à devoir gérer le provisioning des modules Ina et Tlc au niveau du routing des messages ?
+      - Pourquoi ne pas indiquer aux modules concernés qu'ils doivent se self-provision ?
+      - Directement passer cette information
 ** Semaine du <2024-02-05 Mon> au <2024-02-09 Fri>
 *** Planned
 **** DONE SmartSense: Ajouter des tests pour *DataToLocalInfluxDB.parseMqtt()*
