@@ -69,6 +69,32 @@
 - Le consulter
 ** Semaine du <2024-02-12 Mon> au <2024-02-16 Fri>
 *** Planned
+**** DONE SmartSense: Self provision *InaManager* et *TlcManager*
+CLOSED: [2024-02-13 Tue 17:00]
+- À l'heure actuelle, on a un comportement étrange
+- Le noeud sait, qu'en fonction de la configuration, il doit se self provision ou non
+- Mais pas *InaManager* et *TlcManager*
+- C'est lorsque leurs messages remontent à son niveau que le noeud les interceptent et y répond à la place du serveur
+- Me paraît plus clair et simple d'avoir les différents modules qui se chargent eux-mêmes de leur self provisioning
+**** DONE SmartSense: Mettre en place des *Factory* pour les *Manager*
+CLOSED: [2024-02-14 Wed 16:59]
+- Les objets *Manager* sont des objets un minimum complexe
+- Potentiellement avec plusieurs configurations, en fonction du comportement voulu
+  - Je pense à toi *MqttInterface*
+- L'utilisation de *Factory* permettrait de préparer le terrain pour de l'injection de dépendances
+- D'expliciter les paramètres requis pour chaque *Manager*
+  - Au lieu de les avoir éparpillés dans le constructeur et dans la méthode executée lors du lancement du process
+- Et permettrait aussi de déléguer l'instanciation des *Queue*
+**** DONE SmartSense: Ajouter des tests pour *MainApp.handleProvisioningMsg()*
+CLOSED: [2024-02-14 Wed 16:59]
+- Vérifier le bon fonctionnement de cette méthode
+- Me paraît un bon point d'entrée pour mettre en place des tests pour *MainApp*
+**** IN-PROGRESS SmartSense: Ajouter *NodeManager*
+- Idée est d'avoir un module qui se charge
+  - Du provisioning
+  - Des commandes ciblant le noeud entier
+- Permet de démêler le code de *MainApp* du code du noeud
+  - Et le routing des messages de leur traitement
 **** IN-PROGRESS SmartSense: Rework *MainApp* pour permettre la mise en place de tests
 - En essayant de mettre en place des tests, j'ai rencontré le problème suivant
 - *MainApp* instancie tous les composants de l'application, notamment ceux qui interagissent avec le hardware
@@ -80,9 +106,6 @@
   - Décomposition de *MainApp* en modules
     - Mais comment ?
   - Combinaison des deux
-**** IN-PROGRESS SmartSense: Ajouter des tests pour *MainApp.handleProvisioningMsg()*
-- Vérifier le bon fonctionnement de cette méthode
-- Me paraît un bon point d'entrée pour mettre en place des tests pour *MainApp*
 **** IN-PROGRESS SmartSense: Intégrer la branche *refactor/split-mqtt-interface*
 - Maintenant que la branche *feat/autonomous-node-and-add-tools* a été intégrée
 - Peut commencer à intégrer les modifications dans mon backlog
@@ -126,6 +149,35 @@
       - Et qu'on se retrouve à devoir gérer le provisioning des modules Ina et Tlc au niveau du routing des messages ?
       - Pourquoi ne pas indiquer aux modules concernés qu'ils doivent se self-provision ?
       - Directement passer cette information
+- SmartSense: Ajouter *NodeManager*
+  - J'ai commencé à faire cela
+  - Mais je viens de me rendre compte d'un potentiel problème
+  - À l'heure actuelle, les commandes sont exécutées par le process principal
+  - L'ajout de *NodeManager* déplacerait leur exécution dans un nouveau process
+  - Donc pendant que la commande s'exécute, d'autres commandes peuvent être récupérées par le process principal, envoyées à un module et traitées
+  - Est-ce qu'on ne risque pas de rencontrer des problèmes de concurrence du coup ?
+    - Genre un /updateFirmwareCmd/ en concurrence d'un /set meta/
+  - Après, est-ce qu'on a pas déjà ces problèmes ?
+  - À vérifier
+- SmartSense: Ajouter des tests pour *MainApp.handleProvisioningMsg()*
+  - Maintenant que j'ai mis en place des *Factory*, peut voir pour mock leur comportement dans les tests
+  - Peut les mocker dans le cadre d'un test à l'aide de *unittest.mock.patch()*
+  - *patch()* peut aussi mocker une classe carrément
+  - En mockant *MqttInterface* et *INA219Manager*, arrive à instancier *MainApp*
+  - Pas besoin des *Factory* du coup
+  - Quoique, rencontre l'erreur habituelle quand essaie d'intégrer les tests sur l'état pré-factory
+    - *patch()* n'a pas l'air d'avoir d'effet
+    - Le constructeur de *INA219Manager* est bel et bien appelé
+  - Peut reproduire le bug sur la branche avec factory en repassant sur un appel au constructeur plutôt qu'à la factory
+  - Why?
+  - Tout simplement parce que j'utilise mal *patch()*
+    - https://docs.python.org/3/library/unittest.mock.html#where-to-patch
+  - Doit pas patcher d'où vient l'objet, mais où est son utilisation
+    - Donc patcher *MainApp.INA219Manager* et non pas *INA219Manager.INA219Manager*
+    - Cela fonctionnait avec la factory car *INA219Manager.INA219Manager* correspondait bien au module où l'objet était utilisé
+  - Correction des patchs
+  - Ajout de tests en guise d'exemple
+    - Directement dans la branche *refactor/main-app*
 ** Semaine du <2024-02-05 Mon> au <2024-02-09 Fri>
 *** Planned
 **** DONE SmartSense: Ajouter des tests pour *DataToLocalInfluxDB.parseMqtt()*
