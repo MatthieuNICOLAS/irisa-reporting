@@ -67,6 +67,54 @@
 *** TODO Lire *OZCAR: The French Network of Critical Zone Observatories*
 - Ammar m'a recommandé cet article pour en apprendre plus sur les observatoires et leurs buts
 - Le consulter
+** Semaine du <2024-02-19 Mon> au <2024-02-23 Fri>
+*** Planned
+**** IN-PROGRESS SmartSense: Intégrer la branche *refactor/mqtt-interface-remove-inheritance*
+- Je voulais pas forcément intégrer cette modif
+- Mais une bonne partie des commits de *refactor/main-app* modifient des lignes concernées par ces changements
+- Je me retrouve avec des conflits fréquemment lorsque j'essaie de rebase en le retirant de l'historique
+- Me parait plus safe, et préférable, d'intégrer ces changements
+**** IN-PROGRESS SmartSense: Intégrer la branche *refactor/main-app*
+- MàJ par rapport à *refactor/mqtt-interface-remove-inheritance*
+- Faire la MR
+**** IN-PROGRESS SmartSense: Ajouter *NodeManager*
+- Idée est d'avoir un module qui se charge
+  - Du provisioning
+  - Des commandes ciblant le noeud entier
+- Permet de démêler le code de *MainApp* du code du noeud
+  - Et le routing des messages de leur traitement
+**** TODO SmartSense: Revert la version de l'application à avant le workaround pour InfluxDB
+- Je n'ai pas constaté le problème de crash de InfluxDB avec la version fournie
+- Peut supposer qu'il est effectivement contourné par le workaround implémenté
+- Mais ce workaround n'est pas satisfaisant
+  - Données difficiles à importer par la suite vu qu'éclatées en de nombreux fichiers
+- Serait intéressant de voir si une autre solution peut être mise en place
+- Revert à la version pré-workaround de l'application pour observer et documenter le problème
+**** TODO SmartSense: Intégrer la branche *refactor/naming-conventions*
+- Préparer la MR, en attendant l'intégration de *refactor/main-app*
+**** TODO SmartSense: Traiter les problèmes relevés lors de l'uniformisation du code
+- J'ai noté plusieurs points problématiques au cours de mon passage sur l'ensemble des modules
+  - Le module *sensor_board* est inutilisé
+    - Code obsolète à supprimer ?
+  - La librairie *telnetlib* est dépréciée
+    - Passer à https://pypi.org/project/telnetlib3/ ?
+  - Une conditionnelle étrange est effectuée dans le module *tlc59108_manager*
+    - https://gitlab.inria.fr/smartsense/3douest/node-app/smartsense-node-app/-/blob/3feb5c56dc5e74dcea9eb2f2ba98bec40029acdf/TLC59108Manager.py#L370
+    - Revient à `if data[0]`
+    - `and` est-il l'opérateur désiré ?
+    - Simplifier/corriger
+  - Les appels à *OpenOCDManager.update()* dans *test_ocd* manquent d'un paramètre
+    - J'ai l'impression que c'est le paramètre *board*
+    - Ajouter les valeurs correctes ?
+  - *USBBoardManager.read_data()* et *parse_to_mqtt()* sont particulièrement sujets aux retours de Pylint
+    - Trop d'instructions
+    - Trop de branchements
+    - Trop de blocs imbriqués
+    - Refactorer pour améliorer la lisibilité du code ?
+    - Voir si on peut aussi factoriser du code à l'aide de fonctions
+  - Corriger ces problèmes
+    - Ou si pas de solution claire et rapide, créer une issue correspondante
+*** Done
 ** Semaine du <2024-02-12 Mon> au <2024-02-16 Fri>
 *** Planned
 **** DONE SmartSense: Self provision *InaManager* et *TlcManager*
@@ -89,13 +137,8 @@ CLOSED: [2024-02-14 Wed 16:59]
 CLOSED: [2024-02-14 Wed 16:59]
 - Vérifier le bon fonctionnement de cette méthode
 - Me paraît un bon point d'entrée pour mettre en place des tests pour *MainApp*
-**** IN-PROGRESS SmartSense: Ajouter *NodeManager*
-- Idée est d'avoir un module qui se charge
-  - Du provisioning
-  - Des commandes ciblant le noeud entier
-- Permet de démêler le code de *MainApp* du code du noeud
-  - Et le routing des messages de leur traitement
-**** IN-PROGRESS SmartSense: Rework *MainApp* pour permettre la mise en place de tests
+**** DONE SmartSense: Rework *MainApp* pour permettre la mise en place de tests
+CLOSED: [2024-02-15 Thu 14:08]
 - En essayant de mettre en place des tests, j'ai rencontré le problème suivant
 - *MainApp* instancie tous les composants de l'application, notamment ceux qui interagissent avec le hardware
 - Empêche donc l'exécution de tests, même si c'est pour une méthode n'interagissant pas avec cette partie de l'application
@@ -106,11 +149,33 @@ CLOSED: [2024-02-14 Wed 16:59]
   - Décomposition de *MainApp* en modules
     - Mais comment ?
   - Combinaison des deux
-**** IN-PROGRESS SmartSense: Intégrer la branche *refactor/split-mqtt-interface*
+**** DONE SmartSense: Intégrer la branche *refactor/split-mqtt-interface*
+CLOSED: [2024-02-15 Thu 14:08]
 - Maintenant que la branche *feat/autonomous-node-and-add-tools* a été intégrée
 - Peut commencer à intégrer les modifications dans mon backlog
 - MàJ la branche *refactor/split-mqtt-interface* par rapport à *main*
 - Faire la MR
+**** DONE SmartSense: Mettre en place les conventions de nommage
+CLOSED: [2024-02-16 Fri 16:44]
+- Le projet n'a pas adopté initialement les conventions de nommage de Python
+- Les avertissements de Pylint sur les morceaux de code complexes et conseils sur comment les retravailler se retrouvent donc noyés
+- Afin d'éviter cela, j'ai adopté les conventions Python pour les nouveaux modules que j'ai défini
+- On se retrouve donc avec un micmac de conventions dans le projet
+- Modifier la base existante pour adopter les conventions Python
+**** IN-PROGRESS SmartSense: Intégrer la branche *refactor/mqtt-interface-remove-inheritance*
+- Je voulais pas forcément intégrer cette modif
+- Mais une bonne partie des commits de *refactor/main-app* modifient des lignes concernées par ces changements
+- Je me retrouve avec des conflits fréquemment lorsque j'essaie de rebase en le retirant de l'historique
+- Me parait plus safe, et préférable, d'intégrer ces changements
+**** IN-PROGRESS SmartSense: Intégrer la branche *refactor/main-app*
+- MàJ par rapport à *refactor/mqtt-interface-remove-inheritance*
+- Faire la MR
+**** IN-PROGRESS SmartSense: Ajouter *NodeManager*
+- Idée est d'avoir un module qui se charge
+  - Du provisioning
+  - Des commandes ciblant le noeud entier
+- Permet de démêler le code de *MainApp* du code du noeud
+  - Et le routing des messages de leur traitement
 *** Done
 - SmartSense: Rework *MainApp* pour permettre la mise en place de tests
   - Plusieurs tentatives de décomposition de *MainApp* en modules
@@ -178,6 +243,19 @@ CLOSED: [2024-02-14 Wed 16:59]
   - Correction des patchs
   - Ajout de tests en guise d'exemple
     - Directement dans la branche *refactor/main-app*
+- SmartSense: Intégrer la branche *refactor/split-mqtt-interface*
+  - Ajout des modifs demandées par Mickaël
+  - Intégration de la branche
+- SmartSense: Intégrer la branche *refactor/mqtt-interface-remove-inheritance*
+  - Rebase sur la branche *main*
+  - Intégration du commit qui ajoute *QualityOfService*
+  - Création de la MR : https://gitlab.inria.fr/smartsense/3douest/node-app/smartsense-node-app/-/merge_requests/4
+- SmartSense: Intégrer la branche *refactor/main-app*
+  - Rebase sur la branche *refactor/mqtt-interface-remove-inheritance*
+  - Modification au passage du type annoté pour *sector* et *sub_sector*
+  - Préparation du draft de la MR
+    - En attendant que *refactor/mqtt-interface-remove-inheritance* soit validée et intégrée
+  - MR : https://gitlab.inria.fr/smartsense/3douest/node-app/smartsense-node-app/-/merge_requests/5
 ** Semaine du <2024-02-05 Mon> au <2024-02-09 Fri>
 *** Planned
 **** DONE SmartSense: Ajouter des tests pour *DataToLocalInfluxDB.parseMqtt()*
