@@ -17,6 +17,9 @@
 *** TODO Déployer WordPress sur un cluster de Raspberry
 - Permettrait de valider le résultat obtenu dans les étapes précédentes
 - Et de rencontrer les problèmes éventuels liés aux architectures processeurs
+*** TODO SmartSense: Corriger le bug de récupération de la valeur `sector` dans une trame MQTT
+- Un test unitaire a mis en lumière qu'en absence d'un champ `sector` dans une trame MQTT, c'est la valeur du champ `sub_sector` qui est utilisé instead
+- Corriger cela
 *** TODO SmartSense: Étudier la mise en place d'un schéma de fichier de config
 - L'initialisation des noeuds reposent sur un fichier config.ini
 - Pour le moment, je le retro-ingénérie pour identifier les différentes options possibles
@@ -69,6 +72,14 @@
 - Le consulter
 ** Semaine du <2024-02-19 Mon> au <2024-02-23 Fri>
 *** Planned
+**** DONE SmartSense: Revert la version de l'application à avant le workaround pour InfluxDB
+CLOSED: [2024-02-19 Mon 09:18]
+- Je n'ai pas constaté le problème de crash de InfluxDB avec la version fournie
+- Peut supposer qu'il est effectivement contourné par le workaround implémenté
+- Mais ce workaround n'est pas satisfaisant
+  - Données difficiles à importer par la suite vu qu'éclatées en de nombreux fichiers
+- Serait intéressant de voir si une autre solution peut être mise en place
+- Revert à la version pré-workaround de l'application pour observer et documenter le problème
 **** IN-PROGRESS SmartSense: Intégrer la branche *refactor/mqtt-interface-remove-inheritance*
 - Je voulais pas forcément intégrer cette modif
 - Mais une bonne partie des commits de *refactor/main-app* modifient des lignes concernées par ces changements
@@ -83,16 +94,9 @@
   - Des commandes ciblant le noeud entier
 - Permet de démêler le code de *MainApp* du code du noeud
   - Et le routing des messages de leur traitement
-**** TODO SmartSense: Revert la version de l'application à avant le workaround pour InfluxDB
-- Je n'ai pas constaté le problème de crash de InfluxDB avec la version fournie
-- Peut supposer qu'il est effectivement contourné par le workaround implémenté
-- Mais ce workaround n'est pas satisfaisant
-  - Données difficiles à importer par la suite vu qu'éclatées en de nombreux fichiers
-- Serait intéressant de voir si une autre solution peut être mise en place
-- Revert à la version pré-workaround de l'application pour observer et documenter le problème
-**** TODO SmartSense: Intégrer la branche *refactor/naming-conventions*
+**** IN-PROGRESS SmartSense: Intégrer la branche *refactor/naming-conventions*
 - Préparer la MR, en attendant l'intégration de *refactor/main-app*
-**** TODO SmartSense: Traiter les problèmes relevés lors de l'uniformisation du code
+**** IN-PROGRESS SmartSense: Traiter les problèmes relevés lors de l'uniformisation du code
 - J'ai noté plusieurs points problématiques au cours de mon passage sur l'ensemble des modules
   - Le module *sensor_board* est inutilisé
     - Code obsolète à supprimer ?
@@ -114,7 +118,106 @@
     - Voir si on peut aussi factoriser du code à l'aide de fonctions
   - Corriger ces problèmes
     - Ou si pas de solution claire et rapide, créer une issue correspondante
+**** IN-PROGRESS SmartSense: Monitorer l'instance locale d'InfluxDB
+- Maintenant que j'ai revert le workaround
+- Le problème rencontré autrefois devrait se reproduire
+- Monitorer l'exécution de l'application pour détecter et identifier le problème rencontré
 *** Done
+- SmartSense: Revert la version de l'application à avant le workaround pour InfluxDB
+  - Création d'un backup de l'application dans /home/pi/backupApp
+  - Stop de l'application
+    - systemctl stop mainApp
+  - Suppression des DBs
+    - DROP DATABASE SensorData
+  - Petit doute sur le comportement de l'application à propos de collectd
+  - Qu'est-ce qui se passe si la BD n'existe pas au lancement de l'application
+  - Dans le doute
+    - DROP DATABASE collectd
+  - À la réflexion, rien à voir avec l'application dans cette version
+  - J'ai en effet pu constater que les writes échouaient
+  - Recréation de la DB
+    - CREATE DATABASE collectd
+  - Récupération du code source à l'état désiré et transfert
+    - git checkout 29a50461
+    - scp DataToLocalInfluxDB.py  pi@192.168.1.2:/home/pi
+    - sudo mv DataToLocalInfluxDB.py /home/root/App (sur rpi)
+  - Redémarrage de l'application
+    - systemctl start mainApp
+  - Plus qu'à attendre l'erreur
+- SmartSense: État du noeud au <2024-02-19 Mon>
+  - Avec mes jours de télétravail, je me retrouve avec le noeud qui a tourné durant ~1 semaine
+  - Semblerait qu'aucun bug particulier ne se soit produit pendant ce temps
+    - [[file:img/2024-02-19-smartsense-node-uptime-1-week.png]]
+  - A bien quelques erreurs loggées, mais concernent le parsing de trame MQTT
+    - [[file:img/2024-02-19-smartsense-node-errors-parsing-data.png]]
+  - Le workaround a l'air d'être efficace
+- SmartSense: Intégrer la branche *refactor/naming-conventions
+  - MR préparée
+- SmartSense: Traiter les problèmes relevés lors de l'uniformisation du code
+  - Module `sensor_board` inutilisé
+    - J'ai posé la question à Mickaël, à voir s'il sait quelque chose à ce sujet
+  - `USBBoardManager.read_data()` et `parse_to_mqtt()`
+    - Décomposition de `read_data()` en plusieurs méthodes
+      - `handle_incoming_msgs()`, qui correspond au traitement des messages en entrée du module
+        - Commande stop/start/timestamp et message MQTT
+        - Quelle différence de nature entre les deux types de message?
+- SmartSense: Monitorer l'instance locale d'InfluxDB
+  - Suis les logs des services de l'application et d'InfluxDB
+    - journalctl -f -u mainApp/influxdb
+  - Et les performances systèmes (htop)
+  - A vu un pic de consommation mémoire
+    - Passé de 300Mo de RAM à 850Mo
+      - Sature presque les 923Mo du noeud
+    - Swap quant à lui saturé (100Mo)
+  - La consommation mémoire est retombée ensuite
+    - 350Mo
+  - Mais pas le swap
+  - Pas de logs particuliers côté mainApp à ce moment
+  - Par contre, niveau influxdb, on a :
+    #+BEGIN_PLAIN
+mai 13 21:24:54 raspberrypi influxd[435]: ts=2023-05-13T19:24:54.806599Z lvl=info msg="Cache snapshot (start)" log_id=0hdK~cBG000 engine=tsm1 trace_id=0hme0UaW000 op_name=tsm1_cache_snapshot op_event=start
+mai 13 21:24:56 raspberrypi influxd[435]: ts=2023-05-13T19:24:56.780813Z lvl=info msg="Snapshot for path written" log_id=0hdK~cBG000 engine=tsm1 trace_id=0hme0UaW000 op_name=tsm1_cache_snapshot path=/data/influxdb/data/SensorData/autogen/706 duration=1974.300ms
+mai 13 21:24:56 raspberrypi influxd[435]: ts=2023-05-13T19:24:56.781155Z lvl=info msg="Cache snapshot (end)" log_id=0hdK~cBG000 engine=tsm1 trace_id=0hme0UaW000 op_name=tsm1_cache_snapshot op_event=end op_elapsed=1974.582ms
+mai 13 21:24:56 raspberrypi influxd[435]: ts=2023-05-13T19:24:56.807596Z lvl=info msg="TSM compaction (start)" log_id=0hdK~cBG000 engine=tsm1 tsm1_level=1 tsm1_strategy=level trace_id=0hme0bPl000 op_name=tsm1_compact_group op_event=start
+mai 13 21:24:56 raspberrypi influxd[435]: ts=2023-05-13T19:24:56.807735Z lvl=info msg="Beginning compaction" log_id=0hdK~cBG000 engine=tsm1 tsm1_level=1 tsm1_strategy=level trace_id=0hme0bPl000 op_name=tsm1_compact_group tsm1_files_n=8
+mai 13 21:24:56 raspberrypi influxd[435]: ts=2023-05-13T19:24:56.807794Z lvl=info msg="Compacting file" log_id=0hdK~cBG000 engine=tsm1 tsm1_level=1 tsm1_strategy=level trace_id=0hme0bPl000 op_name=tsm1_compact_group tsm1_index=0 tsm1_file=/data/influxdb/data/SensorData/autogen/706/000000009-000000001.tsm
+mai 13 21:24:56 raspberrypi influxd[435]: ts=2023-05-13T19:24:56.807853Z lvl=info msg="Compacting file" log_id=0hdK~cBG000 engine=tsm1 tsm1_level=1 tsm1_strategy=level trace_id=0hme0bPl000 op_name=tsm1_compact_group tsm1_index=1 tsm1_file=/data/influxdb/data/SensorData/autogen/706/000000010-000000001.tsm
+mai 13 21:24:56 raspberrypi influxd[435]: ts=2023-05-13T19:24:56.807914Z lvl=info msg="Compacting file" log_id=0hdK~cBG000 engine=tsm1 tsm1_level=1 tsm1_strategy=level trace_id=0hme0bPl000 op_name=tsm1_compact_group tsm1_index=2 tsm1_file=/data/influxdb/data/SensorData/autogen/706/000000011-000000001.tsm
+mai 13 21:24:56 raspberrypi influxd[435]: ts=2023-05-13T19:24:56.807970Z lvl=info msg="Compacting file" log_id=0hdK~cBG000 engine=tsm1 tsm1_level=1 tsm1_strategy=level trace_id=0hme0bPl000 op_name=tsm1_compact_group tsm1_index=3 tsm1_file=/data/influxdb/data/SensorData/autogen/706/000000012-000000001.tsm
+mai 13 21:24:56 raspberrypi influxd[435]: ts=2023-05-13T19:24:56.808027Z lvl=info msg="Compacting file" log_id=0hdK~cBG000 engine=tsm1 tsm1_level=1 tsm1_strategy=level trace_id=0hme0bPl000 op_name=tsm1_compact_group tsm1_index=4 tsm1_file=/data/influxdb/data/SensorData/autogen/706/000000013-000000001.tsm
+mai 13 21:24:56 raspberrypi influxd[435]: ts=2023-05-13T19:24:56.808082Z lvl=info msg="Compacting file" log_id=0hdK~cBG000 engine=tsm1 tsm1_level=1 tsm1_strategy=level trace_id=0hme0bPl000 op_name=tsm1_compact_group tsm1_index=5 tsm1_file=/data/influxdb/data/SensorData/autogen/706/000000014-000000001.tsm
+mai 13 21:24:56 raspberrypi influxd[435]: ts=2023-05-13T19:24:56.808140Z lvl=info msg="Compacting file" log_id=0hdK~cBG000 engine=tsm1 tsm1_level=1 tsm1_strategy=level trace_id=0hme0bPl000 op_name=tsm1_compact_group tsm1_index=6 tsm1_file=/data/influxdb/data/SensorData/autogen/706/000000015-000000001.tsm
+mai 13 21:24:56 raspberrypi influxd[435]: ts=2023-05-13T19:24:56.808196Z lvl=info msg="Compacting file" log_id=0hdK~cBG000 engine=tsm1 tsm1_level=1 tsm1_strategy=level trace_id=0hme0bPl000 op_name=tsm1_compact_group tsm1_index=7 tsm1_file=/data/influxdb/data/SensorData/autogen/706/000000016-000000001.tsm
+mai 13 21:24:58 raspberrypi influxd[435]: [httpd] ::1 - admin [13/May/2023:21:24:58 +0200] "POST /write?db=SensorData HTTP/1.1" 204 0 "-" "python-requests/2.21.0" d985282a-f1c3-11ed-8a7e-000000000000 33756
+mai 13 21:25:05 raspberrypi influxd[435]: [httpd] ::1 - admin [13/May/2023:21:25:03 +0200] "POST /write?db=SensorData HTTP/1.1" 204 0 "-" "python-requests/2.21.0" dc24e767-f1c3-11ed-8a7f-000000000000 2189585
+mai 13 21:25:07 raspberrypi influxd[435]: [httpd] ::1 - admin [13/May/2023:21:25:07 +0200] "POST /write?db=SensorData HTTP/1.1" 204 0 "-" "python-requests/2.21.0" de7238fe-f1c3-11ed-8a80-000000000000 58013
+mai 13 21:25:11 raspberrypi influxd[435]: [httpd] ::1 - admin [13/May/2023:21:25:11 +0200] "POST /write?db=SensorData HTTP/1.1" 204 0 "-" "python-requests/2.21.0" e0eb72bc-f1c3-11ed-8a81-000000000000 417895
+mai 13 21:25:16 raspberrypi influxd[435]: [httpd] ::1 - admin [13/May/2023:21:25:16 +0200] "POST /write?db=SensorData HTTP/1.1" 204 0 "-" "python-requests/2.21.0" e3fdf960-f1c3-11ed-8a82-000000000000 360349
+mai 13 21:25:19 raspberrypi influxd[435]: [httpd] ::1 - admin [13/May/2023:21:25:19 +0200] "POST /write?db=SensorData HTTP/1.1" 204 0 "-" "python-requests/2.21.0" e5fceda3-f1c3-11ed-8a83-000000000000 138687
+mai 13 21:25:24 raspberrypi influxd[435]: [httpd] ::1 - admin [13/May/2023:21:25:24 +0200] "POST /write?db=SensorData HTTP/1.1" 204 0 "-" "python-requests/2.21.0" e8815e7b-f1c3-11ed-8a84-000000000000 157898
+mai 13 21:25:28 raspberrypi influxd[435]: ts=2023-05-13T19:25:28.295225Z lvl=info msg="Compacted file" log_id=0hdK~cBG000 engine=tsm1 tsm1_level=1 tsm1_strategy=level trace_id=0hme0bPl000 op_name=tsm1_compact_group tsm1_index=0 tsm1_file=/data/influxdb/data/SensorData/autogen/706/000000016-000000002.tsm.tmp
+mai 13 21:25:28 raspberrypi influxd[435]: ts=2023-05-13T19:25:28.320221Z lvl=info msg="Finished compacting files" log_id=0hdK~cBG000 engine=tsm1 tsm1_level=1 tsm1_strategy=level trace_id=0hme0bPl000 op_name=tsm1_compact_group tsm1_files_n=1
+mai 13 21:25:28 raspberrypi influxd[435]: ts=2023-05-13T19:25:28.320331Z lvl=info msg="TSM compaction (end)" log_id=0hdK~cBG000 engine=tsm1 tsm1_level=1 tsm1_strategy=level trace_id=0hme0bPl000 op_name=tsm1_compact_group op_event=end op_elapsed=31512.756ms
+    #+END_PLAIN
+  - A bien l'air de correspondre au mécanisme de compression d'InfluxDB
+    - Voir s'il est désactivable
+    - Voir s'il est nécessaire
+  - Augmentation de la RAM de ~70Mo
+    - Dûe à un mécanisme de cache d'InfluxDB
+      #+BEGIN_PLAIN
+mai 13 21:44:49 raspberrypi influxd[435]: ts=2023-05-13T19:44:49.815468Z lvl=info msg="Cache snapshot (start)" log_id=0hdK~cBG000 engine=tsm1 trace_id=0hmf9Qal000 op_name=tsm1_cache_snapshot op_event=start
+mai 13 21:44:51 raspberrypi influxd[435]: ts=2023-05-13T19:44:51.828599Z lvl=info msg="Snapshot for path written" log_id=0hdK~cBG000 engine=tsm1 trace_id=0hmf9Qal000 op_name=tsm1_cache_snapshot path=/data/influxdb/data/SensorData/autogen/706 duration=2014.542ms
+mai 13 21:44:51 raspberrypi influxd[435]: ts=2023-05-13T19:44:51.841164Z lvl=info msg="Cache snapshot (end)" log_id=0hdK~cBG000 engine=tsm1 trace_id=0hmf9Qal000 op_name=tsm1_cache_snapshot op_event=end op_elapsed=2025.725ms
+      #+END_PLAIN
+  - RAM revient à sa valeur d'origine au bout d'un moment
+  - Ça a enfin explosé à 16h50
+  - La base de données crash au cours de sa compaction
+  - Pendant ce temps, mainApp essaie d'enregistrer ses données et rencontre une erreur
+  - Au bout d'un moment, la BDD redémarre automatiquement et réaccepte les requêtes
+  - MainApp arrive alors à enregistrer ses données
+  - J'ai récup les graphiques de Grafana au moment du crash
+  - Observe tout de même une perte de données à cette période
+    - Pour quelle(s) raison(s) ?
 ** Semaine du <2024-02-12 Mon> au <2024-02-16 Fri>
 *** Planned
 **** DONE SmartSense: Self provision *InaManager* et *TlcManager*
@@ -2936,6 +3039,7 @@ CLOSED: [2024-01-05 Fri 07:57]
   - Récupérer la liste des services en route : systemctl --type=service --state=running
   - Se connecter à la DB : influx -username <username> -password <password> -database <database>
   - Suivre les logs de l'application : tail -f /var/log/syslog
+    - Ou : journalctl -f -u mainApp/influxdb
   - Récupérer la conf d'un fichier, sans les commentaires : grep '^[[:blank:]]*[^[:blank:]#;]' <file>
   - Arrêter le noeud : sudo shutdown -h now / sudo halt
 - Influx
