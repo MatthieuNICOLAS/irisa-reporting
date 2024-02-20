@@ -17,6 +17,9 @@
 *** TODO Déployer WordPress sur un cluster de Raspberry
 - Permettrait de valider le résultat obtenu dans les étapes précédentes
 - Et de rencontrer les problèmes éventuels liés aux architectures processeurs
+*** TODO SmartSense: Étudier la mise en place d'une interface WiFi
+- Voir si un hardware donné est conseillé pour la Raspberry CM3
+- Et comment ça s'utiliserait d'un POV logiciel
 *** TODO SmartSense: Corriger le bug de récupération de la valeur `sector` dans une trame MQTT
 - Un test unitaire a mis en lumière qu'en absence d'un champ `sector` dans une trame MQTT, c'est la valeur du champ `sub_sector` qui est utilisé instead
 - Corriger cela
@@ -212,12 +215,76 @@ mai 13 21:44:51 raspberrypi influxd[435]: ts=2023-05-13T19:44:51.841164Z lvl=inf
   - RAM revient à sa valeur d'origine au bout d'un moment
   - Ça a enfin explosé à 16h50
   - La base de données crash au cours de sa compaction
+    #+BEGIN_PLAIN
+mai 14 00:02:08 raspberrypi influxd[435]: [httpd] ::1 - admin [14/May/2023:00:02:08 +0200] "POST /write?db=SensorData HTTP/1.1" 204 0 "-" "python-requests/2.21.0" ce13ecf6-f1d9-11ed-9349-000000000000 47503
+mai 14 00:02:12 raspberrypi influxd[435]: [httpd] ::1 - admin [14/May/2023:00:02:12 +0200] "POST /write?db=SensorData HTTP/1.1" 204 0 "-" "python-requests/2.21.0" d0877f75-f1d9-11ed-934a-000000000000 42272
+mai 14 00:02:16 raspberrypi influxd[435]: [httpd] ::1 - admin [14/May/2023:00:02:16 +0200] "POST /write?db=SensorData HTTP/1.1" 204 0 "-" "python-requests/2.21.0" d30c972d-f1d9-11ed-934b-000000000000 29123
+mai 14 00:02:21 raspberrypi influxd[435]: [httpd] ::1 - admin [14/May/2023:00:02:21 +0200] "POST /write?db=SensorData HTTP/1.1" 204 0 "-" "python-requests/2.21.0" d5ae5268-f1d9-11ed-934c-000000000000 53104
+mai 14 00:02:21 raspberrypi influxd[435]: ts=2023-05-13T22:02:21.806703Z lvl=info msg="Cache snapshot (start)" log_id=0hdK~cBG000 engine=tsm1 trace_id=0hmn14wW000 op_name=tsm1_cache_snapshot op_event=start
+mai 14 00:02:23 raspberrypi influxd[435]: ts=2023-05-13T22:02:23.767757Z lvl=info msg="Snapshot for path written" log_id=0hdK~cBG000 engine=tsm1 trace_id=0hmn14wW000 op_name=tsm1_cache_snapshot path=/data/influxdb/data/SensorData/autogen/706 duration=1961.160ms
+mai 14 00:02:23 raspberrypi influxd[435]: ts=2023-05-13T22:02:23.768046Z lvl=info msg="Cache snapshot (end)" log_id=0hdK~cBG000 engine=tsm1 trace_id=0hmn14wW000 op_name=tsm1_cache_snapshot op_event=end op_elapsed=1961.412ms
+mai 14 00:02:23 raspberrypi influxd[435]: ts=2023-05-13T22:02:23.807542Z lvl=info msg="TSM compaction (start)" log_id=0hdK~cBG000 engine=tsm1 tsm1_level=1 tsm1_strategy=level trace_id=0hmn1Ckl000 op_name=tsm1_compact_group op_event=start
+mai 14 00:02:23 raspberrypi influxd[435]: ts=2023-05-13T22:02:23.807708Z lvl=info msg="Beginning compaction" log_id=0hdK~cBG000 engine=tsm1 tsm1_level=1 tsm1_strategy=level trace_id=0hmn1Ckl000 op_name=tsm1_compact_group tsm1_files_n=8
+mai 14 00:02:23 raspberrypi influxd[435]: ts=2023-05-13T22:02:23.807755Z lvl=info msg="Compacting file" log_id=0hdK~cBG000 engine=tsm1 tsm1_level=1 tsm1_strategy=level trace_id=0hmn1Ckl000 op_name=tsm1_compact_group tsm1_index=0 tsm1_file=/data/influxdb/data/SensorData/autogen/706/000000017-000000001.tsm
+mai 14 00:02:23 raspberrypi influxd[435]: ts=2023-05-13T22:02:23.807809Z lvl=info msg="Compacting file" log_id=0hdK~cBG000 engine=tsm1 tsm1_level=1 tsm1_strategy=level trace_id=0hmn1Ckl000 op_name=tsm1_compact_group tsm1_index=1 tsm1_file=/data/influxdb/data/SensorData/autogen/706/000000018-000000001.tsm
+mai 14 00:02:23 raspberrypi influxd[435]: ts=2023-05-13T22:02:23.807861Z lvl=info msg="Compacting file" log_id=0hdK~cBG000 engine=tsm1 tsm1_level=1 tsm1_strategy=level trace_id=0hmn1Ckl000 op_name=tsm1_compact_group tsm1_index=2 tsm1_file=/data/influxdb/data/SensorData/autogen/706/000000019-000000001.tsm
+mai 14 00:02:23 raspberrypi influxd[435]: ts=2023-05-13T22:02:23.807911Z lvl=info msg="Compacting file" log_id=0hdK~cBG000 engine=tsm1 tsm1_level=1 tsm1_strategy=level trace_id=0hmn1Ckl000 op_name=tsm1_compact_group tsm1_index=3 tsm1_file=/data/influxdb/data/SensorData/autogen/706/000000020-000000001.tsm
+mai 14 00:02:23 raspberrypi influxd[435]: ts=2023-05-13T22:02:23.807960Z lvl=info msg="Compacting file" log_id=0hdK~cBG000 engine=tsm1 tsm1_level=1 tsm1_strategy=level trace_id=0hmn1Ckl000 op_name=tsm1_compact_group tsm1_index=4 tsm1_file=/data/influxdb/data/SensorData/autogen/706/000000021-000000001.tsm
+mai 14 00:02:23 raspberrypi influxd[435]: ts=2023-05-13T22:02:23.808011Z lvl=info msg="Compacting file" log_id=0hdK~cBG000 engine=tsm1 tsm1_level=1 tsm1_strategy=level trace_id=0hmn1Ckl000 op_name=tsm1_compact_group tsm1_index=5 tsm1_file=/data/influxdb/data/SensorData/autogen/706/000000022-000000001.tsm
+mai 14 00:02:23 raspberrypi influxd[435]: ts=2023-05-13T22:02:23.808061Z lvl=info msg="Compacting file" log_id=0hdK~cBG000 engine=tsm1 tsm1_level=1 tsm1_strategy=level trace_id=0hmn1Ckl000 op_name=tsm1_compact_group tsm1_index=6 tsm1_file=/data/influxdb/data/SensorData/autogen/706/000000023-000000001.tsm
+mai 14 00:02:23 raspberrypi influxd[435]: ts=2023-05-13T22:02:23.808110Z lvl=info msg="Compacting file" log_id=0hdK~cBG000 engine=tsm1 tsm1_level=1 tsm1_strategy=level trace_id=0hmn1Ckl000 op_name=tsm1_compact_group tsm1_index=7 tsm1_file=/data/influxdb/data/SensorData/autogen/706/000000024-000000001.tsm
+mai 14 00:02:25 raspberrypi influxd[435]: [httpd] ::1 - admin [14/May/2023:00:02:25 +0200] "POST /write?db=SensorData HTTP/1.1" 204 0 "-" "python-requests/2.21.0" d805ca3e-f1d9-11ed-934d-000000000000 33651
+mai 14 00:02:34 raspberrypi systemd[1]: influxdb.service: Main process exited, code=killed, status=9/KILL
+mai 14 00:02:34 raspberrypi systemd[1]: influxdb.service: Failed with result 'signal'.
+    #+END_PLAIN
   - Pendant ce temps, mainApp essaie d'enregistrer ses données et rencontre une erreur
+    #+BEGIN_PLAIN
+mai 14 00:02:25 raspberrypi mainApp.py[2526]: [DataToLocalInfluxDB] : write_points 100
+mai 14 00:02:38 raspberrypi mainApp.py[2526]: [DataToLocalInfluxDB] : data not saved, timeout ! HTTPConnectionPool(host='localhost', port=8086): Max retries exceeded with url: /write?db=SensorData (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x74bc8350>: Failed to establish a new connection: [Errno 111] Connection refused'))
+mai 14 00:02:38 raspberrypi mainApp.py[2526]: [DataToLocalInfluxDB] : data not saved, timeout ! HTTPConnectionPool(host='localhost', port=8086): Max retries exceeded with url: /write?db=SensorData (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x74bc88f0>: Failed to establish a new connection: [Errno 111] Connection refused'))
+mai 14 00:02:38 raspberrypi mainApp.py[2526]: [DataToLocalInfluxDB] : data not saved, timeout ! HTTPConnectionPool(host='localhost', port=8086): Max retries exceeded with url: /write?db=SensorData (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x74be50b0>: Failed to establish a new connection: [Errno 111] Connection refused'))
+mai 14 00:02:38 raspberrypi mainApp.py[2526]: [DataToLocalInfluxDB] : data not saved, timeout ! HTTPConnectionPool(host='localhost', port=8086): Max retries exceeded with url: /write?db=SensorData (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x74bc8d10>: Failed to establish a new connection: [Errno 111] Connection refused'))
+mai 14 00:02:38 raspberrypi mainApp.py[2526]: [DataToLocalInfluxDB] : data not saved, timeout ! HTTPConnectionPool(host='localhost', port=8086): Max retries exceeded with url: /write?db=SensorData (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x74bc84f0>: Failed to establish a new connection: [Errno 111] Connection refused'))
+mai 14 00:02:38 raspberrypi mainApp.py[2526]: [DataToLocalInfluxDB] : data not saved, timeout ! HTTPConnectionPool(host='localhost', port=8086): Max retries exceeded with url: /write?db=SensorData (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x74bc83b0>: Failed to establish a new connection: [Errno 111] Connection refused'))
+mai 14 00:02:38 raspberrypi mainApp.py[2526]: [DataToLocalInfluxDB] : data not saved, timeout ! HTTPConnectionPool(host='localhost', port=8086): Max retries exceeded with url: /write?db=SensorData (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x74be5510>: Failed to establish a new connection: [Errno 111] Connection refused'))
+mai 14 00:02:38 raspberrypi mainApp.py[2526]: [DataToLocalInfluxDB] : data not saved, timeout ! HTTPConnectionPool(host='localhost', port=8086): Max retries exceeded with url: /write?db=SensorData (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x74be5b10>: Failed to establish a new connection: [Errno 111] Connection refused'))
+mai 14 00:02:38 raspberrypi mainApp.py[2526]: [DataToLocalInfluxDB] : data not saved, timeout ! HTTPConnectionPool(host='localhost', port=8086): Max retries exceeded with url: /write?db=SensorData (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x74bc81f0>: Failed to establish a new connection: [Errno 111] Connection refused'))
+mai 14 00:02:38 raspberrypi mainApp.py[2526]: [DataToLocalInfluxDB] : data not saved, timeout ! HTTPConnectionPool(host='localhost', port=8086): Max retries exceeded with url: /write?db=SensorData (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x74bc88b0>: Failed to establish a new connection: [Errno 111] Connection refused'))
+mai 14 00:02:38 raspberrypi mainApp.py[2526]: [DataToLocalInfluxDB] : data not saved, timeout ! HTTPConnectionPool(host='localhost', port=8086): Max retries exceeded with url: /write?db=SensorData (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x74be5ab0>: Failed to establish a new connection: [Errno 111] Connection refused'))
+mai 14 00:02:38 raspberrypi mainApp.py[2526]: [DataToLocalInfluxDB] : data not saved, timeout ! HTTPConnectionPool(host='localhost', port=8086): Max retries exceeded with url: /write?db=SensorData (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x74be5690>: Failed to establish a new connection: [Errno 111] Connection refused'))
+mai 14 00:02:38 raspberrypi mainApp.py[2526]: [DataToLocalInfluxDB] : data not saved, timeout ! HTTPConnectionPool(host='localhost', port=8086): Max retries exceeded with url: /write?db=SensorData (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x74be53f0>: Failed to establish a new connection: [Errno 111] Connection refused'))
+mai 14 00:02:38 raspberrypi mainApp.py[2526]: [DataToLocalInfluxDB] : data not saved, timeout ! HTTPConnectionPool(host='localhost', port=8086): Max retries exceeded with url: /write?db=SensorData (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x74bc8f50>: Failed to establish a new connection: [Errno 111] Connection refused'))
+mai 14 00:02:38 raspberrypi mainApp.py[2526]: [DataToLocalInfluxDB] : data not saved, timeout ! HTTPConnectionPool(host='localhost', port=8086): Max retries exceeded with url: /write?db=SensorData (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x74bc8730>: Failed to establish a new connection: [Errno 111] Connection refused'))
+    #+END_PLAIN
   - Au bout d'un moment, la BDD redémarre automatiquement et réaccepte les requêtes
+    - Voir [[file:logs/2024-02-19-crash-influxdb.log]], lignes 24-112
   - MainApp arrive alors à enregistrer ses données
+    - [[file:logs/2024-02-19-crash-main-app.log]], lignes 445-449
   - J'ai récup les graphiques de Grafana au moment du crash
+    - Sensor Data
+      - [[file:img/2024-02-19-crash-grafana-sensor-data-part-1.png]]
+      - [[file:img/2024-02-19-crash-grafana-sensor-data-part-2.png]]
+    - Hardware Monitoring
+      - [[file:img/2024-02-19-crash-grafana-hardware-monitoring-part-1.png]]
+      - [[file:img/2024-02-19-crash-grafana-hardware-monitoring-part-2.png]]
   - Observe tout de même une perte de données à cette période
     - Pour quelle(s) raison(s) ?
+  - À la réflexion, les courbes concernant les métriques systèmes sont étranges
+    - Le pic de consommation est montré à 00:03:00, i.e. après le redémarrage d'influxdb et le lancement d'une nouvelle compaction
+    - Rien de particulier n'apparaît à 00:02:20, lors de la compaction initiale, et à 00:02:30, lors du kill d'influxdb
+  - P-e que le fait que grafana se base sur les données stockées par influxdb a un lien
+    - Si influxdb était en train de planter à ce moment là
+    - N'a pas pu enregistrer les données collectées par collectd
+      - Pas sûr que le support de collectd par influxdb intègre un mécanisme de bufferisation des écritures
+    - Les courbes montrées se basent-elles donc sur des données ou font-elles de l'interpolation ?
+      - L'interpolation expliquerait l'absence de pic
+  - Mickaël me faisait part de sa surprise que l'application redémarre normalement
+  - Mais à la réflexion, j'ai p-e eu de la chance sur ce coup-ci
+  - Influxdb redémarre et retente d'effectuer une compaction
+    - Ici c'est passé
+  - Mais possible que cette nouvelle compaction fasse de nouveau planter influxdb
+  - Tomberait alors dans une boucle de crashs
+  - Voir pour poursuivre/reproduire l'expérience si on peut observer cette boucle de crashs
 ** Semaine du <2024-02-12 Mon> au <2024-02-16 Fri>
 *** Planned
 **** DONE SmartSense: Self provision *InaManager* et *TlcManager*
