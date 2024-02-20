@@ -83,6 +83,15 @@ CLOSED: [2024-02-19 Mon 09:18]
   - Données difficiles à importer par la suite vu qu'éclatées en de nombreux fichiers
 - Serait intéressant de voir si une autre solution peut être mise en place
 - Revert à la version pré-workaround de l'application pour observer et documenter le problème
+**** DONE SmartSense: Identifier les paramètres de configuration d'InfluxDB pertinents pour la compaction
+CLOSED: [2024-02-20 Tue 15:26]
+- L'origine des crashs d'InfluxDB a bien l'air d'être le mécanisme de compaction de la base de données
+- Il serait intéressant de jeter un oeil aux différents paramètres de configuration
+  - https://docs.influxdata.com/influxdb/v1/administration/config/
+- Et d'identifier lesquels peuvent être pertinents dans notre cas
+- Sachant que nous voulons soit :
+  - Désactiver le mécanisme de compression, puisque nous ne faisons aucune lecture sur le noeud
+  - Augmenter la fréquence du mécanisme de compression, de façon à rendre ses exécutions moins gourmandes
 **** IN-PROGRESS SmartSense: Intégrer la branche *refactor/mqtt-interface-remove-inheritance*
 - Je voulais pas forcément intégrer cette modif
 - Mais une bonne partie des commits de *refactor/main-app* modifient des lignes concernées par ces changements
@@ -285,6 +294,81 @@ mai 14 00:02:38 raspberrypi mainApp.py[2526]: [DataToLocalInfluxDB] : data not s
   - Mais possible que cette nouvelle compaction fasse de nouveau planter influxdb
   - Tomberait alors dans une boucle de crashs
   - Voir pour poursuivre/reproduire l'expérience si on peut observer cette boucle de crashs
+- SmartSense: Identifier les paramètres de configuration d'InfluxDB pertinents pour la compaction
+  - max-concurrent-compactions
+    - https://docs.influxdata.com/influxdb/v1/administration/config/#max-concurrent-compactions--0
+    - Par défaut, utilise jusqu'à 50% du CPU lors d'une compaction
+    - Limiter à 1 ?
+  - compact-throughput
+    - https://docs.influxdata.com/influxdb/v1/administration/config/#compact-throughput--48m
+    - Quantité de données écrites sur le disk par seconde lors d'une compaction
+    - Par défaut, 48m = 48Mo/s
+    - Me paraît raisonnable
+  - compact-throughput-burst
+    - https://docs.influxdata.com/influxdb/v1/administration/config/#compact-throughput-burst--48m
+    - Pas sûr de comprendre la diff avec l'option précédente
+    - Par défaut, 48m = 48Mo/s
+  - max-index-log-file-size
+    - https://docs.influxdata.com/influxdb/v1/administration/config/#max-index-log-file-size--1m
+    - A l'air de correspondre à la taille limite du WAL afin qu'il soit clos, compacté et intégré à l'index
+    - Indique que diminuer cette taille limite entrainera des compactions moins coûteuses mais plus fréquentes, et impactant le débit en écriture
+    - Mais par défaut, 1m = 1Mo
+    - Me paraît pas bien grand
+    - Je suppose que c'est pas cette partie là du mécanisme de compression qui impacte et fait crasher influxdb
+  - Aparté
+    - Alors pas pertinent par rapport au problème actuel
+    - Mais serait intéressant de vérifier les paramètres vis-à-vis de la rétention de données
+    - retention.enabled
+      - https://docs.influxdata.com/influxdb/v1/administration/config/#enabled--true
+      - Par défaut activé
+    - meta.retention_autocreate
+      - https://docs.influxdata.com/influxdb/v1/administration/config/#retention-autocreate--true
+      - Par défaut activé
+      - Créé une *retention policy* autogen qui
+        - Conserve indéfiniment les données
+        - Replication factor de 1
+        - Et une *shard group duration* de 7j
+      - avec *shard*
+        - Fichier TSM qui contient les données d'un ensemble donné de *serie* sur un interval de temps donné
+        - avec *serie*, ensemble de *points* avec le même *measurement*, les mêmes *tags*, et les mêmes *field keys*
+      - *shard group*
+        - Ensemble de *shards* sur un interval de temps donné
+      - et donc *shard group duration*
+        - Interval de temps représenté/géré par un *shard group*
+        - Tous les points de cette période seront donc stockés au sein de ce *shard group*
+  - Donc finalement, la *retention policy* est p-e un paramètre sur lequel on peut jouer
+    - En diminuant la *shard group duration*, par défaut 1 semaine, à une granularité plus fine, e.g. 4h
+      - Sachant que la valeur minimale est 1h
+    - Forcerait la création de nouveaux *shards* régulièrement
+    - Donc *shards* plus petits
+    - Et permettrait p-e de lisser les compactions
+    - Notamment en combinaison de data.compact-full-write-cold-duration
+      - https://docs.influxdata.com/influxdb/v1/administration/config/#compact-full-write-cold-duration--4h
+      - Qui déclenche une compaction sur un shard non-modifié depuis 4h
+      - On pourrait donc "forcer" la création et la compaction régulière de nouveaux shards
+    - Reste à voir l'impact de la multiplication des shards
+    - Tombe sur ces recommandations : https://docs.influxdata.com/influxdb/v1/concepts/schema_and_data_layout/#shard-group-duration-recommendations
+      - 100k points par shard group
+      - 1000 points par série
+    - Dans notre cas, on a une 30aine de séries régulières
+    - Nous suffit donc "que" de 3k points par série pour atteindre ces quotas
+    - Voir la fréquence d'échantillonage, mais je suppose qu'on fait plusieurs mesures par seconde
+  - Suis tombé sinon sur https://docs.influxdata.com/influxdb/v1/concepts/tsi-details/#important-compaction-configuration-settings
+    - Ne met rien de nouveau en lumière
+    - Le commentaire suivant n'est pas rassurant
+      #+BEGIN_QUOTE
+These configuration settings are especially beneficial for systems with irregular loads,
+limiting compactions during periods of high usage, and letting compactions catch up during periods of lower load.
+In systems with stable loads, if compactions interfere with other operations, typically,
+the system is undersized for its load, and configuration changes won’t help much.
+      #+END_QUOTE
+  - Conclusion
+    - Set max-concurrent-compactions à 1 pour déterminer si cela suffit
+    - Sinon
+      - Modifier la retention policy autogen
+        - ALTER RETENTION POLICY "autogen" ON "Sensor Data" SHARD DURATION 4h
+        - ALTER RETENTION POLICY "autogen" ON "collectd" SHARD DURATION 4h
+      - Et set compact-full-write-cold-duration à 4h
 ** Semaine du <2024-02-12 Mon> au <2024-02-16 Fri>
 *** Planned
 **** DONE SmartSense: Self provision *InaManager* et *TlcManager*
