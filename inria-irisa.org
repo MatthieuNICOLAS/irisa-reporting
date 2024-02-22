@@ -90,7 +90,8 @@ CLOSED: [2024-02-21 Wed 11:20]
 - Maintenant que j'ai revert le workaround
 - Le problème rencontré autrefois devrait se reproduire
 - Monitorer l'exécution de l'application pour détecter et identifier le problème rencontré
-**** IN-PROGRESS SmartSense: Intégrer la branche *refactor/mqtt-interface-remove-inheritance*
+**** DONE SmartSense: Intégrer la branche *refactor/mqtt-interface-remove-inheritance*
+CLOSED: [2024-02-22 Thu 11:17]
 - Je voulais pas forcément intégrer cette modif
 - Mais une bonne partie des commits de *refactor/main-app* modifient des lignes concernées par ces changements
 - Je me retrouve avec des conflits fréquemment lorsque j'essaie de rebase en le retirant de l'historique
@@ -146,6 +147,8 @@ CLOSED: [2024-02-21 Wed 11:20]
       - ALTER RETENTION POLICY autogen ON collectd SHARD DURATION 4h
     - Et set compact-full-write-cold-duration à 4h
 - Voir si cela permet de prévenir le crash
+**** IN-PROGRESS SmartSense: Intégrer la branche *refactor/usb-board-manager*
+- Faire la MR
 *** Done
 - SmartSense: Revert la version de l'application à avant le workaround pour InfluxDB
   - Création d'un backup de l'application dans /home/pi/backupApp
@@ -185,6 +188,17 @@ CLOSED: [2024-02-21 Wed 11:20]
       - `handle_incoming_msgs()`, qui correspond au traitement des messages en entrée du module
         - Commande stop/start/timestamp et message MQTT
         - Quelle différence de nature entre les deux types de message?
+  - La librairie *telnetlib* est dépréciée
+    - La page annonçant la dépréciation de la librairie propose 2 alternatives
+      - Lien de la page : https://peps.python.org/pep-0594/#deprecated-modules
+    - *telnetlib3* et *Exscript*
+      - https://github.com/jquast/telnetlib3
+      - https://github.com/knipknap/exscript
+    - *Exscript* semble 2.5x plus populaire
+    - Mais bien plus ancien (2007 vs 2013)
+    - Moyennement convaincu par l'API de *telnetlib3*
+      - Asynchrone, donc besoin de faire remonter ce changement sur toute la chaîne d'appels
+      - Absence de `read_until()` avec timeout
 - SmartSense: Monitorer l'instance locale d'InfluxDB
   - Suis les logs des services de l'application et d'InfluxDB
     - journalctl -f -u mainApp/influxdb
@@ -753,6 +767,168 @@ the system is undersized for its load, and configuration changes won’t help mu
   - On va faire le test avec cette config
     - Donc sans avoir modifié collectd
     - À voir comment ça se comporte
+  - A bien un nouveau shard qui s'est créé pour la table SensorData
+    #+BEGIN_PLAIN
+> SHOW SHARDS
+name: _internal
+id database  retention_policy shard_group start_time           end_time             expiry_time          owners
+-- --------  ---------------- ----------- ----------           --------             -----------          ------
+1  _internal monitor          1           2023-05-14T00:00:00Z 2023-05-15T00:00:00Z 2023-05-22T00:00:00Z
+
+name: collectd
+id database retention_policy shard_group start_time           end_time             expiry_time          owners
+-- -------- ---------------- ----------- ----------           --------             -----------          ------
+2  collectd autogen          2           2023-05-08T00:00:00Z 2023-05-15T00:00:00Z 2023-05-15T00:00:00Z
+
+name: SensorData
+id database   retention_policy shard_group start_time           end_time             expiry_time          owners
+-- --------   ---------------- ----------- ----------           --------             -----------          ------
+4  SensorData short_lived      4           2023-05-14T04:00:00Z 2023-05-14T08:00:00Z 2023-05-14T08:00:00Z
+5  SensorData short_lived      5           2023-05-14T08:00:00Z 2023-05-14T12:00:00Z 2023-05-14T12:00:00Z
+    #+END_PLAIN
+  - Reste à voir si cela a un impact
+  - Une première compaction a eu lieu à 09:37 (heure du noeud)
+    #+BEGIN_PLAIN
+mai 14 09:37:58 raspberrypi influxd[438]: ts=2023-05-14T07:37:58.486512Z lvl=info msg="Cache snapshot (start)" log_id=0hnIEsZG000 engine=tsm1 trace_id=0hnIy1qW000 op_name=tsm1_cache_snapshot op_event=start
+mai 14 09:38:00 raspberrypi influxd[438]: ts=2023-05-14T07:38:00.785781Z lvl=info msg="Snapshot for path written" log_id=0hnIEsZG000 engine=tsm1 trace_id=0hnIy1qW000 op_name=tsm1_cache_snapshot path=/data/influxdb/data/SensorData/short_lived/4 duration=2299.397ms
+mai 14 09:38:00 raspberrypi influxd[438]: ts=2023-05-14T07:38:00.786026Z lvl=info msg="Cache snapshot (end)" log_id=0hnIEsZG000 engine=tsm1 trace_id=0hnIy1qW000 op_name=tsm1_cache_snapshot op_event=end op_elapsed=2299.539ms
+mai 14 09:38:01 raspberrypi influxd[438]: ts=2023-05-14T07:38:01.487226Z lvl=info msg="TSM compaction (start)" log_id=0hnIEsZG000 engine=tsm1 tsm1_level=1 tsm1_strategy=level trace_id=0hnIyDZl000 op_name=tsm1_compact_group op_event=start
+mai 14 09:38:01 raspberrypi influxd[438]: ts=2023-05-14T07:38:01.487357Z lvl=info msg="Beginning compaction" log_id=0hnIEsZG000 engine=tsm1 tsm1_level=1 tsm1_strategy=level trace_id=0hnIyDZl000 op_name=tsm1_compact_group tsm1_files_n=8
+mai 14 09:38:01 raspberrypi influxd[438]: ts=2023-05-14T07:38:01.487412Z lvl=info msg="Compacting file" log_id=0hnIEsZG000 engine=tsm1 tsm1_level=1 tsm1_strategy=level trace_id=0hnIyDZl000 op_name=tsm1_compact_group tsm1_index=0 tsm1_file=/data/influxdb/data/SensorData/short_lived/4/000000001-000000001.tsm
+mai 14 09:38:01 raspberrypi influxd[438]: ts=2023-05-14T07:38:01.487468Z lvl=info msg="Compacting file" log_id=0hnIEsZG000 engine=tsm1 tsm1_level=1 tsm1_strategy=level trace_id=0hnIyDZl000 op_name=tsm1_compact_group tsm1_index=1 tsm1_file=/data/influxdb/data/SensorData/short_lived/4/000000002-000000001.tsm
+mai 14 09:38:01 raspberrypi influxd[438]: ts=2023-05-14T07:38:01.487504Z lvl=info msg="Compacting file" log_id=0hnIEsZG000 engine=tsm1 tsm1_level=1 tsm1_strategy=level trace_id=0hnIyDZl000 op_name=tsm1_compact_group tsm1_index=2 tsm1_file=/data/influxdb/data/SensorData/short_lived/4/000000003-000000001.tsm
+mai 14 09:38:01 raspberrypi influxd[438]: ts=2023-05-14T07:38:01.487559Z lvl=info msg="Compacting file" log_id=0hnIEsZG000 engine=tsm1 tsm1_level=1 tsm1_strategy=level trace_id=0hnIyDZl000 op_name=tsm1_compact_group tsm1_index=3 tsm1_file=/data/influxdb/data/SensorData/short_lived/4/000000004-000000001.tsm
+mai 14 09:38:01 raspberrypi influxd[438]: ts=2023-05-14T07:38:01.487594Z lvl=info msg="Compacting file" log_id=0hnIEsZG000 engine=tsm1 tsm1_level=1 tsm1_strategy=level trace_id=0hnIyDZl000 op_name=tsm1_compact_group tsm1_index=4 tsm1_file=/data/influxdb/data/SensorData/short_lived/4/000000005-000000001.tsm
+mai 14 09:38:01 raspberrypi influxd[438]: ts=2023-05-14T07:38:01.487659Z lvl=info msg="Compacting file" log_id=0hnIEsZG000 engine=tsm1 tsm1_level=1 tsm1_strategy=level trace_id=0hnIyDZl000 op_name=tsm1_compact_group tsm1_index=5 tsm1_file=/data/influxdb/data/SensorData/short_lived/4/000000006-000000001.tsm
+mai 14 09:38:01 raspberrypi influxd[438]: ts=2023-05-14T07:38:01.487693Z lvl=info msg="Compacting file" log_id=0hnIEsZG000 engine=tsm1 tsm1_level=1 tsm1_strategy=level trace_id=0hnIyDZl000 op_name=tsm1_compact_group tsm1_index=6 tsm1_file=/data/influxdb/data/SensorData/short_lived/4/000000007-000000001.tsm
+mai 14 09:38:01 raspberrypi influxd[438]: ts=2023-05-14T07:38:01.487750Z lvl=info msg="Compacting file" log_id=0hnIEsZG000 engine=tsm1 tsm1_level=1 tsm1_strategy=level trace_id=0hnIyDZl000 op_name=tsm1_compact_group tsm1_index=7 tsm1_file=/data/influxdb/data/SensorData/short_lived/4/000000009-000000001.tsm
+mai 14 09:38:01 raspberrypi influxd[438]: [httpd] ::1 - admin [14/May/2023:09:38:01 +0200] "POST /write?db=SensorData HTTP/1.1" 204 0 "-" "python-requests/2.21.0" 41460f35-f22a-11ed-80ad-000000000000 39453
+mai 14 09:38:05 raspberrypi influxd[438]: [httpd] ::1 - admin [14/May/2023:09:38:05 +0200] "POST /write?db=SensorData HTTP/1.1" 204 0 "-" "python-requests/2.21.0" 43b8a241-f22a-11ed-80ae-000000000000 46620
+mai 14 09:38:10 raspberrypi influxd[438]: [httpd] ::1 - admin [14/May/2023:09:38:10 +0200] "POST /write?db=SensorData HTTP/1.1" 204 0 "-" "python-requests/2.21.0" 466891a3-f22a-11ed-80af-000000000000 34139
+mai 14 09:38:14 raspberrypi influxd[438]: [httpd] ::1 - admin [14/May/2023:09:38:14 +0200] "POST /write?db=SensorData HTTP/1.1" 204 0 "-" "python-requests/2.21.0" 48ea1b32-f22a-11ed-80b0-000000000000 50190
+mai 14 09:38:18 raspberrypi influxd[438]: [httpd] ::1 - admin [14/May/2023:09:38:18 +0200] "POST /write?db=SensorData HTTP/1.1" 204 0 "-" "python-requests/2.21.0" 4b4e3cfa-f22a-11ed-80b1-000000000000 148018
+mai 14 09:38:22 raspberrypi influxd[438]: [httpd] ::1 - admin [14/May/2023:09:38:22 +0200] "POST /write?db=SensorData HTTP/1.1" 204 0 "-" "python-requests/2.21.0" 4dc15fba-f22a-11ed-80b2-000000000000 71808
+mai 14 09:38:26 raspberrypi influxd[438]: [httpd] ::1 - admin [14/May/2023:09:38:26 +0200] "POST /write?db=SensorData HTTP/1.1" 204 0 "-" "python-requests/2.21.0" 50471862-f22a-11ed-80b3-000000000000 31373
+mai 14 09:38:28 raspberrypi influxd[438]: ts=2023-05-14T07:38:28.382788Z lvl=info msg="Compacted file" log_id=0hnIEsZG000 engine=tsm1 tsm1_level=1 tsm1_strategy=level trace_id=0hnIyDZl000 op_name=tsm1_compact_group tsm1_index=0 tsm1_file=/data/influxdb/data/SensorData/short_lived/4/000000009-000000002.tsm.tmp
+mai 14 09:38:28 raspberrypi influxd[438]: ts=2023-05-14T07:38:28.387826Z lvl=info msg="Finished compacting files" log_id=0hnIEsZG000 engine=tsm1 tsm1_level=1 tsm1_strategy=level trace_id=0hnIyDZl000 op_name=tsm1_compact_group tsm1_files_n=1
+mai 14 09:38:28 raspberrypi influxd[438]: ts=2023-05-14T07:38:28.387872Z lvl=info msg="TSM compaction (end)" log_id=0hnIEsZG000 engine=tsm1 tsm1_level=1 tsm1_strategy=level trace_id=0hnIyDZl000 op_name=tsm1_compact_group op_event=end op_elapsed=26900.686ms
+    #+END_PLAIN
+  - A concerné le shard 4, i.e. le 1er shard de SensorData
+    - On est passé d'un shard contenant 7 fichiers tsm de niveau 1
+      #+BEGIN_PLAIN
+> sudo ./test.sh (ls -l /data/influxdb/data/SensorData/4)
+total 107420
+-rw-r--r--  1 influxdb influxdb 15832867 mai   14 07:21 000000001-000000001.tsm
+-rw-r--r--  1 influxdb influxdb 15405657 mai   14 07:42 000000002-000000001.tsm
+-rw-r--r--  1 influxdb influxdb 15948310 mai   14 08:01 000000003-000000001.tsm
+-rw-r--r--  1 influxdb influxdb 15935606 mai   14 08:19 000000004-000000001.tsm
+-rw-r--r--  1 influxdb influxdb 15514571 mai   14 08:38 000000005-000000001.tsm
+-rw-r--r--  1 influxdb influxdb 15647234 mai   14 08:57 000000006-000000001.tsm
+-rw-r--r--  1 influxdb influxdb 15689207 mai   14 09:18 000000007-000000001.tsm
+-rw-r--r--  1 influxdb influxdb     2798 mai   14 07:07 fields.idx
+drwxr-xr-x 10 influxdb influxdb     4096 mai   14 07:02 index
+      #+END_PLAIN
+    - À un fichier tsm unique de niveau 2
+      #+BEGIN_PLAIN
+> sudo ./test.sh
+total 122592
+-rw-r--r--  1 influxdb influxdb 125525378 mai   14 09:38 000000009-000000002.tsm
+-rw-r--r--  1 influxdb influxdb      2798 mai   14 07:07 fields.idx
+drwxr-xr-x 10 influxdb influxdb      4096 mai   14 07:02 index
+      #+END_PLAIN
+  - On remarque que cette première étape de compression a déjà été couteuse
+    - 27s d'exécution
+    - 60% de la RAM utilisée
+      - [[file:img/2024-02-22-09h37-tsm-compaction-grafana-hardware-monitoring.png]]
+  - Et qu'on obtient un fichier volumineux en résultat
+    - 125Mo
+  - Quid d'une compaction de niveau 2 traitant plusieurs de ces fichiers ?
+  - Par contre je ne pige pas pour collectd, où sont les données ?
+    - Pas de fichiers tsm stockés au niveau du shard
+      #+BEGIN_PLAIN
+> sudo ls -l /data/influxdb/data/collectd/autogen/2
+total 8
+-rw-r--r--  1 influxdb influxdb  486 mai   14 03:55 fields.idx
+drwxr-xr-x 10 influxdb influxdb 4096 mai   14 03:55 index
+      #+END_PLAIN
+  - Nouvelle compaction a eu lieu à 12:10 (heure du noeud)
+    - Logs
+      #+BEGIN_PLAIN
+mai 14 12:10:19 raspberrypi influxd[438]: [httpd] ::1 - admin [14/May/2023:12:10:19 +0200] "POST /write?db=SensorData HTTP/1.1" 204 0 "-" "python-requests/2.21.0" 87bcab70-f23f-11ed-897b-000000000000 95581
+mai 14 12:10:20 raspberrypi influxd[438]: ts=2023-05-14T10:10:20.073216Z lvl=info msg="Cache snapshot (start)" log_id=0hnIEsZG000 engine=tsm1 trace_id=0hnRf~AG000 op_name=tsm1_cache_snapshot op_event=start
+mai 14 12:10:22 raspberrypi influxd[438]: ts=2023-05-14T10:10:22.761640Z lvl=info msg="Snapshot for path written" log_id=0hnIEsZG000 engine=tsm1 trace_id=0hnRf~AG000 op_name=tsm1_cache_snapshot path=/data/influxdb/data/SensorData/short_lived/5 duration=2688.487ms
+mai 14 12:10:22 raspberrypi influxd[438]: ts=2023-05-14T10:10:22.761926Z lvl=info msg="Cache snapshot (end)" log_id=0hnIEsZG000 engine=tsm1 trace_id=0hnRf~AG000 op_name=tsm1_cache_snapshot op_event=end op_elapsed=2688.765ms
+mai 14 12:10:23 raspberrypi influxd[438]: ts=2023-05-14T10:10:23.074276Z lvl=info msg="TSM compaction (start)" log_id=0hnIEsZG000 engine=tsm1 tsm1_level=1 tsm1_strategy=level trace_id=0hnRgAtW000 op_name=tsm1_compact_group op_event=start
+mai 14 12:10:23 raspberrypi influxd[438]: ts=2023-05-14T10:10:23.074467Z lvl=info msg="Beginning compaction" log_id=0hnIEsZG000 engine=tsm1 tsm1_level=1 tsm1_strategy=level trace_id=0hnRgAtW000 op_name=tsm1_compact_group tsm1_files_n=8
+mai 14 12:10:23 raspberrypi influxd[438]: ts=2023-05-14T10:10:23.074521Z lvl=info msg="Compacting file" log_id=0hnIEsZG000 engine=tsm1 tsm1_level=1 tsm1_strategy=level trace_id=0hnRgAtW000 op_name=tsm1_compact_group tsm1_index=0 tsm1_file=/data/influxdb/data/SensorData/short_lived/5/000000001-000000001.tsm
+mai 14 12:10:23 raspberrypi influxd[438]: ts=2023-05-14T10:10:23.074605Z lvl=info msg="Compacting file" log_id=0hnIEsZG000 engine=tsm1 tsm1_level=1 tsm1_strategy=level trace_id=0hnRgAtW000 op_name=tsm1_compact_group tsm1_index=1 tsm1_file=/data/influxdb/data/SensorData/short_lived/5/000000003-000000001.tsm
+mai 14 12:10:23 raspberrypi influxd[438]: ts=2023-05-14T10:10:23.074663Z lvl=info msg="Compacting file" log_id=0hnIEsZG000 engine=tsm1 tsm1_level=1 tsm1_strategy=level trace_id=0hnRgAtW000 op_name=tsm1_compact_group tsm1_index=2 tsm1_file=/data/influxdb/data/SensorData/short_lived/5/000000004-000000001.tsm
+mai 14 12:10:23 raspberrypi influxd[438]: ts=2023-05-14T10:10:23.074758Z lvl=info msg="Compacting file" log_id=0hnIEsZG000 engine=tsm1 tsm1_level=1 tsm1_strategy=level trace_id=0hnRgAtW000 op_name=tsm1_compact_group tsm1_index=3 tsm1_file=/data/influxdb/data/SensorData/short_lived/5/000000005-000000001.tsm
+mai 14 12:10:23 raspberrypi influxd[438]: ts=2023-05-14T10:10:23.074815Z lvl=info msg="Compacting file" log_id=0hnIEsZG000 engine=tsm1 tsm1_level=1 tsm1_strategy=level trace_id=0hnRgAtW000 op_name=tsm1_compact_group tsm1_index=4 tsm1_file=/data/influxdb/data/SensorData/short_lived/5/000000006-000000001.tsm
+mai 14 12:10:23 raspberrypi influxd[438]: ts=2023-05-14T10:10:23.074923Z lvl=info msg="Compacting file" log_id=0hnIEsZG000 engine=tsm1 tsm1_level=1 tsm1_strategy=level trace_id=0hnRgAtW000 op_name=tsm1_compact_group tsm1_index=5 tsm1_file=/data/influxdb/data/SensorData/short_lived/5/000000007-000000001.tsm
+mai 14 12:10:23 raspberrypi influxd[438]: ts=2023-05-14T10:10:23.075023Z lvl=info msg="Compacting file" log_id=0hnIEsZG000 engine=tsm1 tsm1_level=1 tsm1_strategy=level trace_id=0hnRgAtW000 op_name=tsm1_compact_group tsm1_index=6 tsm1_file=/data/influxdb/data/SensorData/short_lived/5/000000008-000000001.tsm
+mai 14 12:10:23 raspberrypi influxd[438]: ts=2023-05-14T10:10:23.075175Z lvl=info msg="Compacting file" log_id=0hnIEsZG000 engine=tsm1 tsm1_level=1 tsm1_strategy=level trace_id=0hnRgAtW000 op_name=tsm1_compact_group tsm1_index=7 tsm1_file=/data/influxdb/data/SensorData/short_lived/5/000000009-000000001.tsm
+mai 14 12:10:23 raspberrypi influxd[438]: [httpd] ::1 - admin [14/May/2023:12:10:23 +0200] "POST /write?db=SensorData HTTP/1.1" 204 0 "-" "python-requests/2.21.0" 8a381246-f23f-11ed-897c-000000000000 28174
+mai 14 12:10:27 raspberrypi influxd[438]: [httpd] ::1 - admin [14/May/2023:12:10:27 +0200] "POST /write?db=SensorData HTTP/1.1" 204 0 "-" "python-requests/2.21.0" 8cc62371-f23f-11ed-897d-000000000000 29153
+mai 14 12:10:34 raspberrypi influxd[438]: [httpd] ::1 - admin [14/May/2023:12:10:31 +0200] "POST /write?db=SensorData HTTP/1.1" 204 0 "-" "python-requests/2.21.0" 8f44fe59-f23f-11ed-897e-000000000000 2250719
+mai 14 12:10:36 raspberrypi influxd[438]: [httpd] ::1 - admin [14/May/2023:12:10:35 +0200] "POST /write?db=SensorData HTTP/1.1" 204 0 "-" "python-requests/2.21.0" 91b68b5e-f23f-11ed-897f-000000000000 56507
+mai 14 12:10:40 raspberrypi influxd[438]: [httpd] ::1 - admin [14/May/2023:12:10:40 +0200] "POST /write?db=SensorData HTTP/1.1" 204 0 "-" "python-requests/2.21.0" 942b5608-f23f-11ed-8980-000000000000 86398
+mai 14 12:10:44 raspberrypi influxd[438]: [httpd] ::1 - admin [14/May/2023:12:10:44 +0200] "POST /write?db=SensorData HTTP/1.1" 204 0 "-" "python-requests/2.21.0" 96954054-f23f-11ed-8981-000000000000 547207
+mai 14 12:10:45 raspberrypi influxd[438]: ts=2023-05-14T10:10:45.148315Z lvl=info msg="Compacted file" log_id=0hnIEsZG000 engine=tsm1 tsm1_level=1 tsm1_strategy=level trace_id=0hnRgAtW000 op_name=tsm1_compact_group tsm1_index=0 tsm1_file=/data/influxdb/data/SensorData/short_lived/5/000000009-000000002.tsm.tmp
+mai 14 12:10:45 raspberrypi influxd[438]: ts=2023-05-14T10:10:45.148498Z lvl=info msg="Finished compacting files" log_id=0hnIEsZG000 engine=tsm1 tsm1_level=1 tsm1_strategy=level trace_id=0hnRgAtW000 op_name=tsm1_compact_group tsm1_files_n=1
+mai 14 12:10:45 raspberrypi influxd[438]: ts=2023-05-14T10:10:45.148537Z lvl=info msg="TSM compaction (end)" log_id=0hnIEsZG000 engine=tsm1 tsm1_level=1 tsm1_strategy=level trace_id=0hnRgAtW000 op_name=tsm1_compact_group op_event=end op_elapsed=22074.286ms
+      #+END_PLAIN
+    - Performances
+      - [[file:img/2024-02-22-12h10-tsm-compaction-grafana-hardware-monitoring.png]]
+    - A impacté le shard 5
+      #+BEGIN_PLAIN
+> sudo ./test.sh (ls -l /data/influxdb/data/SensorData/short_lived/5)
+-rw-r--r--  1 influxdb influxdb 109136415 mai   14 12:10 000000009-000000002.tsm
+-rw-r--r--  1 influxdb influxdb  15752157 mai   14 12:28 000000010-000000001.tsm
+-rw-r--r--  1 influxdb influxdb  15483866 mai   14 12:47 000000011-000000001.tsm
+-rw-r--r--  1 influxdb influxdb  15175954 mai   14 13:05 000000012-000000001.tsm
+-rw-r--r--  1 influxdb influxdb  14752678 mai   14 13:24 000000013-000000001.tsm
+-rw-r--r--  1 influxdb influxdb  15400436 mai   14 13:42 000000014-000000001.tsm
+-rw-r--r--  1 influxdb influxdb  14456614 mai   14 14:10 000000015-000000001.tsm
+-rw-r--r--  1 influxdb influxdb       960 mai   14 11:45 fields.idx
+drwxr-xr-x 10 influxdb influxdb      4096 mai   14 09:02 index
+      #+END_PLAIN
+    - Mais remarque depuis l'ajout de nouvelles données
+    - Qui entraineront probablement une compaction supplémentaire
+    - Mais d'où sortent ces nouvelles données ?
+    - L'heure de fin du shard était fixée à 12:00
+  - Nouvelle compaction a eu lieu à 14:10 (heure du noeud)
+    - Logs
+      #+BEGIN_PLAIN
+mai 14 14:10:05 raspberrypi influxd[438]: ts=2023-05-14T12:10:05.487024Z lvl=info msg="TSM compaction (start)" log_id=0hnIEsZG000 engine=tsm1 tsm1_strategy=full tsm1_optimize=false trace_id=0hnYXZBW000 op_name=tsm1_compact_group op_event=start
+mai 14 14:10:05 raspberrypi influxd[438]: ts=2023-05-14T12:10:05.487144Z lvl=info msg="Beginning compaction" log_id=0hnIEsZG000 engine=tsm1 tsm1_strategy=full tsm1_optimize=false trace_id=0hnYXZBW000 op_name=tsm1_compact_group tsm1_files_n=3
+mai 14 14:10:05 raspberrypi influxd[438]: ts=2023-05-14T12:10:05.487189Z lvl=info msg="Compacting file" log_id=0hnIEsZG000 engine=tsm1 tsm1_strategy=full tsm1_optimize=false trace_id=0hnYXZBW000 op_name=tsm1_compact_group tsm1_index=0 tsm1_file=/data/influxdb/data/SensorData/short_lived/4/000000009-000000002.tsm
+mai 14 14:10:05 raspberrypi influxd[438]: ts=2023-05-14T12:10:05.487271Z lvl=info msg="Compacting file" log_id=0hnIEsZG000 engine=tsm1 tsm1_strategy=full tsm1_optimize=false trace_id=0hnYXZBW000 op_name=tsm1_compact_group tsm1_index=1 tsm1_file=/data/influxdb/data/SensorData/short_lived/4/000000010-000000001.tsm
+mai 14 14:10:05 raspberrypi influxd[438]: ts=2023-05-14T12:10:05.487317Z lvl=info msg="Compacting file" log_id=0hnIEsZG000 engine=tsm1 tsm1_strategy=full tsm1_optimize=false trace_id=0hnYXZBW000 op_name=tsm1_compact_group tsm1_index=2 tsm1_file=/data/influxdb/data/SensorData/short_lived/4/000000011-000000001.tsm
+mai 14 14:10:08 raspberrypi influxd[438]: [httpd] ::1 - admin [14/May/2023:14:10:08 +0200] "POST /write?db=SensorData HTTP/1.1" 204 0 "-" "python-requests/2.21.0" 44b407e9-f250-11ed-903e-000000000000 106170
+mai 14 14:10:13 raspberrypi influxd[438]: [httpd] ::1 - admin [14/May/2023:14:10:12 +0200] "POST /write?db=SensorData HTTP/1.1" 204 0 "-" "python-requests/2.21.0" 47523785-f250-11ed-903f-000000000000 1219454
+mai 14 14:10:16 raspberrypi influxd[438]: [httpd] ::1 - admin [14/May/2023:14:10:16 +0200] "POST /write?db=SensorData HTTP/1.1" 204 0 "-" "python-requests/2.21.0" 49c01987-f250-11ed-9040-000000000000 275720
+mai 14 14:10:20 raspberrypi influxd[438]: [httpd] ::1 - admin [14/May/2023:14:10:20 +0200] "POST /write?db=SensorData HTTP/1.1" 204 0 "-" "python-requests/2.21.0" 4c0932da-f250-11ed-9041-000000000000 248464
+mai 14 14:10:24 raspberrypi influxd[438]: ts=2023-05-14T12:10:24.956136Z lvl=info msg="Compacted file" log_id=0hnIEsZG000 engine=tsm1 tsm1_strategy=full tsm1_optimize=false trace_id=0hnYXZBW000 op_name=tsm1_compact_group tsm1_index=0 tsm1_file=/data/influxdb/data/SensorData/short_lived/4/000000011-000000002.tsm.tmp
+mai 14 14:10:24 raspberrypi influxd[438]: ts=2023-05-14T12:10:24.956414Z lvl=info msg="Finished compacting files" log_id=0hnIEsZG000 engine=tsm1 tsm1_strategy=full tsm1_optimize=false trace_id=0hnYXZBW000 op_name=tsm1_compact_group tsm1_files_n=1
+mai 14 14:10:24 raspberrypi influxd[438]: ts=2023-05-14T12:10:24.956567Z lvl=info msg="TSM compaction (end)" log_id=0hnIEsZG000 engine=tsm1 tsm1_strategy=full tsm1_optimize=false trace_id=0hnYXZBW000 op_name=tsm1_compact_group op_event=end op_elapsed=19469.573ms
+      #+END_PLAIN
+    - Performances
+      - [[file:img/2024-02-22-14h10-tsm-compaction-grafana-hardware-monitoring.png]]
+    - A impacté cette fois-ci le shard 4
+      #+BEGIN_PLAIN
+> sudo ./test.sh
+-rw-r--r--  1 influxdb influxdb 143834863 mai   14 14:10 000000011-000000002.tsm
+-rw-r--r--  1 influxdb influxdb      2798 mai   14 07:07 fields.idx
+drwxr-xr-x 10 influxdb influxdb      4096 mai   14 07:02 index
+      #+END_PLAIN
+    - De manière similaire, pourquoi ces nouvelles données au niveau du shard 4 ?
+      - Censé être inactif depuis 08:00
+  - 
+- SmartSense: Intégrer la branche *refactor/main-app*
+  - MàJ par rapport à la branche *main* maintenant que *refactor/mqtt-interface-remove-inheritance* a été intégrée
+- SmartSense: Intégrer la branche *refactor/usb-board-manager*
+  - MR créée
 ** Semaine du <2024-02-12 Mon> au <2024-02-16 Fri>
 *** Planned
 **** DONE SmartSense: Self provision *InaManager* et *TlcManager*
