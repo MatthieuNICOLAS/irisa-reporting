@@ -17,9 +17,6 @@
 *** TODO Déployer WordPress sur un cluster de Raspberry
 - Permettrait de valider le résultat obtenu dans les étapes précédentes
 - Et de rencontrer les problèmes éventuels liés aux architectures processeurs
-*** TODO SmartSense: Étudier la mise en place d'une interface WiFi
-- Voir si un hardware donné est conseillé pour la Raspberry CM3
-- Et comment ça s'utiliserait d'un POV logiciel
 *** TODO SmartSense: Corriger le bug de récupération de la valeur `sector` dans une trame MQTT
 - Un test unitaire a mis en lumière qu'en absence d'un champ `sector` dans une trame MQTT, c'est la valeur du champ `sub_sector` qui est utilisé instead
 - Corriger cela
@@ -66,6 +63,56 @@
 *** TODO Lire *OZCAR: The French Network of Critical Zone Observatories*
 - Ammar m'a recommandé cet article pour en apprendre plus sur les observatoires et leurs buts
 - Le consulter
+** Semaine du <2024-02-26 Mon> au <2024-03-01 Fri>
+*** Planned
+**** IN-PROGRESS SmartSense: Intégrer la branche *refactor/main-app*
+- MàJ par rapport à *refactor/mqtt-interface-remove-inheritance*
+- Faire la MR
+**** IN-PROGRESS SmartSense: Intégrer la branche *refactor/naming-conventions*
+- Préparer la MR, en attendant l'intégration de *refactor/main-app*
+**** IN-PROGRESS SmartSense: Intégrer la branche *refactor/usb-board-manager*
+- Faire la MR
+**** IN-PROGRESS SmartSense: Traiter les problèmes relevés lors de l'uniformisation du code
+- J'ai noté plusieurs points problématiques au cours de mon passage sur l'ensemble des modules
+  - Le module *sensor_board* est inutilisé
+    - Code obsolète à supprimer ?
+  - La librairie *telnetlib* est dépréciée
+    - Passer à https://pypi.org/project/telnetlib3/ ?
+  - Une conditionnelle étrange est effectuée dans le module *tlc59108_manager*
+    - https://gitlab.inria.fr/smartsense/3douest/node-app/smartsense-node-app/-/blob/3feb5c56dc5e74dcea9eb2f2ba98bec40029acdf/TLC59108Manager.py#L370
+    - Revient à `if data[0]`
+    - `and` est-il l'opérateur désiré ?
+    - Simplifier/corriger
+  - Les appels à *OpenOCDManager.update()* dans *test_ocd* manquent d'un paramètre
+    - J'ai l'impression que c'est le paramètre *board*
+    - Ajouter les valeurs correctes ?
+  - *USBBoardManager.read_data()* et *parse_to_mqtt()* sont particulièrement sujets aux retours de Pylint
+    - Trop d'instructions
+    - Trop de branchements
+    - Trop de blocs imbriqués
+    - Refactorer pour améliorer la lisibilité du code ?
+    - Voir si on peut aussi factoriser du code à l'aide de fonctions
+  - Corriger ces problèmes
+    - Ou si pas de solution claire et rapide, créer une issue correspondante
+**** IN-PROGRESS SmartSense: Étudier la mise en place d'une interface WiFi
+- Voir si un hardware donné est conseillé pour la Raspberry CM3
+- Et comment ça s'utiliserait d'un POV logiciel
+**** TODO SmartSense: Suivre le comportement d'InfluxDB avec une shard duration de 2h
+- La config avec une shard duration de 4h a tout de même rencontré la OoM error
+- Notamment car InfluxDB tardait à créer de nouveaux shards
+- J'ai redéployé l'application en mettant 2h comme durée de fenêtre de travail des shards
+- Monitorer l'application pour observer l'impact de cette diminution
+**** TODO SmartSense: Reporter les observations sur le crash d'InfluxDB
+- Un détail frustrant lorsque je me suis penché sur le crash d'InfluxDB était le flou ambiant concernant le problème
+  - Pas de présentation et de précisions concernant l'erreur rencontrée
+  - Pas de log associé
+  - Flou sur l'efficacité du workaround
+- Serait bien de documenter cette fois-ci
+  - Le problème
+  - Les différentes approches envisagées pour le résoudre
+  - Le résultat des approches mises en place
+- Mettre à jour l'issue
+  - https://gitlab.inria.fr/smartsense/3douest/node-app/smartsense-node-app/-/issues/1
 ** Semaine du <2024-02-19 Mon> au <2024-02-23 Fri>
 *** Planned
 **** DONE SmartSense: Revert la version de l'application à avant le workaround pour InfluxDB
@@ -96,17 +143,33 @@ CLOSED: [2024-02-22 Thu 11:17]
 - Mais une bonne partie des commits de *refactor/main-app* modifient des lignes concernées par ces changements
 - Je me retrouve avec des conflits fréquemment lorsque j'essaie de rebase en le retirant de l'historique
 - Me parait plus safe, et préférable, d'intégrer ces changements
+**** DONE SmartSense: Étudier la migration vers une nouvelle version d'InfluxDB
+CLOSED: [2024-02-23 Fri 16:53]
+- Le projet utilise pour le moment la version 1.6.4 d'InfluxDB
+- On en est actuellement à la version 2.7.5
+- Voir si y a un intérêt à migrer à cette nouvelle version
+  - Features, performances
+- Voir surtout si ça peut tourner sur la rpi qui équipe le noeud SmartSense
+  - Tourne sur un Compute Module 3 : https://www.raspberrypi.com/products/compute-module-3/
+**** DONE SmartSense: Tester les différentes configurations d'InfluxDB
+CLOSED: [2024-02-23 Fri 16:54]
+- Dans le but de résoudre le problème de crash d'InfluxDB
+  - Provoqué par une compaction des shards trop couteuse semblerait
+- A identifié des paramètres de la config qui pourraient avoir un impact si modifié
+  - Set max-concurrent-compactions à 1 pour déterminer si cela suffit
+  - Sinon
+    - Modifier la retention policy autogen
+      - ALTER RETENTION POLICY autogen ON SensorData SHARD DURATION 4h
+      - ALTER RETENTION POLICY autogen ON collectd SHARD DURATION 4h
+    - Et set compact-full-write-cold-duration à 4h
+- Voir si cela permet de prévenir le crash
 **** IN-PROGRESS SmartSense: Intégrer la branche *refactor/main-app*
 - MàJ par rapport à *refactor/mqtt-interface-remove-inheritance*
 - Faire la MR
-**** IN-PROGRESS SmartSense: Ajouter *NodeManager*
-- Idée est d'avoir un module qui se charge
-  - Du provisioning
-  - Des commandes ciblant le noeud entier
-- Permet de démêler le code de *MainApp* du code du noeud
-  - Et le routing des messages de leur traitement
 **** IN-PROGRESS SmartSense: Intégrer la branche *refactor/naming-conventions*
 - Préparer la MR, en attendant l'intégration de *refactor/main-app*
+**** IN-PROGRESS SmartSense: Intégrer la branche *refactor/usb-board-manager*
+- Faire la MR
 **** IN-PROGRESS SmartSense: Traiter les problèmes relevés lors de l'uniformisation du code
 - J'ai noté plusieurs points problématiques au cours de mon passage sur l'ensemble des modules
   - Le module *sensor_board* est inutilisé
@@ -129,26 +192,15 @@ CLOSED: [2024-02-22 Thu 11:17]
     - Voir si on peut aussi factoriser du code à l'aide de fonctions
   - Corriger ces problèmes
     - Ou si pas de solution claire et rapide, créer une issue correspondante
-**** IN-PROGRESS SmartSense: Étudier la migration vers une nouvelle version d'InfluxDB
-- Le projet utilise pour le moment la version 1.6.4 d'InfluxDB
-- On en est actuellement à la version 2.7.5
-- Voir si y a un intérêt à migrer à cette nouvelle version
-  - Features, performances
-- Voir surtout si ça peut tourner sur la rpi qui équipe le noeud SmartSense
-  - Tourne sur un Compute Module 3 : https://www.raspberrypi.com/products/compute-module-3/
-**** IN-PROGRESS SmartSense: Tester les différentes configurations d'InfluxDB
-- Dans le but de résoudre le problème de crash d'InfluxDB
-  - Provoqué par une compaction des shards trop couteuse semblerait
-- A identifié des paramètres de la config qui pourraient avoir un impact si modifié
-  - Set max-concurrent-compactions à 1 pour déterminer si cela suffit
-  - Sinon
-    - Modifier la retention policy autogen
-      - ALTER RETENTION POLICY autogen ON SensorData SHARD DURATION 4h
-      - ALTER RETENTION POLICY autogen ON collectd SHARD DURATION 4h
-    - Et set compact-full-write-cold-duration à 4h
-- Voir si cela permet de prévenir le crash
-**** IN-PROGRESS SmartSense: Intégrer la branche *refactor/usb-board-manager*
-- Faire la MR
+**** IN-PROGRESS SmartSense: Étudier la mise en place d'une interface WiFi
+- Voir si un hardware donné est conseillé pour la Raspberry CM3
+- Et comment ça s'utiliserait d'un POV logiciel
+**** CANCELLED SmartSense: Ajouter *NodeManager*
+- Idée est d'avoir un module qui se charge
+  - Du provisioning
+  - Des commandes ciblant le noeud entier
+- Permet de démêler le code de *MainApp* du code du noeud
+  - Et le routing des messages de leur traitement
 *** Done
 - SmartSense: Revert la version de l'application à avant le workaround pour InfluxDB
   - Création d'un backup de l'application dans /home/pi/backupApp
@@ -178,7 +230,7 @@ CLOSED: [2024-02-22 Thu 11:17]
   - A bien quelques erreurs loggées, mais concernent le parsing de trame MQTT
     - [[file:img/2024-02-19-smartsense-node-errors-parsing-data.png]]
   - Le workaround a l'air d'être efficace
-- SmartSense: Intégrer la branche *refactor/naming-conventions
+- SmartSense: Intégrer la branche *refactor/naming-conventions*
   - MR préparée
 - SmartSense: Traiter les problèmes relevés lors de l'uniformisation du code
   - Module `sensor_board` inutilisé
@@ -726,6 +778,8 @@ the system is undersized for its load, and configuration changes won’t help mu
     - Plante inopinément si utilise le default in-memory index
   - 1.7.3 À ÉVITER
     - Data loss lors de la compaction
+    - Mais
+      - Limit force-full and cold compaction size : https://github.com/influxdata/influxdb/pull/10536
   - 1.7.0
     - The `ifql` section in the configuration has been changed to `flux` and it is enabled by default on port `:8082`.
     - Compaction performance improvements for Time Series Index (TSI).
@@ -924,11 +978,173 @@ drwxr-xr-x 10 influxdb influxdb      4096 mai   14 07:02 index
       #+END_PLAIN
     - De manière similaire, pourquoi ces nouvelles données au niveau du shard 4 ?
       - Censé être inactif depuis 08:00
-  - 
+  - Comportement étrange du shard 6
+    - Alors qu'il est censé couvrir les données que de 12:00 à 16:00
+    - À 17:03, il est toujours en train de récupérer des données
+    - Et son successeur n'est toujours pas créé
+    - Que fait influxdb ?
+    - Et où sont stockées les données ?
+      - À 17:20, aucun fichier .tsm ne semble avoir été mis à jour
+      - i.e. aucune MàJ dans _series depuis 07:02 et 10:04, dans les shards depuis 17:03
+      - Probablement dans le WAL du coup
+    - Ah non c'est bon, à 17:22, MàJ des fichiers du shard 6
+  - Mais toujours pas de shard 7 à 17:24, soit 1:24 après la fin du shard 6
+  - C'est bien ça, les données que je ne vois pas sont en fait stockées dans le WAL
+    #+BEGIN_PLAIN
+> sudo ls -l /data/influxdb/wal/collectd/autogen/2
+total 14320
+-rw-r--r-- 1 influxdb influxdb 14657777 mai   14 17:32 _00001.wal
+> sudo ls -l /data/influxdb/wal/SensorData/short_lived/6
+total 8888
+-rw-r--r-- 1 influxdb influxdb 9099577 mai   14 17:33 _00023.wal
+    #+END_PLAIN
+  - Pourquoi le WAL se comporte de manière si différente entre les BDs ?
+    - Écrit régulièrement pour SensorData
+    - Et pour le moment, ne constate pas la moindre écriture pour collectd
+    - A une taille limite de cache, 25Mo
+    - Mais cette taille semble jamais atteinte dans le cas de de SensorData
+      - Pas vu de fichier tsm de niveau 1 dépassant les 20Mo
+    - La discussion suivante apporte une réponse :
+      - https://community.influxdata.com/t/what-determines-when-these-influxdb-wal-directory-contents-are-moved-to-data/14785
+      - Correspond à la taille en mémoire de la structure WAL
+      - Forcément, sa taille est réduite lors du passage en TSM, cette structure étant plus efficace d'un point de vue taille
+  - Ne comprends pas la différence entre les options cache-snapshot-memory-size et max-index-log-file-size
+    - cache-snapshot-memory-size : la taille du TSM en mémoire avant qu'il soit écrit sur le disque
+    - max-index-log-file-size : la taille de l'index du WAL avant qu'il soit écrit sur le disque
+    - WAL
+      - Structure de données optimisée pour l'écriture des données et non pas la lecture
+      - Sert de buffer avant de reporter les écritures au TSM
+      - Données dans le WAL sont tout de même comprises dans les requêtes
+      - Durable
+    - Cache
+      - Représentation en mémoire du WAL
+      - Lorsqu'il atteint la taille limite, données sont écrites dans un TSM
+      - Cache et fichiers WAL correspondants sont réinitialisé/supprimés
+    - TSM
+      - Structure de données optimisée pour la lecture
+    - La discussion suivante aide bien à comprendre : https://community.influxdata.com/t/how-influxdb-work-with-files-tsm-db-wal/787/9
+  - En vrai, nous on se passerait bien des TSM
+    - Mais il n'y a pas l'air d'y avoir de mode de fonctionnement WAL-only
+  - De nouveau un crash à 22:00 (heure du noeud)
+    - Toujours un problème out of RAM
+  - Sauf que cette fois-ic, rencontre un problème au redémarrage d'InfluxDB
+    - Logs
+      #+BEGIN_PLAIN
+mai 14 22:00:20 raspberrypi influxd[6485]: ts=2023-05-14T20:00:20.383999Z lvl=info msg="TSM compaction (start)" log_id=0hnyQydG000 engine=tsm1 tsm1_strategy=full tsm1_optimize=false trace_id=0hnyRecl000 op_name=tsm1_compact_group op_event=start
+mai 14 22:00:20 raspberrypi influxd[6485]: ts=2023-05-14T20:00:20.384182Z lvl=info msg="Beginning compaction" log_id=0hnyQydG000 engine=tsm1 tsm1_strategy=full tsm1_optimize=false trace_id=0hnyRecl000 op_name=tsm1_compact_group tsm1_files_n=6
+mai 14 22:00:20 raspberrypi influxd[6485]: ts=2023-05-14T20:00:20.384263Z lvl=info msg="Compacting file" log_id=0hnyQydG000 engine=tsm1 tsm1_strategy=full tsm1_optimize=false trace_id=0hnyRecl000 op_name=tsm1_compact_group tsm1_index=0 tsm1_file=/data/influxdb/data/SensorData/short_lived/6/000000008-000000002.tsm
+mai 14 22:00:20 raspberrypi influxd[6485]: ts=2023-05-14T20:00:20.384317Z lvl=info msg="Compacting file" log_id=0hnyQydG000 engine=tsm1 tsm1_strategy=full tsm1_optimize=false trace_id=0hnyRecl000 op_name=tsm1_compact_group tsm1_index=1 tsm1_file=/data/influxdb/data/SensorData/short_lived/6/000000009-000000001.tsm
+mai 14 22:00:20 raspberrypi influxd[6485]: ts=2023-05-14T20:00:20.384399Z lvl=info msg="Compacting file" log_id=0hnyQydG000 engine=tsm1 tsm1_strategy=full tsm1_optimize=false trace_id=0hnyRecl000 op_name=tsm1_compact_group tsm1_index=2 tsm1_file=/data/influxdb/data/SensorData/short_lived/6/000000010-000000001.tsm
+mai 14 22:00:20 raspberrypi influxd[6485]: ts=2023-05-14T20:00:20.384480Z lvl=info msg="Compacting file" log_id=0hnyQydG000 engine=tsm1 tsm1_strategy=full tsm1_optimize=false trace_id=0hnyRecl000 op_name=tsm1_compact_group tsm1_index=3 tsm1_file=/data/influxdb/data/SensorData/short_lived/6/000000011-000000001.tsm
+mai 14 22:00:20 raspberrypi influxd[6485]: ts=2023-05-14T20:00:20.384562Z lvl=info msg="Compacting file" log_id=0hnyQydG000 engine=tsm1 tsm1_strategy=full tsm1_optimize=false trace_id=0hnyRecl000 op_name=tsm1_compact_group tsm1_index=4 tsm1_file=/data/influxdb/data/SensorData/short_lived/6/000000012-000000001.tsm
+mai 14 22:00:20 raspberrypi influxd[6485]: ts=2023-05-14T20:00:20.384643Z lvl=info msg="Compacting file" log_id=0hnyQydG000 engine=tsm1 tsm1_strategy=full tsm1_optimize=false trace_id=0hnyRecl000 op_name=tsm1_compact_group tsm1_index=5 tsm1_file=/data/influxdb/data/SensorData/short_lived/6/000000013-000000001.tsm
+mai 14 22:00:21 raspberrypi influxd[6485]: [httpd] ::1 - admin [14/May/2023:22:00:21 +0200] "POST /write?db=SensorData HTTP/1.1" 204 0 "-" "python-requests/2.21.0" f4d8655f-f291-11ed-8002-000000000000 37448
+mai 14 22:00:25 raspberrypi influxd[6485]: [httpd] ::1 - admin [14/May/2023:22:00:25 +0200] "POST /write?db=SensorData HTTP/1.1" 204 0 "-" "python-requests/2.21.0" f769a241-f291-11ed-8003-000000000000 45923
+mai 14 22:00:29 raspberrypi influxd[6485]: [httpd] ::1 - admin [14/May/2023:22:00:29 +0200] "POST /write?db=SensorData HTTP/1.1" 204 0 "-" "python-requests/2.21.0" f9ccecd3-f291-11ed-8004-000000000000 62994
+mai 14 22:00:34 raspberrypi influxd[6485]: [httpd] ::1 - admin [14/May/2023:22:00:33 +0200] "POST /write?db=SensorData HTTP/1.1" 204 0 "-" "python-requests/2.21.0" fc7080e1-f291-11ed-8005-000000000000 510367
+mai 14 22:00:38 raspberrypi influxd[6485]: [httpd] ::1 - admin [14/May/2023:22:00:38 +0200] "POST /write?db=SensorData HTTP/1.1" 204 0 "-" "python-requests/2.21.0" fefc8a02-f291-11ed-8006-000000000000 198751
+mai 14 22:00:42 raspberrypi influxd[6485]: [httpd] ::1 - admin [14/May/2023:22:00:42 +0200] "POST /write?db=SensorData HTTP/1.1" 204 0 "-" "python-requests/2.21.0" 0168ff58-f292-11ed-8007-000000000000 356423
+mai 14 22:00:46 raspberrypi influxd[6485]: [httpd] ::1 - admin [14/May/2023:22:00:46 +0200] "POST /write?db=SensorData HTTP/1.1" 204 0 "-" "python-requests/2.21.0" 03ed81f9-f292-11ed-8008-000000000000 67127
+mai 14 22:00:50 raspberrypi influxd[6485]: [httpd] ::1 - admin [14/May/2023:22:00:50 +0200] "POST /write?db=SensorData HTTP/1.1" 204 0 "-" "python-requests/2.21.0" 0685bed8-f292-11ed-8009-000000000000 89830
+mai 14 22:00:55 raspberrypi influxd[6485]: ts=2023-05-14T20:00:55.222738Z lvl=info msg="Error replacing new TSM files" log_id=0hnyQydG000 engine=tsm1 tsm1_strategy=full tsm1_optimize=false trace_id=0hnyRecl000 op_name=tsm1_compact_group error="cannot allocate memory"
+mai 14 22:00:55 raspberrypi influxd[6485]: [httpd] ::1 - admin [14/May/2023:22:00:54 +0200] "POST /write?db=SensorData HTTP/1.1" 204 0 "-" "python-requests/2.21.0" 08e1a644-f292-11ed-800a-000000000000 601332
+mai 14 22:00:56 raspberrypi influxd[6485]: ts=2023-05-14T20:00:56.230288Z lvl=info msg="TSM compaction (end)" log_id=0hnyQydG000 engine=tsm1 tsm1_strategy=full tsm1_optimize=false trace_id=0hnyRecl000 op_name=tsm1_compact_group op_event=end op_elapsed=35846.263ms
+mai 14 22:00:56 raspberrypi influxd[6485]: ts=2023-05-14T20:00:56.384020Z lvl=info msg="TSM compaction (start)" log_id=0hnyQydG000 engine=tsm1 tsm1_strategy=full tsm1_optimize=false trace_id=0hnyTrFl000 op_name=tsm1_compact_group op_event=start
+mai 14 22:00:56 raspberrypi influxd[6485]: ts=2023-05-14T20:00:56.384158Z lvl=info msg="Beginning compaction" log_id=0hnyQydG000 engine=tsm1 tsm1_strategy=full tsm1_optimize=false trace_id=0hnyTrFl000 op_name=tsm1_compact_group tsm1_files_n=6
+mai 14 22:00:56 raspberrypi influxd[6485]: ts=2023-05-14T20:00:56.384212Z lvl=info msg="Compacting file" log_id=0hnyQydG000 engine=tsm1 tsm1_strategy=full tsm1_optimize=false trace_id=0hnyTrFl000 op_name=tsm1_compact_group tsm1_index=0 tsm1_file=/data/influxdb/data/SensorData/short_lived/6/000000008-000000002.tsm
+mai 14 22:00:56 raspberrypi influxd[6485]: ts=2023-05-14T20:00:56.384272Z lvl=info msg="Compacting file" log_id=0hnyQydG000 engine=tsm1 tsm1_strategy=full tsm1_optimize=false trace_id=0hnyTrFl000 op_name=tsm1_compact_group tsm1_index=1 tsm1_file=/data/influxdb/data/SensorData/short_lived/6/000000009-000000001.tsm
+mai 14 22:00:56 raspberrypi influxd[6485]: ts=2023-05-14T20:00:56.384331Z lvl=info msg="Compacting file" log_id=0hnyQydG000 engine=tsm1 tsm1_strategy=full tsm1_optimize=false trace_id=0hnyTrFl000 op_name=tsm1_compact_group tsm1_index=2 tsm1_file=/data/influxdb/data/SensorData/short_lived/6/000000010-000000001.tsm
+mai 14 22:00:56 raspberrypi influxd[6485]: ts=2023-05-14T20:00:56.384387Z lvl=info msg="Compacting file" log_id=0hnyQydG000 engine=tsm1 tsm1_strategy=full tsm1_optimize=false trace_id=0hnyTrFl000 op_name=tsm1_compact_group tsm1_index=3 tsm1_file=/data/influxdb/data/SensorData/short_lived/6/000000011-000000001.tsm
+mai 14 22:00:56 raspberrypi influxd[6485]: ts=2023-05-14T20:00:56.384445Z lvl=info msg="Compacting file" log_id=0hnyQydG000 engine=tsm1 tsm1_strategy=full tsm1_optimize=false trace_id=0hnyTrFl000 op_name=tsm1_compact_group tsm1_index=4 tsm1_file=/data/influxdb/data/SensorData/short_lived/6/000000012-000000001.tsm
+mai 14 22:00:56 raspberrypi influxd[6485]: ts=2023-05-14T20:00:56.384501Z lvl=info msg="Compacting file" log_id=0hnyQydG000 engine=tsm1 tsm1_strategy=full tsm1_optimize=false trace_id=0hnyTrFl000 op_name=tsm1_compact_group tsm1_index=5 tsm1_file=/data/influxdb/data/SensorData/short_lived/6/000000013-000000001.tsm
+mai 14 22:00:56 raspberrypi influxd[6485]: ts=2023-05-14T20:00:56.384893Z lvl=info msg="Aborted compaction" log_id=0hnyQydG000 engine=tsm1 tsm1_strategy=full tsm1_optimize=false trace_id=0hnyTrFl000 op_name=tsm1_compact_group error="compaction in progress: open /data/influxdb/data/SensorData/short_lived/6/000000013-000000002.tsm.tmp: file exists"
+mai 14 22:00:57 raspberrypi influxd[6485]: ts=2023-05-14T20:00:57.385245Z lvl=info msg="TSM compaction (end)" log_id=0hnyQydG000 engine=tsm1 tsm1_strategy=full tsm1_optimize=false trace_id=0hnyTrFl000 op_name=tsm1_compact_group op_event=end op_elapsed=1001.241ms
+mai 14 22:00:58 raspberrypi influxd[6485]: ts=2023-05-14T20:00:58.384198Z lvl=info msg="TSM compaction (start)" log_id=0hnyQydG000 engine=tsm1 tsm1_strategy=full tsm1_optimize=false trace_id=0hnyTz40000 op_name=tsm1_compact_group op_event=start
+mai 14 22:00:58 raspberrypi influxd[6485]: ts=2023-05-14T20:00:58.384359Z lvl=info msg="Beginning compaction" log_id=0hnyQydG000 engine=tsm1 tsm1_strategy=full tsm1_optimize=false trace_id=0hnyTz40000 op_name=tsm1_compact_group tsm1_files_n=6
+mai 14 22:00:58 raspberrypi influxd[6485]: ts=2023-05-14T20:00:58.384414Z lvl=info msg="Compacting file" log_id=0hnyQydG000 engine=tsm1 tsm1_strategy=full tsm1_optimize=false trace_id=0hnyTz40000 op_name=tsm1_compact_group tsm1_index=0 tsm1_file=/data/influxdb/data/SensorData/short_lived/6/000000008-000000002.tsm
+mai 14 22:00:58 raspberrypi influxd[6485]: ts=2023-05-14T20:00:58.384493Z lvl=info msg="Compacting file" log_id=0hnyQydG000 engine=tsm1 tsm1_strategy=full tsm1_optimize=false trace_id=0hnyTz40000 op_name=tsm1_compact_group tsm1_index=1 tsm1_file=/data/influxdb/data/SensorData/short_lived/6/000000009-000000001.tsm
+mai 14 22:00:58 raspberrypi influxd[6485]: ts=2023-05-14T20:00:58.384564Z lvl=info msg="Compacting file" log_id=0hnyQydG000 engine=tsm1 tsm1_strategy=full tsm1_optimize=false trace_id=0hnyTz40000 op_name=tsm1_compact_group tsm1_index=2 tsm1_file=/data/influxdb/data/SensorData/short_lived/6/000000010-000000001.tsm
+mai 14 22:00:58 raspberrypi influxd[6485]: ts=2023-05-14T20:00:58.384623Z lvl=info msg="Compacting file" log_id=0hnyQydG000 engine=tsm1 tsm1_strategy=full tsm1_optimize=false trace_id=0hnyTz40000 op_name=tsm1_compact_group tsm1_index=3 tsm1_file=/data/influxdb/data/SensorData/short_lived/6/000000011-000000001.tsm
+mai 14 22:00:58 raspberrypi influxd[6485]: ts=2023-05-14T20:00:58.384706Z lvl=info msg="Compacting file" log_id=0hnyQydG000 engine=tsm1 tsm1_strategy=full tsm1_optimize=false trace_id=0hnyTz40000 op_name=tsm1_compact_group tsm1_index=4 tsm1_file=/data/influxdb/data/SensorData/short_lived/6/000000012-000000001.tsm
+mai 14 22:00:58 raspberrypi influxd[6485]: ts=2023-05-14T20:00:58.384768Z lvl=info msg="Compacting file" log_id=0hnyQydG000 engine=tsm1 tsm1_strategy=full tsm1_optimize=false trace_id=0hnyTz40000 op_name=tsm1_compact_group tsm1_index=5 tsm1_file=/data/influxdb/data/SensorData/short_lived/6/000000013-000000001.tsm
+mai 14 22:00:58 raspberrypi influxd[6485]: ts=2023-05-14T20:00:58.385214Z lvl=info msg="Aborted compaction" log_id=0hnyQydG000 engine=tsm1 tsm1_strategy=full tsm1_optimize=false trace_id=0hnyTz40000 op_name=tsm1_compact_group error="compaction in progress: open /data/influxdb/data/SensorData/short_lived/6/000000013-000000002.tsm.tmp: file exists"
+mai 14 22:00:58 raspberrypi influxd[6485]: [httpd] ::1 - admin [14/May/2023:22:00:58 +0200] "POST /write?db=SensorData HTTP/1.1" 204 0 "-" "python-requests/2.21.0" 0b6daeed-f292-11ed-800b-000000000000 38946
+mai 14 22:00:59 raspberrypi influxd[6485]: ts=2023-05-14T20:00:59.385566Z lvl=info msg="TSM compaction (end)" log_id=0hnyQydG000 engine=tsm1 tsm1_strategy=full tsm1_optimize=false trace_id=0hnyTz40000 op_name=tsm1_compact_group op_event=end op_elapsed=1001.396ms
+      #+END_PLAIN
+    - De ce que je comprends, au redémarrage, InfluxDB retente la compaction
+    - Cette fois-ci, il abort car il tombe de nouveau out-of-memory
+    - Mais au lieu de s'arrêter là, il retente la compaction
+    - Détecte un fichier temp de la tentative de compaction précédente et abort de nouveau
+    - Et boucle de cette manière en continue
+  - Donc instance toujours fonctionnelle, mais néanmoins détériorée
+  - Comment empêcher cela de se reproduire ?
+    - Diminuer la durée de la fenêtre de temps d'un shard à 2h
+    - En espérant que cette fois-ci, cela aboutisse bien à des shards plus petits
+    - En profite pour modifier la configuration InfluxDB pour limiter les compactions en parallèle
+      - La présentation de cette option utilise l'angle du CPU
+      - Mais plusieurs compactions en concurrence devrait aussi impacter la RAM
+        - e.g. de plusieurs shards
+      - Pas sûr qu'on est déjà eu ce cas de figure
+      - Mais dans le doute, ça coûte rien
+  - Remise en état de la DB
+    - Export des données
+      - sudo cp -r /data/influxdb/ 2024-02-23-backupDataInfluxDB
+    - Recréation du dossier de données
+      - cd /data
+      - sudo mkdir influxdb
+      - sudo chown influxdb:influxdb influxdb/
+    - MàJ de la config
+      - sudo cp working-influxdb.conf /etc/influxdb/influxdb.conf
+    - Démarrage d'InfluxDB
+    - Création de l'utilisateur admin
+    - Quitter/Relancer l'invit de commande
+    - Créer les measurements avec les bonnes retention policies
+      - DROP DATABASE collectd; CREATE DATABASE collectd WITH SHARD DURATION 2h NAME short_duration
+      - CREATE DATABASE SensorData WITH SHARD DURATION 2h NAME short_duration
+  - Le fait que la BD démarre avec des shards dont la fenêtre est déjà censée être passée est peu encourageant
+    - On va voir si ça se corrige par la suite
 - SmartSense: Intégrer la branche *refactor/main-app*
   - MàJ par rapport à la branche *main* maintenant que *refactor/mqtt-interface-remove-inheritance* a été intégrée
 - SmartSense: Intégrer la branche *refactor/usb-board-manager*
   - MR créée
+- SmartSense: Étudier la mise en place d'une interface WiFi
+  - Parcours plusieurs pages à la recherche d'infos
+    - CM3+ and WiFi/BT CYW43455 : https://forums.raspberrypi.com/viewtopic.php?t=183618
+      - Un peu HS, mais a l'air d'avoir rassemblé beaucoup de discussions
+      - Des commentaires seront p-e pertinents pour la mise en place d'une interface WiFi pour CM3
+    - How to connect Wi-Fi with ESP32 on CM3 ? : https://forums.raspberrypi.com/viewtopic.php?t=268087
+      - Court
+      - Mais donne quelques pistes intéressantes
+        - Utilisation du device comme un serial device, configuration spécifique via des commandes AT
+        - Utilisation du device via un port USB, utilisation de drivers standards
+  - Existe donc un forum dédié aux CMs
+    - https://forums.raspberrypi.com/viewforum.php?f=98&sid=417b80a60019b2755077dade3b1165b0
+  - Description du fonctionnement du Compute Module
+    - https://www.raspberrypi.com/documentation/computers/compute-module.html
+    - Link des documents techniques sur l'architecture de la CM3 et de la Compute Module IO board (CMIO)
+    - Présente s'initialise la CM3 à partir de la description hardware décrite dans des Device Trees.
+    - Indique comment surcharger cette configuration par le biais d'overlays pour intégrer du hardware supplémentaire
+      - Au hasard, carte WiFi
+- SmartSense: Récapitulatif concernant bug InfluxDB
+  - Pistes
+    - Réduire davantage la fenêtre des shards
+      - 4h00 semblait correcte comme durée
+      - Mais le fait qu'InfluxDB ne spawn pas forcément de nouveaux shards à ce rythme casse cette stratégie
+      - Voir si réduire davantage permet de mitiger ce problème
+    - MàJ InfluxDB et vérifier si cela a un impact
+      - Vérifier si le mécanisme de compression est plus performant
+      - Vérifier si le mécanisme d'allocation des shards est plus réactif
+    - MàJ InfluxDB et mettre en place un job de désactivation du mécanisme de compression des shards
+      - Explorer les sous-dossiers de /data/influxdb/data/
+      - Pour chaque feuille, i.e. dossier d'un shard, créer le fichier /do_not_compact/
+    - Remplacer l'utilisation d'InfluxDB locale par un export brut
+      - Possible d'insérer des données stockées dans un fichier au format Line
+      - https://docs.influxdata.com/influxdb/v1/guides/write_data/#writing-points-from-a-file
+      - Indique cependant qu'il faut limiter à 5k entrées par fichier
+      - Y aurait besoin d'un utilitaire dans ce cas
+        - Ce qu'on cherche à éviter
+    - Upgrade du matériel
+      - Dans ce cas, devrait probablement redesign le noeud SmartSense
 ** Semaine du <2024-02-12 Mon> au <2024-02-16 Fri>
 *** Planned
 **** DONE SmartSense: Self provision *InaManager* et *TlcManager*
