@@ -65,6 +65,31 @@
 - Le consulter
 ** Semaine du <2024-02-26 Mon> au <2024-03-01 Fri>
 *** Planned
+**** DONE SmartSense: Résoudre le problème de monitoring du noeud
+CLOSED: [2024-02-26 Mon 09:28]
+- Rencontre une erreur inconnue au lancement du noeud ce matin (<2024-02-26 Mon>)
+- L'application a l'air de fonctionner correctement
+- Mais Grafana n'arrive pas à afficher les métriques systèmes collectées
+- Obtient l'erreur "InfluxDB Error: not executed" lorsque j'affiche le dashboard *Hardware Monitoring*
+- Ne rencontre pas de problèmes par contre avec le dashboard *Sensor Data*
+- Identifier et résoudre le problème sous-jacent
+**** DONE SmartSense: Reporter les observations sur le crash d'InfluxDB
+CLOSED: [2024-02-26 Mon 14:50]
+- Un détail frustrant lorsque je me suis penché sur le crash d'InfluxDB était le flou ambiant concernant le problème
+  - Pas de présentation et de précisions concernant l'erreur rencontrée
+  - Pas de log associé
+  - Flou sur l'efficacité du workaround
+- Serait bien de documenter cette fois-ci
+  - Le problème
+  - Les différentes approches envisagées pour le résoudre
+  - Le résultat des approches mises en place
+- Mettre à jour l'issue
+  - https://gitlab.inria.fr/smartsense/3douest/node-app/smartsense-node-app/-/issues/1
+**** IN-PROGRESS SmartSense: Suivre le comportement d'InfluxDB avec une shard duration de 2h
+- La config avec une shard duration de 4h a tout de même rencontré la OoM error
+- Notamment car InfluxDB tardait à créer de nouveaux shards
+- J'ai redéployé l'application en mettant 2h comme durée de fenêtre de travail des shards
+- Monitorer l'application pour observer l'impact de cette diminution
 **** IN-PROGRESS SmartSense: Intégrer la branche *refactor/main-app*
 - MàJ par rapport à *refactor/mqtt-interface-remove-inheritance*
 - Faire la MR
@@ -97,22 +122,85 @@
 **** IN-PROGRESS SmartSense: Étudier la mise en place d'une interface WiFi
 - Voir si un hardware donné est conseillé pour la Raspberry CM3
 - Et comment ça s'utiliserait d'un POV logiciel
-**** TODO SmartSense: Suivre le comportement d'InfluxDB avec une shard duration de 2h
-- La config avec une shard duration de 4h a tout de même rencontré la OoM error
-- Notamment car InfluxDB tardait à créer de nouveaux shards
-- J'ai redéployé l'application en mettant 2h comme durée de fenêtre de travail des shards
-- Monitorer l'application pour observer l'impact de cette diminution
-**** TODO SmartSense: Reporter les observations sur le crash d'InfluxDB
-- Un détail frustrant lorsque je me suis penché sur le crash d'InfluxDB était le flou ambiant concernant le problème
-  - Pas de présentation et de précisions concernant l'erreur rencontrée
-  - Pas de log associé
-  - Flou sur l'efficacité du workaround
-- Serait bien de documenter cette fois-ci
-  - Le problème
-  - Les différentes approches envisagées pour le résoudre
-  - Le résultat des approches mises en place
-- Mettre à jour l'issue
-  - https://gitlab.inria.fr/smartsense/3douest/node-app/smartsense-node-app/-/issues/1
+*** Done
+- SmartSense: Résoudre le problème de monitoring du noeud
+  - Si j'interroge directement influxdb, observe les données de collectd être collectées et stockées
+  - "Juste" une question d'affichage donc
+  - En récupérant les requêtes soumises à la BDD, observe que celles du dashboard *Hardware Monitoring* mentionnent la retention policy par défaut
+    #+BEGIN_PLAIN
+SELECT mean(value) FROM collectd.autogen.df_value WHERE (host =~ /^raspberrypi$/ AND instance =~ /^data$/ AND type_instance = 'used') AND time >= now() - 1d GROUP BY time(2m) fill(previous)
+    #+END_PLAIN
+  - Tandis que celles du dashboard *Sensor Data* utilisent bien celle que j'ai défini
+     #+BEGIN_PLAIN
+SELECT mean(*) FROM SensorData.short_duration.event_airQuality WHERE (node =~ /^b8:27:eb:8c:67:48$/ AND mcu = 'esensor') AND time >= now() - 2d GROUP BY time(2m)
+     #+END_PLAIN
+  - "Corrige" le problème en supprimant/recréant "collectd" en utilisant le nom "autogen" pour sa rentention policy
+  - Mais à garder en tête et à creuser
+    - Pourquoi et comment le dashboard *Sensor Data* s'adapte au changement de nom de la retention policy ?
+    - Et comment faire pour que le dashboard *Hardware Monitoring* adopte le même comportement ?
+- SmartSense: Suivre le comportement d'InfluxDB avec une shard duration de 2h
+  - A l'air de fonctionner correctement
+  - J'ai rien dit
+  - J'ai beau avoir des shards pour la fenêtre courante, aucune donnée dedans
+    - Par ex, à 05:51 (heure du noeud), aucune donnée dans wal/ et data/ des shards correspondants (11 pour SensorData, 12 pour collectd)
+    - Shards allant de 04:00 à 06:00
+  - P-e tout simplement une histoire de décalage horaire
+    - Est 05:51 (UTC+0200)
+    - Si InfluxDB est en UTC+0, prendrait sens
+    - Ce que je prenais pour un comportement aléatoire
+    - Serait juste un fonctionnement décalé d'un shard
+- SmartSense: Reporter les observations sur le crash d'InfluxDB
+  - Rédaction et ajout d'un commentaire sur l'issue décrivant
+    - Les différentes étapes suivies
+    - Le problème rencontré
+    - Les solutions identifiées
+    - L'approche actuellement en cours d'étude
+- SmartSense: Étudier la mise en place d'une interface WiFi
+  - J'ai discuté avec Govind rapidement
+    - Celui-ci m'a donné quelques conseils à ce sujet
+    - Utilisation d'un dongle USB
+      - Plutôt que de passer par le serial
+      - Serait plus simple/clé en main
+    - Consommation énergie
+      - Vu que le cas d'usage se positionne dans les situations avec contraintes énergétiques
+        - Sur batterie, énergies renouvelables
+      - Devrait viser un périphérique efficace sur cet aspect
+- Discussion avec Matthieu
+  - Workflow Git
+    - Plutôt d'avis à squash les commits d'une MR
+    - De retirer par contre les commits de merge
+      - Possible en modifiant la config du repo
+  - Protocole de messages
+    - Liste quelques solutions
+      - Protobuf, CaptainProto, FlatBuffer
+    - Mais peur que ces solutions soient trop coûteuses pour l'environnement embarqué
+    - Suggère plutôt
+      - MsgPack
+      - JSON Schema + JSONDumps/Loads
+        - Probablement pas adapté vu qu'on repose sur le line protocol d'InfluxDB
+  - InfluxDB
+    - A dérivé du coup sur l'utilisation d'InfluxDB en embarqué
+    - Pas trop convaincu
+      - Un peu too much pour notre environnement et notre utilisation
+    - Suggère plutôt l'utilisation du système de fichiers
+  - Programmation Orientée Objet en Python
+    - Certes, on voit les vestiges de l'historique de Python
+    - Mais désormais adoptée par la communauté
+    - Pas de raison d'hésiter/de se censurer
+- Discussion avec Govind
+  - On a aussi abordé la problématique liée à InfluxDB
+  - Lui suggère à la place d'InfluxDB d'utiliser VictoriaMetrics
+    - https://github.com/VictoriaMetrics/VictoriaMetrics
+    - Une alternative performante
+    - D'après leurs benchs, consommerait jusqu'à 10x moins de RAM qu'InfluxDB
+    - Tout en étant jusqu'à 20x plus rapide
+  - Sinon, me rappelle l'existence du swap
+    - Si le problème, c'est qu'on manque de RAM
+    - L'option évidente, c'est d'accroître la quantité maximale de swap
+      - Actuellement 100Mo
+      - On a 95Go de stockage non-utilisé
+    - Serait p-e plus lent, certes
+    - Mais permettrait de tanker l'exécution du mécanisme de compression
 ** Semaine du <2024-02-19 Mon> au <2024-02-23 Fri>
 *** Planned
 **** DONE SmartSense: Revert la version de l'application à avant le workaround pour InfluxDB
@@ -1099,7 +1187,7 @@ mai 14 22:00:59 raspberrypi influxd[6485]: ts=2023-05-14T20:00:59.385566Z lvl=in
     - Création de l'utilisateur admin
     - Quitter/Relancer l'invit de commande
     - Créer les measurements avec les bonnes retention policies
-      - DROP DATABASE collectd; CREATE DATABASE collectd WITH SHARD DURATION 2h NAME short_duration
+      - DROP DATABASE collectd; CREATE DATABASE collectd WITH SHARD DURATION 2h NAME autogen
       - CREATE DATABASE SensorData WITH SHARD DURATION 2h NAME short_duration
   - Le fait que la BD démarre avec des shards dont la fenêtre est déjà censée être passée est peu encourageant
     - On va voir si ça se corrige par la suite
