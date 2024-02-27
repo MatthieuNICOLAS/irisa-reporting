@@ -1,0 +1,383 @@
+mai 16 04:33:26 raspberrypi influxd[12424]: [httpd] ::1 - admin [16/May/2023:04:33:26 +0200] "POST /write?db=SensorData HTTP/1.1" 204 0 "-" "python-requests/2.21.0" 095eaccc-f392-11ed-8004-000000000000 154212
+mai 16 04:33:31 raspberrypi influxd[12424]: [httpd] ::1 - admin [16/May/2023:04:33:30 +0200] "POST /write?db=SensorData HTTP/1.1" 204 0 "-" "python-requests/2.21.0" 0bf49250-f392-11ed-8005-000000000000 209678
+mai 16 04:33:31 raspberrypi influxd[12424]: ts=2023-05-16T02:33:31.315349Z lvl=info msg="Snapshot for path written" log_id=0hpbIuxG000 engine=tsm1 trace_id=0hpbKXVG000 op_name=tsm1_cache_snapshot path=/data/influxdb/data/SensorData/short_duration/34 duration=7221.920ms
+mai 16 04:33:31 raspberrypi influxd[12424]: ts=2023-05-16T02:33:31.316224Z lvl=info msg="Cache snapshot (end)" log_id=0hpbIuxG000 engine=tsm1 trace_id=0hpbKXVG000 op_name=tsm1_cache_snapshot op_event=end op_elapsed=7222.742ms
+mai 16 04:33:31 raspberrypi influxd[12424]: runtime: out of memory: cannot allocate 27770880-byte block (577798144 in use)
+mai 16 04:33:31 raspberrypi influxd[12424]: fatal error: out of memory
+mai 16 04:33:31 raspberrypi influxd[12424]: runtime stack:
+mai 16 04:33:31 raspberrypi influxd[12424]: runtime.throw(0x8ca717, 0xd)
+mai 16 04:33:31 raspberrypi influxd[12424]:         /usr/lib/go-1.11/src/runtime/panic.go:608 +0x5c
+mai 16 04:33:31 raspberrypi influxd[12424]: runtime.largeAlloc(0x1a7c000, 0x60100, 0x1400000)
+mai 16 04:33:31 raspberrypi influxd[12424]:         /usr/lib/go-1.11/src/runtime/malloc.go:1021 +0x120
+mai 16 04:33:31 raspberrypi influxd[12424]: runtime.mallocgc.func1()
+mai 16 04:33:31 raspberrypi influxd[12424]:         /usr/lib/go-1.11/src/runtime/malloc.go:914 +0x38
+mai 16 04:33:31 raspberrypi influxd[12424]: runtime.systemstack(0x152)
+mai 16 04:33:31 raspberrypi influxd[12424]:         /usr/lib/go-1.11/src/runtime/asm_arm.s:354 +0x84
+mai 16 04:33:31 raspberrypi influxd[12424]: runtime.mstart()
+mai 16 04:33:31 raspberrypi influxd[12424]:         /usr/lib/go-1.11/src/runtime/proc.go:1229
+mai 16 04:33:31 raspberrypi influxd[12424]: goroutine 441 [running]:
+mai 16 04:33:31 raspberrypi influxd[12424]: runtime.systemstack_switch()
+mai 16 04:33:31 raspberrypi influxd[12424]:         /usr/lib/go-1.11/src/runtime/asm_arm.s:298 +0x4 fp=0xd6db4f8 sp=0xd6db4f4 pc=0x6aa68
+mai 16 04:33:31 raspberrypi influxd[12424]: runtime.mallocgc(0x1a7c000, 0x0, 0x10e8600, 0x1400000)
+mai 16 04:33:31 raspberrypi influxd[12424]:         /usr/lib/go-1.11/src/runtime/malloc.go:913 +0x898 fp=0xd6db55c sp=0xd6db4f8 pc=0x1cdf0
+mai 16 04:33:31 raspberrypi influxd[12424]: runtime.growslice(0x7e4568, 0x1400000, 0x152e36f, 0x1530000, 0x153dd70, 0x3, 0x65176c, 0x1530000)
+mai 16 04:33:31 raspberrypi influxd[12424]:         /usr/lib/go-1.11/src/runtime/slice.go:197 +0x1dc fp=0xd6db58c sp=0xd6db55c pc=0x55868
+mai 16 04:33:31 raspberrypi influxd[12424]: github.com/influxdata/influxdb/tsdb/engine/tsm1.(*StringEncoder).Write(0xd6db668, 0xa444000, 0xfa01)
+mai 16 04:33:31 raspberrypi influxd[12424]:         github.com/influxdata/influxdb/tsdb/engine/tsm1/string.go:49 +0x17c fp=0xd6db5d0 sp=0xd6db58c pc=0x63ef98
+mai 16 04:33:31 raspberrypi influxd[12424]: github.com/influxdata/influxdb/tsdb/engine/tsm1.encodeStringValuesBlock.func1(0xb0ff000, 0x39a, 0x500, 0x9f01c8, 0x315a100, 0xd6db668, 0x0, 0x0, 0x0, 0xd6db674, ...)
+mai 16 04:33:31 raspberrypi influxd[12424]:         github.com/influxdata/influxdb/tsdb/engine/tsm1/encoding.gen.go:1242 +0x90 fp=0xd6db624 sp=0xd6db5d0 pc=0x651788
+mai 16 04:33:31 raspberrypi influxd[12424]: github.com/influxdata/influxdb/tsdb/engine/tsm1.encodeStringValuesBlock(0x0, 0x0, 0x0, 0xb0ff000, 0x39a, 0x500, 0xb101d40, 0xb86e000, 0xc60, 0x11e84fa, ...)
+mai 16 04:33:31 raspberrypi influxd[12424]:         github.com/influxdata/influxdb/tsdb/engine/tsm1/encoding.gen.go:1262 +0xdc fp=0xd6db680 sp=0xd6db624 pc=0x601134
+mai 16 04:33:31 raspberrypi influxd[12424]: github.com/influxdata/influxdb/tsdb/engine/tsm1.StringValues.Encode(0xb0ff000, 0x39a, 0x500, 0x0, 0x0, 0x0, 0xb101d40, 0xc6, 0x22c, 0xb86e000, ...)
+mai 16 04:33:31 raspberrypi influxd[12424]:         github.com/influxdata/influxdb/tsdb/engine/tsm1/encoding.gen.go:1227 +0x44 fp=0xd6db6b0 sp=0xd6db680 pc=0x601020
+mai 16 04:33:31 raspberrypi influxd[12424]: github.com/influxdata/influxdb/tsdb/engine/tsm1.(*tsmKeyIterator).chunkString(0x5b72000, 0x535e114, 0x0, 0x0, 0xc6, 0xc6, 0xb0ff000)
+mai 16 04:33:31 raspberrypi influxd[12424]:         github.com/influxdata/influxdb/tsdb/engine/tsm1/compact.gen.go:790 +0x2f8 fp=0xd6db714 sp=0xd6db6b0 pc=0x5ed348
+mai 16 04:33:31 raspberrypi influxd[12424]: github.com/influxdata/influxdb/tsdb/engine/tsm1.(*tsmKeyIterator).combineString(0x5b72000, 0x9f9f000, 0x9f1088, 0x9f9f0f0, 0x5f517c)
+mai 16 04:33:31 raspberrypi influxd[12424]:         github.com/influxdata/influxdb/tsdb/engine/tsm1/compact.gen.go:765 +0x1058 fp=0xd6db79c sp=0xd6db714 pc=0x5eceb8
+mai 16 04:33:31 raspberrypi influxd[12424]: github.com/influxdata/influxdb/tsdb/engine/tsm1.(*tsmKeyIterator).mergeString(0x5b72000)
+mai 16 04:33:31 raspberrypi influxd[12424]:         github.com/influxdata/influxdb/tsdb/engine/tsm1/compact.gen.go:632 +0x24c fp=0xd6db7b4 sp=0xd6db79c pc=0x5ebd20
+mai 16 04:33:31 raspberrypi influxd[12424]: github.com/influxdata/influxdb/tsdb/engine/tsm1.(*tsmKeyIterator).merge(0x5b72000)
+mai 16 04:33:31 raspberrypi influxd[12424]:         github.com/influxdata/influxdb/tsdb/engine/tsm1/compact.go:1501 +0xf4 fp=0xd6db7dc sp=0xd6db7b4 pc=0x5f5ee0
+mai 16 04:33:31 raspberrypi influxd[12424]: github.com/influxdata/influxdb/tsdb/engine/tsm1.(*tsmKeyIterator).Next(0x5b72000, 0x3f213b)
+mai 16 04:33:31 raspberrypi influxd[12424]:         github.com/influxdata/influxdb/tsdb/engine/tsm1/compact.go:1478 +0x108 fp=0xd6db8f0 sp=0xd6db7dc pc=0x5f4fcc
+mai 16 04:33:31 raspberrypi influxd[12424]: github.com/influxdata/influxdb/tsdb/engine/tsm1.(*Compactor).write(0x30963c0, 0xa8c6050, 0x4c, 0x9f2cd8, 0x5b72000, 0x5c2a101, 0x0, 0x0)
+mai 16 04:33:31 raspberrypi influxd[12424]:         github.com/influxdata/influxdb/tsdb/engine/tsm1/compact.go:1109 +0x144 fp=0xd6db968 sp=0xd6db8f0 pc=0x5f42a0
+mai 16 04:33:31 raspberrypi influxd[12424]: github.com/influxdata/influxdb/tsdb/engine/tsm1.(*Compactor).writeNewFiles(0x30963c0, 0x8, 0x2, 0x3e32440, 0x7, 0x8, 0x9f2cd8, 0x5b72000, 0x1, 0x8fa554, ...)
+mai 16 04:33:31 raspberrypi influxd[12424]:         github.com/influxdata/influxdb/tsdb/engine/tsm1/compact.go:1013 +0x128 fp=0xd6db9c0 sp=0xd6db968 pc=0x5f3db8
+mai 16 04:33:31 raspberrypi influxd[12424]: github.com/influxdata/influxdb/tsdb/engine/tsm1.(*Compactor).compact(0x30963c0, 0x8fa400, 0x3e32440, 0x7, 0x8, 0x0, 0x0, 0x0, 0x0, 0x0)
+mai 16 04:33:31 raspberrypi influxd[12424]:         github.com/influxdata/influxdb/tsdb/engine/tsm1/compact.go:921 +0x4a8 fp=0xd6dba50 sp=0xd6db9c0 pc=0x5f3560
+mai 16 04:33:31 raspberrypi influxd[12424]: github.com/influxdata/influxdb/tsdb/engine/tsm1.(*Compactor).CompactFull(0x30963c0, 0x3e32440, 0x7, 0x8, 0x0, 0x0, 0x0, 0x0, 0x0)
+mai 16 04:33:31 raspberrypi influxd[12424]:         github.com/influxdata/influxdb/tsdb/engine/tsm1/compact.go:939 +0x108 fp=0xd6dbaa0 sp=0xd6dba50 pc=0x5f36f8
+mai 16 04:33:31 raspberrypi influxd[12424]: github.com/influxdata/influxdb/tsdb/engine/tsm1.(*compactionStrategy).compactGroup(0x3e32480)
+mai 16 04:33:31 raspberrypi influxd[12424]:         github.com/influxdata/influxdb/tsdb/engine/tsm1/engine.go:2134 +0xaac fp=0xd6dbf88 sp=0xd6dbaa0 pc=0x613244
+mai 16 04:33:31 raspberrypi influxd[12424]: github.com/influxdata/influxdb/tsdb/engine/tsm1.(*compactionStrategy).Apply(0x3e32480)
+mai 16 04:33:31 raspberrypi influxd[12424]:         github.com/influxdata/influxdb/tsdb/engine/tsm1/engine.go:2111 +0x2c fp=0xd6dbfbc sp=0xd6dbf88 pc=0x612758
+mai 16 04:33:31 raspberrypi influxd[12424]: github.com/influxdata/influxdb/tsdb/engine/tsm1.(*Engine).compactFull.func1(0x9cae010, 0x364a000, 0x3e32480)
+mai 16 04:33:31 raspberrypi influxd[12424]:         github.com/influxdata/influxdb/tsdb/engine/tsm1/engine.go:2080 +0xac fp=0xd6dbfdc sp=0xd6dbfbc pc=0x65551c
+mai 16 04:33:31 raspberrypi influxd[12424]: runtime.goexit()
+mai 16 04:33:31 raspberrypi influxd[12424]:         /usr/lib/go-1.11/src/runtime/asm_arm.s:867 +0x4 fp=0xd6dbfdc sp=0xd6dbfdc pc=0x6c8d4
+mai 16 04:33:31 raspberrypi influxd[12424]: created by github.com/influxdata/influxdb/tsdb/engine/tsm1.(*Engine).compactFull
+mai 16 04:33:31 raspberrypi influxd[12424]:         github.com/influxdata/influxdb/tsdb/engine/tsm1/engine.go:2076 +0xd0
+mai 16 04:33:31 raspberrypi influxd[12424]: goroutine 1 [chan receive]:
+mai 16 04:33:31 raspberrypi influxd[12424]: main.(*Main).Run(0x317ffac, 0x30240a8, 0x2, 0x3, 0xfbcf70, 0x0)
+mai 16 04:33:31 raspberrypi influxd[12424]:         github.com/influxdata/influxdb/cmd/influxd/main.go:90 +0x234
+mai 16 04:33:31 raspberrypi influxd[12424]: main.main()
+mai 16 04:33:31 raspberrypi influxd[12424]:         github.com/influxdata/influxdb/cmd/influxd/main.go:45 +0x130
+mai 16 04:33:31 raspberrypi influxd[12424]: goroutine 4 [syscall]:
+mai 16 04:33:31 raspberrypi influxd[12424]: os/signal.signal_recv(0x0)
+mai 16 04:33:31 raspberrypi influxd[12424]:         /usr/lib/go-1.11/src/runtime/sigqueue.go:139 +0x130
+mai 16 04:33:31 raspberrypi influxd[12424]: os/signal.loop()
+mai 16 04:33:31 raspberrypi influxd[12424]:         /usr/lib/go-1.11/src/os/signal/signal_unix.go:23 +0x14
+mai 16 04:33:31 raspberrypi influxd[12424]: created by os/signal.init.0
+mai 16 04:33:31 raspberrypi influxd[12424]:         /usr/lib/go-1.11/src/os/signal/signal_unix.go:29 +0x30
+mai 16 04:33:31 raspberrypi influxd[12424]: goroutine 37 [IO wait]:
+mai 16 04:33:31 raspberrypi influxd[12424]: internal/poll.runtime_pollWait(0x651c2fc0, 0x72, 0x0)
+mai 16 04:33:31 raspberrypi influxd[12424]:         /usr/lib/go-1.11/src/runtime/netpoll.go:173 +0x44
+mai 16 04:33:31 raspberrypi influxd[12424]: internal/poll.(*pollDesc).wait(0x30e94b4, 0x72, 0x31ec000, 0x0, 0x0)
+mai 16 04:33:31 raspberrypi influxd[12424]:         /usr/lib/go-1.11/src/internal/poll/fd_poll_runtime.go:85 +0x7c
+mai 16 04:33:31 raspberrypi influxd[12424]: internal/poll.(*pollDesc).waitRead(0x30e94b4, 0xffffff00, 0x0, 0x0)
+mai 16 04:33:31 raspberrypi influxd[12424]:         /usr/lib/go-1.11/src/internal/poll/fd_poll_runtime.go:90 +0x2c
+mai 16 04:33:31 raspberrypi influxd[12424]: internal/poll.(*FD).Accept(0x30e94a0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0)
+mai 16 04:33:31 raspberrypi influxd[12424]:         /usr/lib/go-1.11/src/internal/poll/fd_unix.go:384 +0x17c
+mai 16 04:33:31 raspberrypi influxd[12424]: net.(*netFD).accept(0x30e94a0, 0xffffffff, 0x0, 0x1)
+mai 16 04:33:31 raspberrypi influxd[12424]:         /usr/lib/go-1.11/src/net/fd_unix.go:238 +0x20
+mai 16 04:33:31 raspberrypi influxd[12424]: net.(*TCPListener).accept(0x31cea70, 0x31de9c0, 0x40000000, 0x0)
+mai 16 04:33:31 raspberrypi influxd[12424]:         /usr/lib/go-1.11/src/net/tcpsock_posix.go:139 +0x20
+mai 16 04:33:31 raspberrypi influxd[12424]: net.(*TCPListener).Accept(0x31cea70, 0x1b0d8, 0x3175430, 0x0, 0x1)
+mai 16 04:33:31 raspberrypi influxd[12424]:         /usr/lib/go-1.11/src/net/tcpsock.go:260 +0x3c
+mai 16 04:33:31 raspberrypi influxd[12424]: github.com/influxdata/influxdb/tcp.(*Mux).Serve(0x31de9c0, 0x9f0968, 0x31cea70, 0x31cea70, 0x0)
+mai 16 04:33:31 raspberrypi influxd[12424]:         github.com/influxdata/influxdb/tcp/mux.go:75 +0x60
+mai 16 04:33:31 raspberrypi influxd[12424]: created by github.com/influxdata/influxdb/cmd/influxd/run.(*Server).Open
+mai 16 04:33:31 raspberrypi influxd[12424]:         github.com/influxdata/influxdb/cmd/influxd/run/server.go:398 +0x1ec
+mai 16 04:33:31 raspberrypi influxd[12424]: goroutine 292 [select]:
+mai 16 04:33:31 raspberrypi influxd[12424]: github.com/influxdata/influxdb/tsdb/engine/tsm1.(*Engine).compactCache(0x5b73340)
+mai 16 04:33:31 raspberrypi influxd[12424]:         github.com/influxdata/influxdb/tsdb/engine/tsm1/engine.go:1902 +0xd8
+mai 16 04:33:31 raspberrypi influxd[12424]: github.com/influxdata/influxdb/tsdb/engine/tsm1.(*Engine).enableSnapshotCompactions.func1(0x9cae200, 0x5b73340)
+mai 16 04:33:31 raspberrypi influxd[12424]:         github.com/influxdata/influxdb/tsdb/engine/tsm1/engine.go:486 +0x40
+mai 16 04:33:31 raspberrypi influxd[12424]: created by github.com/influxdata/influxdb/tsdb/engine/tsm1.(*Engine).enableSnapshotCompactions
+mai 16 04:33:31 raspberrypi influxd[12424]:         github.com/influxdata/influxdb/tsdb/engine/tsm1/engine.go:486 +0xfc
+mai 16 04:33:31 raspberrypi influxd[12424]: goroutine 257 [IO wait]:
+mai 16 04:33:31 raspberrypi influxd[12424]: internal/poll.runtime_pollWait(0x651c2ec0, 0x72, 0xa1140)
+mai 16 04:33:31 raspberrypi influxd[12424]:         /usr/lib/go-1.11/src/runtime/netpoll.go:173 +0x44
+mai 16 04:33:31 raspberrypi influxd[12424]: internal/poll.(*pollDesc).wait(0x30e8974, 0x72, 0xffffff00, 0x9ebd30, 0xf802b4)
+mai 16 04:33:31 raspberrypi influxd[12424]:         /usr/lib/go-1.11/src/internal/poll/fd_poll_runtime.go:85 +0x7c
+mai 16 04:33:31 raspberrypi influxd[12424]: internal/poll.(*pollDesc).waitRead(0x30e8974, 0x6e44000, 0x1000, 0x1000)
+mai 16 04:33:31 raspberrypi influxd[12424]:         /usr/lib/go-1.11/src/internal/poll/fd_poll_runtime.go:90 +0x2c
+mai 16 04:33:31 raspberrypi influxd[12424]: internal/poll.(*FD).Read(0x30e8960, 0x6e44000, 0x1000, 0x1000, 0x0, 0x0, 0x0)
+mai 16 04:33:31 raspberrypi influxd[12424]:         /usr/lib/go-1.11/src/internal/poll/fd_unix.go:169 +0x14c
+mai 16 04:33:31 raspberrypi influxd[12424]: net.(*netFD).Read(0x30e8960, 0x6e44000, 0x1000, 0x1000, 0xffffffff, 0x0, 0x28f32c)
+mai 16 04:33:31 raspberrypi influxd[12424]:         /usr/lib/go-1.11/src/net/fd_unix.go:202 +0x38
+mai 16 04:33:31 raspberrypi influxd[12424]: net.(*conn).Read(0x6fd16a8, 0x6e44000, 0x1000, 0x1000, 0x0, 0x0, 0x0)
+mai 16 04:33:31 raspberrypi influxd[12424]:         /usr/lib/go-1.11/src/net/net.go:177 +0x58
+mai 16 04:33:31 raspberrypi influxd[12424]: net/http.(*connReader).Read(0xa38e420, 0x6e44000, 0x1000, 0x1000, 0x0, 0x0, 0x0)
+mai 16 04:33:31 raspberrypi influxd[12424]:         /usr/lib/go-1.11/src/net/http/server.go:786 +0x154
+mai 16 04:33:31 raspberrypi influxd[12424]: bufio.(*Reader).fill(0x9c83260)
+mai 16 04:33:31 raspberrypi influxd[12424]:         /usr/lib/go-1.11/src/bufio/bufio.go:100 +0x114
+mai 16 04:33:31 raspberrypi influxd[12424]: bufio.(*Reader).Peek(0x9c83260, 0x4, 0x0, 0x0, 0x0, 0x0, 0x0)
+mai 16 04:33:31 raspberrypi influxd[12424]:         /usr/lib/go-1.11/src/bufio/bufio.go:132 +0x2c
+mai 16 04:33:31 raspberrypi influxd[12424]: net/http.(*conn).readRequest(0x348f500, 0x9f1768, 0xa38e400, 0x0, 0x0, 0x0)
+mai 16 04:33:31 raspberrypi influxd[12424]:         /usr/lib/go-1.11/src/net/http/server.go:963 +0xa84
+mai 16 04:33:31 raspberrypi influxd[12424]: net/http.(*conn).serve(0x348f500, 0x9f1768, 0xa38e400)
+mai 16 04:33:31 raspberrypi influxd[12424]:         /usr/lib/go-1.11/src/net/http/server.go:1788 +0x3f0
+mai 16 04:33:31 raspberrypi influxd[12424]: created by net/http.(*Server).Serve
+mai 16 04:33:31 raspberrypi influxd[12424]:         /usr/lib/go-1.11/src/net/http/server.go:2851 +0x290
+mai 16 04:33:31 raspberrypi influxd[12424]: goroutine 221 [select]:
+mai 16 04:33:31 raspberrypi influxd[12424]: github.com/influxdata/influxdb/tsdb/engine/tsm1.(*Engine).compactCache(0x3090160)
+mai 16 04:33:31 raspberrypi influxd[12424]:         github.com/influxdata/influxdb/tsdb/engine/tsm1/engine.go:1902 +0xd8
+mai 16 04:33:31 raspberrypi influxd[12424]: github.com/influxdata/influxdb/tsdb/engine/tsm1.(*Engine).enableSnapshotCompactions.func1(0xc81a040, 0x3090160)
+mai 16 04:33:31 raspberrypi influxd[12424]:         github.com/influxdata/influxdb/tsdb/engine/tsm1/engine.go:486 +0x40
+mai 16 04:33:31 raspberrypi influxd[12424]: created by github.com/influxdata/influxdb/tsdb/engine/tsm1.(*Engine).enableSnapshotCompactions
+mai 16 04:33:31 raspberrypi influxd[12424]:         github.com/influxdata/influxdb/tsdb/engine/tsm1/engine.go:486 +0xfc
+mai 16 04:33:31 raspberrypi influxd[12424]: goroutine 260 [select]:
+mai 16 04:33:31 raspberrypi influxd[12424]: github.com/influxdata/influxdb/tsdb/engine/tsm1.(*Engine).compact(0x364a000, 0x9cae010)
+mai 16 04:33:31 raspberrypi influxd[12424]:         github.com/influxdata/influxdb/tsdb/engine/tsm1/engine.go:1949 +0x1ac
+mai 16 04:33:31 raspberrypi influxd[12424]: github.com/influxdata/influxdb/tsdb/engine/tsm1.(*Engine).enableLevelCompactions.func1(0x9cae010, 0x364a000)
+mai 16 04:33:31 raspberrypi influxd[12424]:         github.com/influxdata/influxdb/tsdb/engine/tsm1/engine.go:407 +0x48
+mai 16 04:33:31 raspberrypi influxd[12424]: created by github.com/influxdata/influxdb/tsdb/engine/tsm1.(*Engine).enableLevelCompactions
+mai 16 04:33:31 raspberrypi influxd[12424]:         github.com/influxdata/influxdb/tsdb/engine/tsm1/engine.go:407 +0x114
+mai 16 04:33:31 raspberrypi influxd[12424]: goroutine 272 [select]:
+mai 16 04:33:31 raspberrypi influxd[12424]: github.com/influxdata/influxdb/tsdb/engine/tsm1.(*Engine).compactCache(0x3090580)
+mai 16 04:33:31 raspberrypi influxd[12424]:         github.com/influxdata/influxdb/tsdb/engine/tsm1/engine.go:1902 +0xd8
+mai 16 04:33:31 raspberrypi influxd[12424]: github.com/influxdata/influxdb/tsdb/engine/tsm1.(*Engine).enableSnapshotCompactions.func1(0x9cae0c0, 0x3090580)
+mai 16 04:33:31 raspberrypi influxd[12424]:         github.com/influxdata/influxdb/tsdb/engine/tsm1/engine.go:486 +0x40
+mai 16 04:33:31 raspberrypi influxd[12424]: created by github.com/influxdata/influxdb/tsdb/engine/tsm1.(*Engine).enableSnapshotCompactions
+mai 16 04:33:31 raspberrypi influxd[12424]:         github.com/influxdata/influxdb/tsdb/engine/tsm1/engine.go:486 +0xfc
+mai 16 04:33:31 raspberrypi influxd[12424]: goroutine 293 [select]:
+mai 16 04:33:31 raspberrypi influxd[12424]: github.com/influxdata/influxdb/tsdb/engine/tsm1.(*Engine).compact(0x5b73340, 0x9cae210)
+mai 16 04:33:31 raspberrypi influxd[12424]:         github.com/influxdata/influxdb/tsdb/engine/tsm1/engine.go:1949 +0x1ac
+mai 16 04:33:31 raspberrypi influxd[12424]: github.com/influxdata/influxdb/tsdb/engine/tsm1.(*Engine).enableLevelCompactions.func1(0x9cae210, 0x5b73340)
+mai 16 04:33:31 raspberrypi influxd[12424]:         github.com/influxdata/influxdb/tsdb/engine/tsm1/engine.go:407 +0x48
+mai 16 04:33:31 raspberrypi influxd[12424]: created by github.com/influxdata/influxdb/tsdb/engine/tsm1.(*Engine).enableLevelCompactions
+mai 16 04:33:31 raspberrypi influxd[12424]:         github.com/influxdata/influxdb/tsdb/engine/tsm1/engine.go:407 +0x114
+mai 16 04:33:31 raspberrypi influxd[12424]: goroutine 273 [select]:
+mai 16 04:33:31 raspberrypi influxd[12424]: github.com/influxdata/influxdb/tsdb/engine/tsm1.(*Engine).compact(0x3090580, 0x9cae0d0)
+mai 16 04:33:31 raspberrypi influxd[12424]:         github.com/influxdata/influxdb/tsdb/engine/tsm1/engine.go:1949 +0x1ac
+mai 16 04:33:31 raspberrypi influxd[12424]: github.com/influxdata/influxdb/tsdb/engine/tsm1.(*Engine).enableLevelCompactions.func1(0x9cae0d0, 0x3090580)
+mai 16 04:33:31 raspberrypi influxd[12424]:         github.com/influxdata/influxdb/tsdb/engine/tsm1/engine.go:407 +0x48
+mai 16 04:33:31 raspberrypi influxd[12424]: created by github.com/influxdata/influxdb/tsdb/engine/tsm1.(*Engine).enableLevelCompactions
+mai 16 04:33:31 raspberrypi influxd[12424]:         github.com/influxdata/influxdb/tsdb/engine/tsm1/engine.go:407 +0x114
+mai 16 04:33:31 raspberrypi influxd[12424]: goroutine 222 [select]:
+mai 16 04:33:31 raspberrypi influxd[12424]: github.com/influxdata/influxdb/tsdb/engine/tsm1.(*Engine).compact(0x3090160, 0xc81a050)
+mai 16 04:33:31 raspberrypi influxd[12424]:         github.com/influxdata/influxdb/tsdb/engine/tsm1/engine.go:1949 +0x1ac
+mai 16 04:33:31 raspberrypi influxd[12424]: github.com/influxdata/influxdb/tsdb/engine/tsm1.(*Engine).enableLevelCompactions.func1(0xc81a050, 0x3090160)
+mai 16 04:33:31 raspberrypi influxd[12424]:         github.com/influxdata/influxdb/tsdb/engine/tsm1/engine.go:407 +0x48
+mai 16 04:33:31 raspberrypi influxd[12424]: created by github.com/influxdata/influxdb/tsdb/engine/tsm1.(*Engine).enableLevelCompactions
+mai 16 04:33:31 raspberrypi influxd[12424]:         github.com/influxdata/influxdb/tsdb/engine/tsm1/engine.go:407 +0x114
+mai 16 04:33:31 raspberrypi influxd[12424]: goroutine 261 [select]:
+mai 16 04:33:31 raspberrypi influxd[12424]: github.com/influxdata/influxdb/tsdb/engine/tsm1.(*Engine).compactCache(0x44ba210)
+mai 16 04:33:31 raspberrypi influxd[12424]:         github.com/influxdata/influxdb/tsdb/engine/tsm1/engine.go:1902 +0xd8
+mai 16 04:33:31 raspberrypi influxd[12424]: github.com/influxdata/influxdb/tsdb/engine/tsm1.(*Engine).enableSnapshotCompactions.func1(0x9cae020, 0x44ba210)
+mai 16 04:33:31 raspberrypi influxd[12424]:         github.com/influxdata/influxdb/tsdb/engine/tsm1/engine.go:486 +0x40
+mai 16 04:33:31 raspberrypi influxd[12424]: created by github.com/influxdata/influxdb/tsdb/engine/tsm1.(*Engine).enableSnapshotCompactions
+mai 16 04:33:31 raspberrypi influxd[12424]:         github.com/influxdata/influxdb/tsdb/engine/tsm1/engine.go:486 +0xfc
+mai 16 04:33:31 raspberrypi influxd[12424]: goroutine 311 [select]:
+mai 16 04:33:31 raspberrypi influxd[12424]: github.com/influxdata/influxdb/services/precreator.(*Service).runPrecreation(0x30b1ef0)
+mai 16 04:33:31 raspberrypi influxd[12424]:         github.com/influxdata/influxdb/services/precreator/service.go:76 +0xc8
+mai 16 04:33:31 raspberrypi influxd[12424]: created by github.com/influxdata/influxdb/services/precreator.(*Service).Open
+mai 16 04:33:31 raspberrypi influxd[12424]:         github.com/influxdata/influxdb/services/precreator/service.go:54 +0x164
+mai 16 04:33:31 raspberrypi influxd[12424]: goroutine 262 [select]:
+mai 16 04:33:31 raspberrypi influxd[12424]: github.com/influxdata/influxdb/tsdb/engine/tsm1.(*Engine).compact(0x44ba210, 0x9cae030)
+mai 16 04:33:31 raspberrypi influxd[12424]:         github.com/influxdata/influxdb/tsdb/engine/tsm1/engine.go:1949 +0x1ac
+mai 16 04:33:31 raspberrypi influxd[12424]: github.com/influxdata/influxdb/tsdb/engine/tsm1.(*Engine).enableLevelCompactions.func1(0x9cae030, 0x44ba210)
+mai 16 04:33:31 raspberrypi influxd[12424]:         github.com/influxdata/influxdb/tsdb/engine/tsm1/engine.go:407 +0x48
+mai 16 04:33:31 raspberrypi influxd[12424]: created by github.com/influxdata/influxdb/tsdb/engine/tsm1.(*Engine).enableLevelCompactions
+mai 16 04:33:31 raspberrypi influxd[12424]:         github.com/influxdata/influxdb/tsdb/engine/tsm1/engine.go:407 +0x114
+mai 16 04:33:31 raspberrypi influxd[12424]: goroutine 259 [select]:
+mai 16 04:33:31 raspberrypi influxd[12424]: github.com/influxdata/influxdb/tsdb/engine/tsm1.(*Engine).compactCache(0x364a000)
+mai 16 04:33:31 raspberrypi influxd[12424]:         github.com/influxdata/influxdb/tsdb/engine/tsm1/engine.go:1902 +0xd8
+mai 16 04:33:31 raspberrypi influxd[12424]: github.com/influxdata/influxdb/tsdb/engine/tsm1.(*Engine).enableSnapshotCompactions.func1(0x9cae000, 0x364a000)
+mai 16 04:33:31 raspberrypi influxd[12424]:         github.com/influxdata/influxdb/tsdb/engine/tsm1/engine.go:486 +0x40
+mai 16 04:33:31 raspberrypi influxd[12424]: created by github.com/influxdata/influxdb/tsdb/engine/tsm1.(*Engine).enableSnapshotCompactions
+mai 16 04:33:31 raspberrypi influxd[12424]:         github.com/influxdata/influxdb/tsdb/engine/tsm1/engine.go:486 +0xfc
+mai 16 04:33:31 raspberrypi influxd[12424]: goroutine 310 [select]:
+mai 16 04:33:31 raspberrypi influxd[12424]: github.com/influxdata/influxdb/monitor.(*Monitor).storeStatistics(0x30bd950)
+mai 16 04:33:31 raspberrypi influxd[12424]:         github.com/influxdata/influxdb/monitor/service.go:432 +0x5b4
+mai 16 04:33:31 raspberrypi influxd[12424]: created by github.com/influxdata/influxdb/monitor.(*Monitor).Open
+mai 16 04:33:31 raspberrypi influxd[12424]:         github.com/influxdata/influxdb/monitor/service.go:126 +0x2b8
+mai 16 04:33:31 raspberrypi influxd[12424]: goroutine 309 [select]:
+mai 16 04:33:31 raspberrypi influxd[12424]: github.com/influxdata/influxdb/services/subscriber.(*Service).waitForMetaUpdates(0x30c8900)
+mai 16 04:33:31 raspberrypi influxd[12424]:         github.com/influxdata/influxdb/services/subscriber/service.go:165 +0x8c
+mai 16 04:33:31 raspberrypi influxd[12424]: github.com/influxdata/influxdb/services/subscriber.(*Service).Open.func2(0x30c8900)
+mai 16 04:33:31 raspberrypi influxd[12424]:         github.com/influxdata/influxdb/services/subscriber/service.go:102 +0x48
+mai 16 04:33:31 raspberrypi influxd[12424]: created by github.com/influxdata/influxdb/services/subscriber.(*Service).Open
+mai 16 04:33:31 raspberrypi influxd[12424]:         github.com/influxdata/influxdb/services/subscriber/service.go:100 +0x158
+mai 16 04:33:31 raspberrypi influxd[12424]: goroutine 283 [select]:
+mai 16 04:33:31 raspberrypi influxd[12424]: github.com/influxdata/influxdb/tsdb/engine/tsm1.(*Engine).compact(0x569b760, 0x9cae170)
+mai 16 04:33:31 raspberrypi influxd[12424]:         github.com/influxdata/influxdb/tsdb/engine/tsm1/engine.go:1949 +0x1ac
+mai 16 04:33:31 raspberrypi influxd[12424]: github.com/influxdata/influxdb/tsdb/engine/tsm1.(*Engine).enableLevelCompactions.func1(0x9cae170, 0x569b760)
+mai 16 04:33:31 raspberrypi influxd[12424]:         github.com/influxdata/influxdb/tsdb/engine/tsm1/engine.go:407 +0x48
+mai 16 04:33:31 raspberrypi influxd[12424]: created by github.com/influxdata/influxdb/tsdb/engine/tsm1.(*Engine).enableLevelCompactions
+mai 16 04:33:31 raspberrypi influxd[12424]:         github.com/influxdata/influxdb/tsdb/engine/tsm1/engine.go:407 +0x114
+mai 16 04:33:31 raspberrypi influxd[12424]: goroutine 282 [select]:
+mai 16 04:33:31 raspberrypi influxd[12424]: github.com/influxdata/influxdb/tsdb/engine/tsm1.(*Engine).compactCache(0x569b760)
+mai 16 04:33:31 raspberrypi influxd[12424]:         github.com/influxdata/influxdb/tsdb/engine/tsm1/engine.go:1902 +0xd8
+mai 16 04:33:31 raspberrypi influxd[12424]: github.com/influxdata/influxdb/tsdb/engine/tsm1.(*Engine).enableSnapshotCompactions.func1(0x9cae160, 0x569b760)
+mai 16 04:33:31 raspberrypi influxd[12424]:         github.com/influxdata/influxdb/tsdb/engine/tsm1/engine.go:486 +0x40
+mai 16 04:33:31 raspberrypi influxd[12424]: created by github.com/influxdata/influxdb/tsdb/engine/tsm1.(*Engine).enableSnapshotCompactions
+mai 16 04:33:31 raspberrypi influxd[12424]:         github.com/influxdata/influxdb/tsdb/engine/tsm1/engine.go:486 +0xfc
+mai 16 04:33:31 raspberrypi influxd[12424]: goroutine 287 [select]:
+mai 16 04:33:31 raspberrypi influxd[12424]: github.com/influxdata/influxdb/tsdb/engine/tsm1.(*Engine).compact(0x5982840, 0x9cae1b0)
+mai 16 04:33:31 raspberrypi influxd[12424]:         github.com/influxdata/influxdb/tsdb/engine/tsm1/engine.go:1949 +0x1ac
+mai 16 04:33:31 raspberrypi influxd[12424]: github.com/influxdata/influxdb/tsdb/engine/tsm1.(*Engine).enableLevelCompactions.func1(0x9cae1b0, 0x5982840)
+mai 16 04:33:31 raspberrypi influxd[12424]:         github.com/influxdata/influxdb/tsdb/engine/tsm1/engine.go:407 +0x48
+mai 16 04:33:31 raspberrypi influxd[12424]: created by github.com/influxdata/influxdb/tsdb/engine/tsm1.(*Engine).enableLevelCompactions
+mai 16 04:33:31 raspberrypi influxd[12424]:         github.com/influxdata/influxdb/tsdb/engine/tsm1/engine.go:407 +0x114
+mai 16 04:33:31 raspberrypi influxd[12424]: goroutine 286 [select]:
+mai 16 04:33:31 raspberrypi influxd[12424]: github.com/influxdata/influxdb/tsdb/engine/tsm1.(*Engine).compactCache(0x5982840)
+mai 16 04:33:31 raspberrypi influxd[12424]:         github.com/influxdata/influxdb/tsdb/engine/tsm1/engine.go:1902 +0xd8
+mai 16 04:33:31 raspberrypi influxd[12424]: github.com/influxdata/influxdb/tsdb/engine/tsm1.(*Engine).enableSnapshotCompactions.func1(0x9cae1a0, 0x5982840)
+mai 16 04:33:31 raspberrypi influxd[12424]:         github.com/influxdata/influxdb/tsdb/engine/tsm1/engine.go:486 +0x40
+mai 16 04:33:31 raspberrypi influxd[12424]: created by github.com/influxdata/influxdb/tsdb/engine/tsm1.(*Engine).enableSnapshotCompactions
+mai 16 04:33:31 raspberrypi influxd[12424]:         github.com/influxdata/influxdb/tsdb/engine/tsm1/engine.go:486 +0xfc
+mai 16 04:33:31 raspberrypi influxd[12424]: goroutine 220 [select]:
+mai 16 04:33:31 raspberrypi influxd[12424]: github.com/influxdata/influxdb/tsdb/engine/tsm1.(*Engine).compact(0x569bce0, 0xc81a030)
+mai 16 04:33:31 raspberrypi influxd[12424]:         github.com/influxdata/influxdb/tsdb/engine/tsm1/engine.go:1949 +0x1ac
+mai 16 04:33:31 raspberrypi influxd[12424]: github.com/influxdata/influxdb/tsdb/engine/tsm1.(*Engine).enableLevelCompactions.func1(0xc81a030, 0x569bce0)
+mai 16 04:33:31 raspberrypi influxd[12424]:         github.com/influxdata/influxdb/tsdb/engine/tsm1/engine.go:407 +0x48
+mai 16 04:33:31 raspberrypi influxd[12424]: created by github.com/influxdata/influxdb/tsdb/engine/tsm1.(*Engine).enableLevelCompactions
+mai 16 04:33:31 raspberrypi influxd[12424]:         github.com/influxdata/influxdb/tsdb/engine/tsm1/engine.go:407 +0x114
+mai 16 04:33:31 raspberrypi influxd[12424]: goroutine 219 [select]:
+mai 16 04:33:31 raspberrypi influxd[12424]: github.com/influxdata/influxdb/tsdb/engine/tsm1.(*Engine).compactCache(0x569bce0)
+mai 16 04:33:31 raspberrypi influxd[12424]:         github.com/influxdata/influxdb/tsdb/engine/tsm1/engine.go:1902 +0xd8
+mai 16 04:33:31 raspberrypi influxd[12424]: github.com/influxdata/influxdb/tsdb/engine/tsm1.(*Engine).enableSnapshotCompactions.func1(0xc81a020, 0x569bce0)
+mai 16 04:33:31 raspberrypi influxd[12424]:         github.com/influxdata/influxdb/tsdb/engine/tsm1/engine.go:486 +0x40
+mai 16 04:33:31 raspberrypi influxd[12424]: created by github.com/influxdata/influxdb/tsdb/engine/tsm1.(*Engine).enableSnapshotCompactions
+mai 16 04:33:31 raspberrypi influxd[12424]:         github.com/influxdata/influxdb/tsdb/engine/tsm1/engine.go:486 +0xfc
+mai 16 04:33:31 raspberrypi influxd[12424]: goroutine 294 [select]:
+mai 16 04:33:31 raspberrypi influxd[12424]: github.com/influxdata/influxdb/tsdb/engine/tsm1.(*Engine).compactCache(0xa133c30)
+mai 16 04:33:31 raspberrypi influxd[12424]:         github.com/influxdata/influxdb/tsdb/engine/tsm1/engine.go:1902 +0xd8
+mai 16 04:33:31 raspberrypi influxd[12424]: github.com/influxdata/influxdb/tsdb/engine/tsm1.(*Engine).enableSnapshotCompactions.func1(0x9cae220, 0xa133c30)
+mai 16 04:33:31 raspberrypi influxd[12424]:         github.com/influxdata/influxdb/tsdb/engine/tsm1/engine.go:486 +0x40
+mai 16 04:33:31 raspberrypi influxd[12424]: created by github.com/influxdata/influxdb/tsdb/engine/tsm1.(*Engine).enableSnapshotCompactions
+mai 16 04:33:31 raspberrypi influxd[12424]:         github.com/influxdata/influxdb/tsdb/engine/tsm1/engine.go:486 +0xfc
+mai 16 04:33:31 raspberrypi influxd[12424]: goroutine 295 [select]:
+mai 16 04:33:31 raspberrypi influxd[12424]: github.com/influxdata/influxdb/tsdb/engine/tsm1.(*Engine).compact(0xa133c30, 0x9cae230)
+mai 16 04:33:31 raspberrypi influxd[12424]:         github.com/influxdata/influxdb/tsdb/engine/tsm1/engine.go:1949 +0x1ac
+mai 16 04:33:31 raspberrypi influxd[12424]: github.com/influxdata/influxdb/tsdb/engine/tsm1.(*Engine).enableLevelCompactions.func1(0x9cae230, 0xa133c30)
+mai 16 04:33:31 raspberrypi influxd[12424]:         github.com/influxdata/influxdb/tsdb/engine/tsm1/engine.go:407 +0x48
+mai 16 04:33:31 raspberrypi influxd[12424]: created by github.com/influxdata/influxdb/tsdb/engine/tsm1.(*Engine).enableLevelCompactions
+mai 16 04:33:31 raspberrypi influxd[12424]:         github.com/influxdata/influxdb/tsdb/engine/tsm1/engine.go:407 +0x114
+mai 16 04:33:31 raspberrypi influxd[12424]: goroutine 296 [select]:
+mai 16 04:33:31 raspberrypi influxd[12424]: github.com/influxdata/influxdb/tsdb/engine/tsm1.(*Engine).compactCache(0x364b3f0)
+mai 16 04:33:31 raspberrypi influxd[12424]:         github.com/influxdata/influxdb/tsdb/engine/tsm1/engine.go:1902 +0xd8
+mai 16 04:33:31 raspberrypi influxd[12424]: github.com/influxdata/influxdb/tsdb/engine/tsm1.(*Engine).enableSnapshotCompactions.func1(0x9cae240, 0x364b3f0)
+mai 16 04:33:31 raspberrypi influxd[12424]:         github.com/influxdata/influxdb/tsdb/engine/tsm1/engine.go:486 +0x40
+mai 16 04:33:31 raspberrypi influxd[12424]: created by github.com/influxdata/influxdb/tsdb/engine/tsm1.(*Engine).enableSnapshotCompactions
+mai 16 04:33:31 raspberrypi influxd[12424]:         github.com/influxdata/influxdb/tsdb/engine/tsm1/engine.go:486 +0xfc
+mai 16 04:33:31 raspberrypi influxd[12424]: goroutine 297 [select]:
+mai 16 04:33:31 raspberrypi influxd[12424]: github.com/influxdata/influxdb/tsdb/engine/tsm1.(*Engine).compact(0x364b3f0, 0x9cae250)
+mai 16 04:33:31 raspberrypi influxd[12424]:         github.com/influxdata/influxdb/tsdb/engine/tsm1/engine.go:1949 +0x1ac
+mai 16 04:33:31 raspberrypi influxd[12424]: github.com/influxdata/influxdb/tsdb/engine/tsm1.(*Engine).enableLevelCompactions.func1(0x9cae250, 0x364b3f0)
+mai 16 04:33:31 raspberrypi influxd[12424]:         github.com/influxdata/influxdb/tsdb/engine/tsm1/engine.go:407 +0x48
+mai 16 04:33:31 raspberrypi influxd[12424]: created by github.com/influxdata/influxdb/tsdb/engine/tsm1.(*Engine).enableLevelCompactions
+mai 16 04:33:31 raspberrypi influxd[12424]:         github.com/influxdata/influxdb/tsdb/engine/tsm1/engine.go:407 +0x114
+mai 16 04:33:31 raspberrypi influxd[12424]: goroutine 301 [select]:
+mai 16 04:33:31 raspberrypi influxd[12424]: github.com/influxdata/influxdb/tsdb/engine/tsm1.(*Engine).compact(0x3100f20, 0x9cae290)
+mai 16 04:33:31 raspberrypi influxd[12424]:         github.com/influxdata/influxdb/tsdb/engine/tsm1/engine.go:1949 +0x1ac
+mai 16 04:33:31 raspberrypi influxd[12424]: github.com/influxdata/influxdb/tsdb/engine/tsm1.(*Engine).enableLevelCompactions.func1(0x9cae290, 0x3100f20)
+mai 16 04:33:31 raspberrypi influxd[12424]:         github.com/influxdata/influxdb/tsdb/engine/tsm1/engine.go:407 +0x48
+mai 16 04:33:31 raspberrypi influxd[12424]: created by github.com/influxdata/influxdb/tsdb/engine/tsm1.(*Engine).enableLevelCompactions
+mai 16 04:33:31 raspberrypi influxd[12424]:         github.com/influxdata/influxdb/tsdb/engine/tsm1/engine.go:407 +0x114
+mai 16 04:33:31 raspberrypi influxd[12424]: goroutine 300 [select]:
+mai 16 04:33:31 raspberrypi influxd[12424]: github.com/influxdata/influxdb/tsdb/engine/tsm1.(*Engine).compactCache(0x3100f20)
+mai 16 04:33:31 raspberrypi influxd[12424]:         github.com/influxdata/influxdb/tsdb/engine/tsm1/engine.go:1902 +0xd8
+mai 16 04:33:31 raspberrypi influxd[12424]: github.com/influxdata/influxdb/tsdb/engine/tsm1.(*Engine).enableSnapshotCompactions.func1(0x9cae280, 0x3100f20)
+mai 16 04:33:31 raspberrypi influxd[12424]:         github.com/influxdata/influxdb/tsdb/engine/tsm1/engine.go:486 +0x40
+mai 16 04:33:31 raspberrypi influxd[12424]: created by github.com/influxdata/influxdb/tsdb/engine/tsm1.(*Engine).enableSnapshotCompactions
+mai 16 04:33:31 raspberrypi influxd[12424]:         github.com/influxdata/influxdb/tsdb/engine/tsm1/engine.go:486 +0xfc
+mai 16 04:33:31 raspberrypi influxd[12424]: goroutine 307 [select]:
+mai 16 04:33:31 raspberrypi influxd[12424]: github.com/influxdata/influxdb/tsdb.(*Store).monitorShards(0x30bb440)
+mai 16 04:33:31 raspberrypi influxd[12424]:         github.com/influxdata/influxdb/tsdb/store.go:1776 +0x12c
+mai 16 04:33:31 raspberrypi influxd[12424]: created by github.com/influxdata/influxdb/tsdb.(*Store).Open
+mai 16 04:33:31 raspberrypi influxd[12424]:         github.com/influxdata/influxdb/tsdb/store.go:197 +0x20c
+mai 16 04:33:31 raspberrypi influxd[12424]: goroutine 308 [select]:
+mai 16 04:33:31 raspberrypi influxd[12424]: github.com/influxdata/influxdb/services/subscriber.(*Service).run(0x30c8900)
+mai 16 04:33:31 raspberrypi influxd[12424]:         github.com/influxdata/influxdb/services/subscriber/service.go:239 +0x1d8
+mai 16 04:33:31 raspberrypi influxd[12424]: github.com/influxdata/influxdb/services/subscriber.(*Service).Open.func1(0x30c8900)
+mai 16 04:33:31 raspberrypi influxd[12424]:         github.com/influxdata/influxdb/services/subscriber/service.go:98 +0x48
+mai 16 04:33:31 raspberrypi influxd[12424]: created by github.com/influxdata/influxdb/services/subscriber.(*Service).Open
+mai 16 04:33:31 raspberrypi influxd[12424]:         github.com/influxdata/influxdb/services/subscriber/service.go:96 +0x13c
+mai 16 04:33:31 raspberrypi influxd[12424]: goroutine 304 [select]:
+mai 16 04:33:31 raspberrypi influxd[12424]: github.com/influxdata/influxdb/tcp.(*listener).Accept(0x31ea300, 0x0, 0x0, 0x0, 0x0)
+mai 16 04:33:31 raspberrypi influxd[12424]:         github.com/influxdata/influxdb/tcp/mux.go:236 +0xd8
+mai 16 04:33:31 raspberrypi influxd[12424]: github.com/influxdata/influxdb/services/snapshotter.(*Service).serve(0x30b1f50)
+mai 16 04:33:31 raspberrypi influxd[12424]:         github.com/influxdata/influxdb/services/snapshotter/service.go:94 +0x54
+mai 16 04:33:31 raspberrypi influxd[12424]: created by github.com/influxdata/influxdb/services/snapshotter.(*Service).Open
+mai 16 04:33:31 raspberrypi influxd[12424]:         github.com/influxdata/influxdb/services/snapshotter/service.go:68 +0x74
+mai 16 04:33:31 raspberrypi influxd[12424]: goroutine 305 [select]:
+mai 16 04:33:31 raspberrypi influxd[12424]: github.com/influxdata/influxdb/services/continuous_querier.(*Service).backgroundLoop(0x30b9980)
+mai 16 04:33:31 raspberrypi influxd[12424]:         github.com/influxdata/influxdb/services/continuous_querier/service.go:215 +0x114
+mai 16 04:33:31 raspberrypi influxd[12424]: created by github.com/influxdata/influxdb/services/continuous_querier.(*Service).Open
+mai 16 04:33:31 raspberrypi influxd[12424]:         github.com/influxdata/influxdb/services/continuous_querier/service.go:133 +0x154
+mai 16 04:33:31 raspberrypi influxd[12424]: goroutine 322 [IO wait]:
+mai 16 04:33:31 raspberrypi influxd[12424]: internal/poll.runtime_pollWait(0x651c2f40, 0x72, 0x0)
+mai 16 04:33:31 raspberrypi influxd[12424]:         /usr/lib/go-1.11/src/runtime/netpoll.go:173 +0x44
+mai 16 04:33:31 raspberrypi influxd[12424]: internal/poll.(*pollDesc).wait(0xca9a014, 0x72, 0x3805d00, 0x0, 0x0)
+mai 16 04:33:31 raspberrypi influxd[12424]:         /usr/lib/go-1.11/src/internal/poll/fd_poll_runtime.go:85 +0x7c
+mai 16 04:33:31 raspberrypi influxd[12424]: internal/poll.(*pollDesc).waitRead(0xca9a014, 0xffffff00, 0x0, 0x0)
+mai 16 04:33:31 raspberrypi influxd[12424]:         /usr/lib/go-1.11/src/internal/poll/fd_poll_runtime.go:90 +0x2c
+mai 16 04:33:31 raspberrypi influxd[12424]: internal/poll.(*FD).Accept(0xca9a000, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0)
+mai 16 04:33:31 raspberrypi influxd[12424]:         /usr/lib/go-1.11/src/internal/poll/fd_unix.go:384 +0x17c
+mai 16 04:33:31 raspberrypi influxd[12424]: net.(*netFD).accept(0xca9a000, 0xfcf650, 0x0, 0x2934a0)
+mai 16 04:33:31 raspberrypi influxd[12424]:         /usr/lib/go-1.11/src/net/fd_unix.go:238 +0x20
+mai 16 04:33:31 raspberrypi influxd[12424]: net.(*TCPListener).accept(0x5e7e080, 0x348f540, 0x62eb7300, 0x472e8)
+mai 16 04:33:31 raspberrypi influxd[12424]:         /usr/lib/go-1.11/src/net/tcpsock_posix.go:139 +0x20
+mai 16 04:33:31 raspberrypi influxd[12424]: net.(*TCPListener).Accept(0x5e7e080, 0xd7d3728, 0xc, 0x473fea0, 0x29758c)
+mai 16 04:33:31 raspberrypi influxd[12424]:         /usr/lib/go-1.11/src/net/tcpsock.go:260 +0x3c
+mai 16 04:33:31 raspberrypi influxd[12424]: net/http.(*Server).Serve(0x3328880, 0x9f0968, 0x5e7e080, 0x0, 0x0)
+mai 16 04:33:31 raspberrypi influxd[12424]:         /usr/lib/go-1.11/src/net/http/server.go:2826 +0x1e0
+mai 16 04:33:31 raspberrypi influxd[12424]: net/http.Serve(0x9f0968, 0x5e7e080, 0x9ea260, 0x31d8700, 0x72656270, 0x69707972)
+mai 16 04:33:31 raspberrypi influxd[12424]:         /usr/lib/go-1.11/src/net/http/server.go:2423 +0x58
+mai 16 04:33:31 raspberrypi influxd[12424]: github.com/influxdata/influxdb/services/httpd.(*Service).serve(0x30b99e0, 0x9f0968, 0x5e7e080)
+mai 16 04:33:31 raspberrypi influxd[12424]:         github.com/influxdata/influxdb/services/httpd/service.go:249 +0x38
+mai 16 04:33:31 raspberrypi influxd[12424]: github.com/influxdata/influxdb/services/httpd.(*Service).serveTCP(0x30b99e0)
+mai 16 04:33:31 raspberrypi influxd[12424]:         github.com/influxdata/influxdb/services/httpd/service.go:237 +0x2c
+mai 16 04:33:31 raspberrypi influxd[12424]: created by github.com/influxdata/influxdb/services/httpd.(*Service).Open
+mai 16 04:33:31 raspberrypi influxd[12424]:         github.com/influxdata/influxdb/services/httpd/service.go:185 +0x474
+mai 16 04:33:31 raspberrypi influxd[12424]: goroutine 323 [select]:
+mai 16 04:33:31 raspberrypi influxd[12424]: github.com/influxdata/influxdb/services/retention.(*Service).run(0x31ea2a0)
+mai 16 04:33:31 raspberrypi influxd[12424]:         github.com/influxdata/influxdb/services/retention/service.go:78 +0x8c0
+mai 16 04:33:31 raspberrypi influxd[12424]: github.com/influxdata/influxdb/services/retention.(*Service).Open.func1(0x31ea2a0)
+mai 16 04:33:31 raspberrypi influxd[12424]:         github.com/influxdata/influxdb/services/retention/service.go:51 +0x48
+mai 16 04:33:31 raspberrypi influxd[12424]: created by github.com/influxdata/influxdb/services/retention.(*Service).Open
+mai 16 04:33:31 raspberrypi influxd[12424]:         github.com/influxdata/influxdb/services/retention/service.go:51 +0x130
+mai 16 04:33:31 raspberrypi influxd[12424]: goroutine 324 [select]:
+mai 16 04:33:31 raspberrypi influxd[12424]: github.com/influxdata/influxdb/tsdb.(*PointBatcher).Start.func2(0x4d9cc40, 0x3f1a380, 0x3f1a370, 0x7c544b0)
+mai 16 04:33:31 raspberrypi influxd[12424]:         github.com/influxdata/influxdb/tsdb/batcher.go:87 +0xcc
+mai 16 04:33:31 raspberrypi influxd[12424]: created by github.com/influxdata/influxdb/tsdb.(*PointBatcher).Start
+mai 16 04:33:31 raspberrypi influxd[12424]:         github.com/influxdata/influxdb/tsdb/batcher.go:84 +0x108
+mai 16 04:33:31 raspberrypi influxd[12424]: goroutine 325 [IO wait]:
+mai 16 04:33:31 raspberrypi influxd[12424]: internal/poll.runtime_pollWait(0x651c2e40, 0x72, 0x0)
+mai 16 04:33:31 raspberrypi influxd[12424]:         /usr/lib/go-1.11/src/runtime/netpoll.go:173 +0x44
+mai 16 04:33:31 raspberrypi influxd[12424]: internal/poll.(*pollDesc).wait(0xca9a0b4, 0x72, 0x0, 0x0, 0x0)
+mai 16 04:33:31 raspberrypi influxd[12424]:         /usr/lib/go-1.11/src/internal/poll/fd_poll_runtime.go:85 +0x7c
+mai 16 04:33:31 raspberrypi influxd[12424]: internal/poll.(*pollDesc).waitRead(0xca9a0b4, 0x9654000, 0x5ac, 0x5ac)
+mai 16 04:33:31 raspberrypi influxd[12424]:         /usr/lib/go-1.11/src/internal/poll/fd_poll_runtime.go:90 +0x2c
+mai 16 04:33:31 raspberrypi influxd[12424]: internal/poll.(*FD).ReadFrom(0xca9a0a0, 0x9654000, 0x5ac, 0x5ac, 0x0, 0x0, 0x0, 0x0, 0x0)
+mai 16 04:33:31 raspberrypi influxd[12424]:         /usr/lib/go-1.11/src/internal/poll/fd_unix.go:219 +0x138
+mai 16 04:33:31 raspberrypi influxd[12424]: net.(*netFD).readFrom(0xca9a0a0, 0x9654000, 0x5ac, 0x5ac, 0x509, 0x9eac98, 0x16fc0, 0x172d0, 0xf813310)
+mai 16 04:33:31 raspberrypi influxd[12424]:         /usr/lib/go-1.11/src/net/fd_unix.go:208 +0x38
+mai 16 04:33:31 raspberrypi influxd[12424]: net.(*UDPConn).readFrom(0x5e7f550, 0x9654000, 0x5ac, 0x5ac, 0x12768, 0x129b4, 0xfcf130, 0x578a2c)
+mai 16 04:33:31 raspberrypi influxd[12424]:         /usr/lib/go-1.11/src/net/udpsock_posix.go:47 +0x38
+mai 16 04:33:31 raspberrypi influxd[12424]: net.(*UDPConn).ReadFromUDP(0x5e7f550, 0x9654000, 0x5ac, 0x5ac, 0x0, 0x9aec7c0, 0x0, 0x0)
+mai 16 04:33:31 raspberrypi influxd[12424]:         /usr/lib/go-1.11/src/net/udpsock.go:109 +0x58
+mai 16 04:33:31 raspberrypi influxd[12424]: github.com/influxdata/influxdb/services/collectd.(*Service).serve(0x31d8770)
+mai 16 04:33:31 raspberrypi influxd[12424]:         github.com/influxdata/influxdb/services/collectd/service.go:348 +0x90
+mai 16 04:33:31 raspberrypi influxd[12424]: github.com/influxdata/influxdb/services/collectd.(*Service).Open.func2(0x31d8770)
+mai 16 04:33:31 raspberrypi influxd[12424]:         github.com/influxdata/influxdb/services/collectd/service.go:208 +0x48
+mai 16 04:33:31 raspberrypi influxd[12424]: created by github.com/influxdata/influxdb/services/collectd.(*Service).Open
+mai 16 04:33:31 raspberrypi influxd[12424]:         github.com/influxdata/influxdb/services/collectd/service.go:208 +0x528
+mai 16 04:33:31 raspberrypi influxd[12424]: goroutine 326 [select]:
+mai 16 04:33:31 raspberrypi influxd[12424]: github.com/influxdata/influxdb/services/collectd.(*Service).writePoints(0x31d8770)
+mai 16 04:33:31 raspberrypi influxd[12424]:         github.com/influxdata/influxdb/services/collectd/service.go:392 +0x98
+mai 16 04:33:31 raspberrypi influxd[12424]: github.com/influxdata/influxdb/services/collectd.(*Service).Open.func3(0x31d8770)
+mai 16 04:33:31 raspberrypi influxd[12424]:         github.com/influxdata/influxdb/services/collectd/service.go:209 +0x48
+mai 16 04:33:31 raspberrypi influxd[12424]: created by github.com/influxdata/influxdb/services/collectd.(*Service).Open
+mai 16 04:33:31 raspberrypi influxd[12424]:         github.com/influxdata/influxdb/services/collectd/service.go:209 +0x544
+mai 16 04:33:31 raspberrypi influxd[12424]: goroutine 327 [select]:
+mai 16 04:33:31 raspberrypi influxd[12424]: github.com/influxdata/influxdb/cmd/influxd/run.(*Command).monitorServerErrors(0x30b95c0)
+mai 16 04:33:31 raspberrypi influxd[12424]:         github.com/influxdata/influxdb/cmd/influxd/run/command.go:174 +0x134
+mai 16 04:33:31 raspberrypi influxd[12424]: created by github.com/influxdata/influxdb/cmd/influxd/run.(*Command).Run
+mai 16 04:33:31 raspberrypi influxd[12424]:         github.com/influxdata/influxdb/cmd/influxd/run/command.go:155 +0x920
+mai 16 04:33:31 raspberrypi systemd[1]: influxdb.service: Main process exited, code=exited, status=2/INVALIDARGUMENT
+mai 16 04:33:31 raspberrypi systemd[1]: influxdb.service: Failed with result 'exit-code'.

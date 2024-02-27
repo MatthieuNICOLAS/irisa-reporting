@@ -54,6 +54,13 @@
 - Mais a-t-on besoin d'une time series database ?
 - Identifier l'utilisation que l'on va faire de la BD locale
 - Et vérifier qu'une time series database est la plus appropriée pour répondre aux besoins correspondants
+*** TODO SmartSense: Automatiser/instrumenter le setup d'un noeud SmartSense
+- Pour le moment, un noeud extérieur SmartSense doit être installé et configuré à la main
+  - Si j'ai bien compris
+- Cela me paraît error-prone et peu documenté
+- Utiliser un outil d'automatisation de la configuration, genre *Ansible*, permettrait
+- Voir sinon l'approche utilisée pour les noeuds connectés
+  - Utilise une image réseau, si j'ai bien compris ce que m'expliquait Mickaël
 *** TODO SmartSense: Ajouter un test *provisioningViaMqtt* pour *MainApp*
 - Mettre en place un test qui vérifie que si on démarre *MainApp* avec le flag /mqttEnabled/, on a bien
   - Envoi d'une requête de provisioning via *MqttInterface*
@@ -85,11 +92,14 @@ CLOSED: [2024-02-26 Mon 14:50]
   - Le résultat des approches mises en place
 - Mettre à jour l'issue
   - https://gitlab.inria.fr/smartsense/3douest/node-app/smartsense-node-app/-/issues/1
-**** IN-PROGRESS SmartSense: Suivre le comportement d'InfluxDB avec une shard duration de 2h
+**** DONE SmartSense: Suivre le comportement d'InfluxDB avec une shard duration de 2h
+CLOSED: [2024-02-27 Tue 10:34]
 - La config avec une shard duration de 4h a tout de même rencontré la OoM error
 - Notamment car InfluxDB tardait à créer de nouveaux shards
 - J'ai redéployé l'application en mettant 2h comme durée de fenêtre de travail des shards
 - Monitorer l'application pour observer l'impact de cette diminution
+**** IN-PROGRESS SmartSense: Suivre le comportement d'InfluxDB avec une shard duration de 1h
+- Recommencer l'expérience précédente avec cette fois-ci une durée de validité des shards de 1h
 **** IN-PROGRESS SmartSense: Intégrer la branche *refactor/main-app*
 - MàJ par rapport à *refactor/mqtt-interface-remove-inheritance*
 - Faire la MR
@@ -149,6 +159,23 @@ SELECT mean(*) FROM SensorData.short_duration.event_airQuality WHERE (node =~ /^
     - Si InfluxDB est en UTC+0, prendrait sens
     - Ce que je prenais pour un comportement aléatoire
     - Serait juste un fonctionnement décalé d'un shard
+  - En arrivant <2024-02-27 Tue> matin, observe qu'InfluxDB a rencontré des crashs durant la nuit
+  - Arrive pas à récupérer le log décrivant les events avant 1:19 (heure du noeud)
+    - [[file:logs/2024-02-26-crash-influxdb.logs]]
+  - À ce stade, avait déjà rencontré un problème
+    - Présence d'un artefact de compression échouée dans le shard 23
+  - Et à 2:10 (heure du noeud), compression du shard 25 provoque crash par OOM
+  - Tiens, après ce crash, permutation de la situation entre les shards 23 et 25
+    - Présence d'un artefact de compression dans le shard 25
+    - InfluxDB crash maintenant en essayant de compresser le shard 23
+      - Où est passé son artefact à lui ?
+  - Bon, on va augmenter la taille du swap
+    - Suivi le tuto : https://pimylifeup.com/raspberry-pi-swap-file/
+    - Passé à 1Go
+  - A rencontré le même problème après avoir relancé l'application
+    - [[file:logs/2024-02-27-crash-influxdb.logs]]
+  - InfluxDB semble ne pas vouloir utiliser/prendre en compte le swap
+  - Cette configuration n'est donc pas valide pour notre système
 - SmartSense: Reporter les observations sur le crash d'InfluxDB
   - Rédaction et ajout d'un commentaire sur l'issue décrivant
     - Les différentes étapes suivies
@@ -165,6 +192,14 @@ SELECT mean(*) FROM SensorData.short_duration.event_airQuality WHERE (node =~ /^
       - Vu que le cas d'usage se positionne dans les situations avec contraintes énergétiques
         - Sur batterie, énergies renouvelables
       - Devrait viser un périphérique efficace sur cet aspect
+  - Pose la question de si on a toujours un port USB de disponible
+    - La documentation mentionne 2 ports d'extensions
+    - Mais en regardant le noeud extérieur, ces ports sont pris
+    - Pour quelles raisons ?
+    - Documentation du noeud indique l'existence d'un troisième port, à l'arrière du noeud
+    - Documentation du noeud extérieur indique qu'une interface d'extension est prise par la *ExternalSensorBoard*
+    - Quid de la 2nde qui a l'air occupée dans le cas de mon noeud ?
+      - Voir avec Mickaël s'il a une idée de ce dont il pourrait s'agir
 - Discussion avec Matthieu
   - Workflow Git
     - Plutôt d'avis à squash les commits d'une MR
@@ -201,6 +236,13 @@ SELECT mean(*) FROM SensorData.short_duration.event_airQuality WHERE (node =~ /^
       - On a 95Go de stockage non-utilisé
     - Serait p-e plus lent, certes
     - Mais permettrait de tanker l'exécution du mécanisme de compression
+- SmartSense: Suivre le comportement d'InfluxDB avec une shard duration de 1h
+  - Nettoyer le système
+    - [X] Exporter et réinitialiser les données de la DB
+    - [X] Création de l'utilisateur admin
+    - [X] Création des BDs avec la bonne shard duration
+  - Application lancée le <2024-02-27 Tue> à 11:00 (heure réelle)
+    - 2023-05-16, 05:12 (heure noeud)
 ** Semaine du <2024-02-19 Mon> au <2024-02-23 Fri>
 *** Planned
 **** DONE SmartSense: Revert la version de l'application à avant le workaround pour InfluxDB
@@ -881,7 +923,7 @@ the system is undersized for its load, and configuration changes won’t help mu
     - Crash au démarrage
   - Doit déjà remettre ça au propre
     - [X] Exporter l'état de la DB
-    - [X] Recréer l'utilisation admin
+    - [X] Recréer l'utilisateur admin
       - CREATE USER admin WITH PASSWORD '<password>' WITH ALL PRIVILEGES
     - [X] Modifier la retention policy autogen
       - ALTER RETENTION POLICY autogen ON collectd SHARD DURATION 4h
