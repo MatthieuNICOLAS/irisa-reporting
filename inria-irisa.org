@@ -98,7 +98,8 @@ CLOSED: [2024-02-27 Tue 10:34]
 - Notamment car InfluxDB tardait à créer de nouveaux shards
 - J'ai redéployé l'application en mettant 2h comme durée de fenêtre de travail des shards
 - Monitorer l'application pour observer l'impact de cette diminution
-**** IN-PROGRESS SmartSense: Suivre le comportement d'InfluxDB avec une shard duration de 1h
+**** DONE SmartSense: Suivre le comportement d'InfluxDB avec une shard duration de 1h
+CLOSED: [2024-02-28 Wed 09:31]
 - Recommencer l'expérience précédente avec cette fois-ci une durée de validité des shards de 1h
 **** IN-PROGRESS SmartSense: Intégrer la branche *refactor/main-app*
 - MàJ par rapport à *refactor/mqtt-interface-remove-inheritance*
@@ -243,6 +244,63 @@ SELECT mean(*) FROM SensorData.short_duration.event_airQuality WHERE (node =~ /^
     - [X] Création des BDs avec la bonne shard duration
   - Application lancée le <2024-02-27 Tue> à 11:00 (heure réelle)
     - 2023-05-16, 05:12 (heure noeud)
+  - En arrivant le <2024-02-28 Wed>, 08:40 (heure réelle), constate crashs en boucle d'influxdb
+    - Depuis 2023-05-17, 2:17 (heure noeud)
+  - Malheureusement, ne dispose pas des logs complets
+  - Le fichier de logs démarre à 2:17
+    - [[file:logs/2024-02-28-crash-influxdb.logs]]
+  - Et pas moyen de trouver/accéder à un fichier précédent
+    #+BEGIN_PLAIN
+> journalctl --list-boots
+ 0 13efb0f602b943d8b0ee823b1fa0df7d Wed 2023-05-17 02:17:16 CEST�<80><94>Wed 2023-05-17 03:18:48 CEST
+> sudo ls -l /var/log/influxdb/
+total 0
+    #+END_PLAIN
+  - Faudra modifier la config des logs influxdb pour conserver sur plusieurs jours les logs
+    - Avoir une rota d'1 semaine ?
+  - Anyway, cette configuration rencontre aussi le problème de OoM
+  - Arrive au bout des options de configuration sur lesquelles jouer pour prévenir le problème
+  - Conclusion
+    - Pas de solution de ce côté là, au niveau de la configuration
+    - Pistes restantes
+      - MàJ d'InfluxDB en espérant une amélioration des perfs
+        - Mais rien vu à ce sujet au niveau du CHANGELOG
+      - Utilisation du "hack" pour désactiver le mécanisme de compression des shards
+      - Remplacement d'InfluxDB
+        - Telegraf ?
+        - VictoriaMetrics ?
+        - Append-Only Log ?
+      - MàJ du hardware pour disposer de plus de RAM
+- SmartSense: Vérifier la bonne utilisation du swap
+  - Avant de rule out l'utilisation du swap, re-vérifier
+  - J'ai juste augmenter la quantité de swap disponible
+  - En supposant que si le noeud en a besoin, il l'utilisera
+  - Ce qui n'est pas le comportement observé finalement
+  - Des paramètres tels que la swappiness existent et permettent de pousser le noeud à swapper
+  - Par défaut, valeur de 60 sur une échelle de 0 à 100 ou 200
+    - Commande : cat /proc/sys/vm/swappiness
+    - Initialement jusqu'à 100, maintenant autorise jusqu'à 200
+      - Pas réussi à identifier si la version courante accepte les valeurs > 100
+    - Plus c'est elevé, plus ça swap
+      - 0 indique au système d'utiliser le swap qu'en ultime recours
+        - i.e. ne désactive pas le swap
+      - 100/200 indique au système de swapper de manière aggressive
+        - i.e. de favoriser le swap à la RAM
+        - mais ne désactive pas la RAM
+  - Possibilité de modifier de manière volatile cette valeur
+    - Commande : sudo sysctl vm.swappiness=<value>
+    - Persiste jusqu'au prochain reboot
+  - Ou de modifier la configuration de manière durable
+    - Commande : sudo nano /etc/sysctl.conf
+    - Ajout de la ligne vm.swappiness=<value>
+  - A testé différentes valeurs avec la première méthode
+  - Que ça soit avoisinant 100 ou > 100, rencontre toujours le problème OoM quand je démarre InfluxDB avec des shards volumineux
+  - A testé la seconde méthode en utilisant la valeur 100
+    - Pas d'utilisation du swap particulière
+    - Quand j'approche de manquer de RAM, par exemple avec un prgogramme python à la volée, commence à utiliser le swap
+  - J'ai réquisitionné la majorité de la RAM (848/923Mo)
+    - 7:57 (heure du noeud)
+  - On va voir si la prochaine compression s'exécute correctement
 ** Semaine du <2024-02-19 Mon> au <2024-02-23 Fri>
 *** Planned
 **** DONE SmartSense: Revert la version de l'application à avant le workaround pour InfluxDB
@@ -908,8 +966,8 @@ the system is undersized for its load, and configuration changes won’t help mu
     - Plante inopinément si utilise le default in-memory index
   - 1.7.3 À ÉVITER
     - Data loss lors de la compaction
-    - Mais
-      - Limit force-full and cold compaction size : https://github.com/influxdata/influxdb/pull/10536
+    - Introduit limit force-full and cold compaction size : https://github.com/influxdata/influxdb/pull/10536
+    - Mais cette modification semble revert un peu plus tard
   - 1.7.0
     - The `ifql` section in the configuration has been changed to `flux` and it is enabled by default on port `:8082`.
     - Compaction performance improvements for Time Series Index (TSI).
@@ -4105,6 +4163,8 @@ CLOSED: [2024-01-05 Fri 07:57]
   - Lister les measurements : SHOW MEASUREMENTS
   - Récupérer les entrées d'un measurement : SELECT * FROM <measurement> LIMIT <nb>
   - Quitter le shell InfluxDB : exit
+- Réquisitionner une partie de la RAM
+  - Réquisitionner 500Mo : head -c 500m /dev/zero | tail
 ** Raccourcis utiles
 *** Fedora
 - Se déplacer entre bureaux virtuels
