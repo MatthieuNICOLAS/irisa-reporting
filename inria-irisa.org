@@ -301,6 +301,45 @@ total 0
   - J'ai réquisitionné la majorité de la RAM (848/923Mo)
     - 7:57 (heure du noeud)
   - On va voir si la prochaine compression s'exécute correctement
+  - Oui, elle s'est bien passée
+    - Bon, la quantité de RAM utilisée avait diminuée (600/923Mo)
+    - Une bonne partie ayant été transférée au swap
+  - Rencontre d'ailleurs une difficulté au moment de quitter le script Python
+    - A l'air de recharger en mémoire les données avant de quitter le programme
+    - Mais ne peut pas car mémoire saturée
+    - Obligé de le tuer manuellement
+  - RAM utilisée par InfluxDB augmente en continue ?
+    - Pas déconnant si de plus en plus de données indexées
+  - À 11:19 (heure noeud), ne consommait que
+    - 191Mo de RAM
+    - 133Mo de swap
+  - Noeud a exécuté une compaction à ce moment
+  - Est passé à
+    - 411Mo de RAM
+    - 104Mo de swap
+    - L'augmentation provenant/concernant bien InfluxDB
+  - En redémarrant InfluxDB, retombe à
+    - 185Mo de RAM
+    - 55Mo de swap
+  - Est-ce que le mécanisme de compression a une fuite mémoire ?
+    - Étrange que cela ne soit pas mentionné dans le CHANGELOG
+  - N'explique pas pourquoi InfluxDB ne veut pas utiliser plus le swap
+  - Nouveau crash détecté en arrivant <2024-02-29 Thu> matin
+    - Crash à 00:10 (heure du noeud)
+    - Logs
+      - [[file:logs/2024-02-29-crash-influxdb.log]]
+    - Monitoring
+      - [[file:img/2024-02-29-00h10-grafana-hardware-monitoring.png]]
+    - Toujours le même problème de OoM alors qu'on a du swap de dispo
+- LivingFog: Lire *Leveraging fog computing and LoRaWAN technologies for smart marina management*
+  - Lisais rapidement le papier pour des précisions sur LoRaWAN et le choix de cette technologie
+  - Ce point n'est pas vraiment détaillé
+  - Point intéressant est que la plateforme fog doit être utilisable par un ensemble de tenants
+    - Idéal est que chacun-e puisse déployer son application
+    - Pose des problèmes de sécurité
+      - Consommation/Accaparation des ressources
+      - Accès aux données des applications des autres tenants
+    - À garder en tête
 ** Semaine du <2024-02-19 Mon> au <2024-02-23 Fri>
 *** Planned
 **** DONE SmartSense: Revert la version de l'application à avant le workaround pour InfluxDB
