@@ -101,6 +101,17 @@ CLOSED: [2024-02-27 Tue 10:34]
 **** DONE SmartSense: Suivre le comportement d'InfluxDB avec une shard duration de 1h
 CLOSED: [2024-02-28 Wed 09:31]
 - Recommencer l'expérience précédente avec cette fois-ci une durée de validité des shards de 1h
+**** DONE SmartSense: Documenter les dernières observations concernant le crash d'InfluxDB
+CLOSED: [2024-02-29 Thu 13:49]
+- Mettre à jour l'issue avec le récapitulatif des configurations utilisées et les résultats obtenus
+**** DONE SmartSense: Envoyer mail pour réunion point sur début du contrat
+CLOSED: [2024-02-29 Thu 14:28]
+- Éric est venu me voir pour m'expliquer que ça serait bien de faire une réunion
+- Histoire de faire le point et de discuter de la suite
+- Et qu'il faudrait s'y prendre tôt
+  - Là avec les vacances
+  - Et avec leur agenda qui se remplissent vite
+- Envoyer mail
 **** IN-PROGRESS SmartSense: Intégrer la branche *refactor/main-app*
 - MàJ par rapport à *refactor/mqtt-interface-remove-inheritance*
 - Faire la MR
@@ -331,6 +342,11 @@ total 0
     - Monitoring
       - [[file:img/2024-02-29-00h10-grafana-hardware-monitoring.png]]
     - Toujours le même problème de OoM alors qu'on a du swap de dispo
+  - Pose la question suivante
+    - Est-ce que le mécanisme de compression peut utiliser le swap ?
+    - Probablement que non
+    - Utilisation du swap consiste à stocker sur le système de fichiers les données en mémoire non-utilisées
+    - Si à un moment donné, doit faire un traitement qui nécessite de charger en RAM un volume plus important de données que ma quantité maximale de RAM, suis bloqué
 - LivingFog: Lire *Leveraging fog computing and LoRaWAN technologies for smart marina management*
   - Lisais rapidement le papier pour des précisions sur LoRaWAN et le choix de cette technologie
   - Ce point n'est pas vraiment détaillé
@@ -340,6 +356,21 @@ total 0
       - Consommation/Accaparation des ressources
       - Accès aux données des applications des autres tenants
     - À garder en tête
+- SmartSense: Documenter les dernières observations concernant le crash d'InfluxDB
+  - Depuis ma MàJ de l'issue, j'ai observé
+    - Crashs avec durée de vie des shards de 2h puis 1h (minimum)
+      - Donc la borne minimale au coût de mécanisme de compression des shards est déjà supérieure aux ressources de notre système
+    - Augmentation de la taille du swap à 1Go, augmentation de la swappiness à 100
+      - Observe qu'InfluxDB n'utilise pas le swap pour l'exécution du mécanisme de compression
+- SmartSense: Envoyer mail pour réunion point sur début du contrat
+  - De ce que je vois de leur agenda, la date du <2024-03-13 Wed> serait la 1ère à convenir
+    - Y a bien des créneaux le <2024-03-11 Mon>
+    - Mais Guillermo rentrera tout juste de congés
+    - P-e pas le plus sympa pour lui
+  - Faudrait que je prenne des nouvelles de Guillaume
+    - Notamment comment ça va passer pour lui après son arrêt
+      - Télétravail ? Arrêt prolongé ?
+    - En profiter pour lui parler de la réunion et lui proposer d'y participer
 ** Semaine du <2024-02-19 Mon> au <2024-02-23 Fri>
 *** Planned
 **** DONE SmartSense: Revert la version de l'application à avant le workaround pour InfluxDB
