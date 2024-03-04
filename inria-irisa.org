@@ -58,7 +58,7 @@
 - Pour le moment, un noeud extérieur SmartSense doit être installé et configuré à la main
   - Si j'ai bien compris
 - Cela me paraît error-prone et peu documenté
-- Utiliser un outil d'automatisation de la configuration, genre *Ansible*, permettrait
+- Utiliser un outil d'automatisation de la configuration, genre *Ansible*, permettrait de résoudre ces problèmes
 - Voir sinon l'approche utilisée pour les noeuds connectés
   - Utilise une image réseau, si j'ai bien compris ce que m'expliquait Mickaël
 *** TODO SmartSense: Ajouter un test *provisioningViaMqtt* pour *MainApp*
@@ -70,6 +70,99 @@
 *** TODO Lire *OZCAR: The French Network of Critical Zone Observatories*
 - Ammar m'a recommandé cet article pour en apprendre plus sur les observatoires et leurs buts
 - Le consulter
+** Semaine du <2024-03-04 Mon> au <2024-03-08 Fri>
+*** Planned
+**** IN-PROGRESS SmartSense: Intégrer la branche *refactor/main-app*
+- MàJ par rapport à *refactor/mqtt-interface-remove-inheritance*
+- Faire la MR
+**** IN-PROGRESS SmartSense: Intégrer la branche *refactor/naming-conventions*
+- Préparer la MR, en attendant l'intégration de *refactor/main-app*
+**** IN-PROGRESS SmartSense: Intégrer la branche *refactor/usb-board-manager*
+- Faire la MR
+**** IN-PROGRESS SmartSense: Traiter les problèmes relevés lors de l'uniformisation du code
+- J'ai noté plusieurs points problématiques au cours de mon passage sur l'ensemble des modules
+  - Le module *sensor_board* est inutilisé
+    - Code obsolète à supprimer ?
+  - La librairie *telnetlib* est dépréciée
+    - Passer à https://pypi.org/project/telnetlib3/ ?
+  - Une conditionnelle étrange est effectuée dans le module *tlc59108_manager*
+    - https://gitlab.inria.fr/smartsense/3douest/node-app/smartsense-node-app/-/blob/3feb5c56dc5e74dcea9eb2f2ba98bec40029acdf/TLC59108Manager.py#L370
+    - Revient à `if data[0]`
+    - `and` est-il l'opérateur désiré ?
+    - Simplifier/corriger
+  - Les appels à *OpenOCDManager.update()* dans *test_ocd* manquent d'un paramètre
+    - J'ai l'impression que c'est le paramètre *board*
+    - Ajouter les valeurs correctes ?
+  - *USBBoardManager.read_data()* et *parse_to_mqtt()* sont particulièrement sujets aux retours de Pylint
+    - Trop d'instructions
+    - Trop de branchements
+    - Trop de blocs imbriqués
+    - Refactorer pour améliorer la lisibilité du code ?
+    - Voir si on peut aussi factoriser du code à l'aide de fonctions
+  - Corriger ces problèmes
+    - Ou si pas de solution claire et rapide, créer une issue correspondante
+**** IN-PROGRESS SmartSense: Étudier la mise en place d'une interface WiFi
+- Voir si un hardware donné est conseillé pour la Raspberry CM3
+- Et comment ça s'utiliserait d'un POV logiciel
+**** IN-PROGRESS SmartSense: Mettre en place une nouvelle version système du noeud
+- Un retour effectué par plusieurs personnes est qu'influxdb fonctionne mieux sur un OS 64-bits
+  - Plus précisément, InfluxDB a pris la décision à la version 1.8.x de ne supporter que ces systèmes
+- Ça tombe bien, désormais il existe des versions de Raspbian 64-bits
+- Permettrait au passage de mettre à jour l'OS
+  - Utile pour les paquets/dépendances
+  - Mais aussi les drivers pour périphériques WiFi
+- Nécessite cependant d'établir le processus de setup d'un noeud
+  - Quels logiciels sont requis ?
+  - Quelles modifications de la configuration par défaut sont effectuées ?
+- Peut être l'occasion de mettre ça au propre
+- Et de paver la voie pour la mise en place d'un outil de déploiement et configuration des noeuds
+  - Ansible ? Nix ?
+*** Done
+- SmartSense: Mettre en place une nouvelle version système du noeud
+  - [ ] Créer une VM de Raspberry CM3 et setup Raspberry OS 64-bits
+    - Revoir du côté de Qemu
+  - [ ] Lister les dépendances, logiciels et configurations déployés sur le noeud SmartSense
+  - [ ] Reproduire l'environnement sur la VM
+- Lister les dépendances, logiciels et configurations déployés sur le noeud SmartSense
+  - Pour le moment, a identifié
+    - collectd
+      - Fichiers de configuration à /etc/collectd/collectd.conf et /etc/collectd/collectd.conf.d
+    - dnsmasq v2.80
+      - Fichier de configuration à /etc/dnsmasq.conf
+    - InfluxDB v1.8.0 (initialement 1.6.4)
+      - Données stockées dans /data/influxdb
+      - Fichier de configuration à /etc/influxdb/influxdb.conf
+    - mainApp
+      - Application stockée dans /home/root/App
+    - grafana v7.0.1
+      - Fichier de configuration à /etc/grafana/grafana.ini
+- SmartSense: Reproduire l'environnement sur la VM
+  - Pose la question de si c'est une bonne idée de reproduire à l'identique l'environnement
+    - Ensemble des dépendances/applications installées directement sur le système
+  - Ou faudrait-il le faire évoluer ?
+    - Mettre en place de la conteneurisation de ses composants
+      - Reproductibilité, gestion explicite des versions des composants, esquive des conflits de dépendances
+    - Quid de l'interaction de docker avec le hardware ?
+      - Je pense à l'utilisation du GPIO et de l'interaction avec les composants Serial
+      - Lien suivant indique que l'on peut lancer un conteneur en lui donnant accès aux parties du système, notamment hardware, pertinentes
+        - https://stackoverflow.com/questions/30059784/docker-access-to-raspberry-pi-gpio-pins
+      - Qui pointe vers la doc de :
+        - https://docs.docker.com/engine/reference/run/#runtime-privilege-and-linux-capabilities
+  - Si on commence à mettre en place des conteneurs, pose la question de l'outil à utiliser
+    - Simplement Docker ?
+      - On ne gère pas un cluster, mais un ensemble de noeuds indépendants
+    - Ou k3s (et assimilés) ?
+      - Est-ce que cet outil peut s'avérer pertinent même dans le cadre de déploiements de noeuds indépendants ?
+      - Notamment grâce à un ensemble de fonctionnalités proposées ?
+    - Volodia m'a expliqué qu'il n'y a pas particulièrement d'intérêt dans ce cas de figure
+  - Et s'il y a un intérêt à coupler l'outil choisi, e.g. Docker, avec Ansible et consorts
+  - Me paraît intéressant de creuser ces questions et de les aborder avec l'équipe
+  - Après, pas nécessaire de faire évoluer cet aspect tout de suite
+    - Mais à garder en tête
+- SmartSense: Anomalie détectée
+  - En monitorant les ressources du noeud SmartSence ce matin <2024-03-04 Mon>
+  - J'ai constaté que la taille du swap avait diminué (1Go -> 558Mo)
+  - Quelle est cette sorcellerie ?
 ** Semaine du <2024-02-26 Mon> au <2024-03-01 Fri>
 *** Planned
 **** DONE SmartSense: Résoudre le problème de monitoring du noeud
@@ -144,6 +237,19 @@ CLOSED: [2024-02-29 Thu 14:28]
 **** IN-PROGRESS SmartSense: Étudier la mise en place d'une interface WiFi
 - Voir si un hardware donné est conseillé pour la Raspberry CM3
 - Et comment ça s'utiliserait d'un POV logiciel
+**** TODO SmartSense: Mettre en place une nouvelle version système du noeud
+- Un retour effectué par plusieurs personnes est qu'influxdb fonctionne mieux sur un OS 64-bits
+  - Plus précisément, InfluxDB a pris la décision à la version 1.8.x de ne supporter que ces systèmes
+- Ça tombe bien, désormais il existe des versions de Raspbian 64-bits
+- Permettrait au passage de mettre à jour l'OS
+  - Utile pour les paquets/dépendances
+  - Mais aussi les drivers pour périphériques WiFi
+- Nécessite cependant d'établir le processus de setup d'un noeud
+  - Quels logiciels sont requis ?
+  - Quelles modifications de la configuration par défaut sont effectuées ?
+- Peut être l'occasion de mettre ça au propre
+- Et de paver la voie pour la mise en place d'un outil de déploiement et configuration des noeuds
+  - Ansible ? Nix ?
 *** Done
 - SmartSense: Résoudre le problème de monitoring du noeud
   - Si j'interroge directement influxdb, observe les données de collectd être collectées et stockées
@@ -371,6 +477,40 @@ total 0
     - Notamment comment ça va passer pour lui après son arrêt
       - Télétravail ? Arrêt prolongé ?
     - En profiter pour lui parler de la réunion et lui proposer d'y participer
+- SmartSense: Lire l'issue *Compaction crash loops and data loss on Raspberry Pi 3 B+ under minimal load*
+  - Issue disponible ici : https://github.com/influxdata/influxdb/issues/11339
+  - Des gens rencontrent un problème similaire au notre depuis 2019
+  - Lié à : https://github.com/influxdata/influxdb/pull/12362
+  - Donc pas exactement similaire au notre
+  - Eux saturent l'espace adressable d'un système 32-bits
+  - Nous, InfluxDB plante bien avant
+  - Mentionne bien que le mécanisme de compression nécessite probablement en mémoire le double de la taille du shard
+  - Et qu'il peut échouer si le système manque de RAM à ce moment
+  - Taille de nos shards
+    - Étonnament, a l'air de pas mal varier
+    - Premiers shards, compressés, ont une taille de ~25Mo
+    - Shards suivants, toujours compressés, ont une taille de ~40Mo
+    - Derniers shards, non compressés, ont une taille de ~40Mo
+    - Donc le double reste d'un ordre de grandeur correct
+  - Mais j'ai l'impression d'avoir observé l'appli crasher alors qu'on avait bien plus que ce montant de RAM disponible
+  - Plusieurs retours d'expériences sur le fait que de passer à OS 64-bits permet de réduire la footprint en RAM d'InfluxDB
+    - Sans raison particulière, i.e. sans avoir mis InfluxDB à jour
+  - Mais programmes utiliseraient + de RAM de manière initiale
+  - Globalement, en ressort qu'InfluxDB ne supporte pas les systèmes 32-bits
+  - Passer à un système 64-bits peut, de manière surprenante, améliorer la stabilité du système
+    - Même si la config ne le justifie pas (< 4Go de RAM)
+    - À tester si ça aide dans notre cas
+  - On est pas non plus à la dernière version d'InfluxDB compatible avec notre code
+    - Actuellement à la 1.6.4
+    - La 1.8.10 (dernière version avant la 2.0.0) est compatible d'après les tests
+    - Faudrait aussi tester cette version, voir si elle améliore la situation
+    - Me paraît une bonne idée dans tous les cas de se maintenir à jour
+  - J'ai mis à jour InfluxDB sur le noeud
+    - J'ai pu trouver le bon paquet ici : https://github.com/influxdata/influxdb/releases/tag/v1.8.10
+    - Juste eu besoin de déinstaller influxdb-client sur le noeud
+      - Entrait en conflit avec cette nouvelle version
+      - Semblerait que le client est inclus dans ce paquet désormais
+  - À voir si ça a un impact sur le comportement du système
 ** Semaine du <2024-02-19 Mon> au <2024-02-23 Fri>
 *** Planned
 **** DONE SmartSense: Revert la version de l'application à avant le workaround pour InfluxDB
@@ -4233,6 +4373,11 @@ CLOSED: [2024-01-05 Fri 07:57]
   - Lister les measurements : SHOW MEASUREMENTS
   - Récupérer les entrées d'un measurement : SELECT * FROM <measurement> LIMIT <nb>
   - Quitter le shell InfluxDB : exit
+  - Créer l'utilisation admin
+    - CREATE USER admin WITH PASSWORD '<password>' WITH ALL PRIVILEGES
+  - Créer les bases de données avec les bonnes retention policies
+    - DROP DATABASE collectd; CREATE DATABASE collectd WITH SHARD DURATION 1h NAME autogen
+    - CREATE DATABASE SensorData WITH SHARD DURATION 1h NAME short_duration
 - Réquisitionner une partie de la RAM
   - Réquisitionner 500Mo : head -c 500m /dev/zero | tail
 ** Raccourcis utiles
