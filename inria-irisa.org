@@ -163,6 +163,51 @@
   - En monitorant les ressources du noeud SmartSence ce matin <2024-03-04 Mon>
   - J'ai constaté que la taille du swap avait diminué (1Go -> 558Mo)
   - Quelle est cette sorcellerie ?
+- SmartSense: Étudier la mise en place d'une interface WiFi
+  - J'ai pas encore clairement identifié/documenté les performances de Long Range WiFi
+  - Temps de corriger cela
+  - Modes de fonctionnement
+    - Infrastructure
+      - Les noeuds communiquent entre eux/avec l'extérieur par l'intermédiaire d'un Access Point
+      - D'où besoin de se connecter à l'Access Point
+    - Ad hoc
+      - Noeuds communiquent entre eux directement
+      - Noeuds doivent être configurés au préalable (SSID, channel, clé de sécurité)
+    - Bridge
+      - Noeud interagit avec le réseau via WiFi
+      - Et retransmet/interopère avec son interface Ethernet
+    - Range-extender
+      - Noeud sert de relai pour le réseau WiFi
+      - Diminue le débit du réseau
+        - Puisque le noeud utilise la même interface pour recevoir/diffuser le signal, divise par 2
+  - Long Range WiFi 2.4GHz
+    - Distance
+    - Débit
+      - 100Mbps -> 11.92Mo/s
+    - Consommation énergétique
+  - Long Range WiFi 5GHz
+    - Distance
+    - Débit
+      - 1Gbps -> 119.2Mos/s
+    - Consommation énergétique
+  - WiFi Halow
+    - Distance
+    - Débit
+    - Consommation énergétique
+- SmartSense: Monitorer le fonctionnement d'InfluxDB v1.8.10
+  - Après 1j de fonctionnement, crash de la DB <2024-03-05 Tue> vers 08:20
+    - [[file:logs/2024-03-05-crash-influxdb.log]]
+  - De nouveau un OoM lors d'une compaction
+  - Mais de manière surprenante, d'un snapshot ce coup-ci
+  - Détecte un nouveau problème si on fait vivre la BD plus longtemps
+  - À son redémarrage, InfluxDB ré-ouvre chaque shard et charge leur index
+  - Étant donné notre retention policy, possède de multiples shards
+    - Dans le cas présent, 30
+  - La BD met ~8s à démarrer
+  - Et vérifie pendant ce temps à de multiples reprises si elle a démarré
+  - Voir si la BD interrompt son démarrage si le compteur dépasse un seuil
+  - Après quelques minutes de fonctionnement, est retombé dans sa boucle de compaction d'un shard, crash, redémarrage
+    - [[file:logs/2024-03-05-crash-influxdb-2.log]]
 ** Semaine du <2024-02-26 Mon> au <2024-03-01 Fri>
 *** Planned
 **** DONE SmartSense: Résoudre le problème de monitoring du noeud
@@ -4378,6 +4423,12 @@ CLOSED: [2024-01-05 Fri 07:57]
   - Créer les bases de données avec les bonnes retention policies
     - DROP DATABASE collectd; CREATE DATABASE collectd WITH SHARD DURATION 1h NAME autogen
     - CREATE DATABASE SensorData WITH SHARD DURATION 1h NAME short_duration
+- Resize le swap sur Raspberry
+  - sudo dphys-swapfile swapoff
+  - sudo nano /etc/dphys-swapfile et modifier CONF_SWAPSIZE
+    - Ou CONF_SWAPFACTOR
+  - sudo dphys-swapfile swapon
+  - sudo reboot
 - Réquisitionner une partie de la RAM
   - Réquisitionner 500Mo : head -c 500m /dev/zero | tail
 ** Raccourcis utiles

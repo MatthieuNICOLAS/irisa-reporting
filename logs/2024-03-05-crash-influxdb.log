@@ -1,0 +1,758 @@
+-- Logs begin at Fri 2023-05-19 07:47:07 CEST, end at Fri 2023-05-19 12:58:03 CEST. --
+mai 19 12:50:02 raspberrypi influxd-systemd-start.sh[8569]: [httpd] ::1 - admin [19/May/2023:12:50:02 +0200] "POST /write?db=SensorData HTTP/1.1 " 204 0 "-" "python-requests/2.21.0" e81b166b-f632-11ed-81f1-b827eb8c6748 62234
+mai 19 12:50:06 raspberrypi influxd-systemd-start.sh[8569]: [httpd] ::1 - admin [19/May/2023:12:50:06 +0200] "POST /write?db=SensorData HTTP/1.1 " 204 0 "-" "python-requests/2.21.0" eab1871c-f632-11ed-81f2-b827eb8c6748 28666
+mai 19 12:50:10 raspberrypi influxd-systemd-start.sh[8569]: [httpd] ::1 - admin [19/May/2023:12:50:10 +0200] "POST /write?db=SensorData HTTP/1.1 " 204 0 "-" "python-requests/2.21.0" ed21648d-f632-11ed-81f3-b827eb8c6748 24985
+mai 19 12:50:14 raspberrypi influxd-systemd-start.sh[8569]: [httpd] ::1 - admin [19/May/2023:12:50:14 +0200] "POST /write?db=SensorData HTTP/1.1 " 204 0 "-" "python-requests/2.21.0" ef91d625-f632-11ed-81f4-b827eb8c6748 61683
+mai 19 12:50:18 raspberrypi influxd-systemd-start.sh[8569]: [httpd] ::1 - admin [19/May/2023:12:50:18 +0200] "POST /write?db=SensorData HTTP/1.1 " 204 0 "-" "python-requests/2.21.0" f208e8e8-f632-11ed-81f5-b827eb8c6748 37506
+mai 19 12:50:23 raspberrypi influxd-systemd-start.sh[8569]: [httpd] ::1 - admin [19/May/2023:12:50:23 +0200] "POST /write?db=SensorData HTTP/1.1 " 204 0 "-" "python-requests/2.21.0" f4a7f780-f632-11ed-81f6-b827eb8c6748 46108
+mai 19 12:50:27 raspberrypi influxd-systemd-start.sh[8569]: [httpd] ::1 - admin [19/May/2023:12:50:27 +0200] "POST /write?db=SensorData HTTP/1.1 " 204 0 "-" "python-requests/2.21.0" f7394ec0-f632-11ed-81f7-b827eb8c6748 39286
+mai 19 12:50:31 raspberrypi influxd-systemd-start.sh[8569]: [httpd] ::1 - admin [19/May/2023:12:50:31 +0200] "POST /write?db=SensorData HTTP/1.1 " 204 0 "-" "python-requests/2.21.0" f99abb07-f632-11ed-81f8-b827eb8c6748 60164
+mai 19 12:50:35 raspberrypi influxd-systemd-start.sh[8569]: [httpd] ::1 - admin [19/May/2023:12:50:35 +0200] "POST /write?db=SensorData HTTP/1.1 " 204 0 "-" "python-requests/2.21.0" fc0fb5d5-f632-11ed-81f9-b827eb8c6748 37720
+mai 19 12:50:39 raspberrypi influxd-systemd-start.sh[8569]: [httpd] ::1 - admin [19/May/2023:12:50:39 +0200] "POST /write?db=SensorData HTTP/1.1 " 204 0 "-" "python-requests/2.21.0" fe831f4f-f632-11ed-81fa-b827eb8c6748 75699
+mai 19 12:50:43 raspberrypi influxd-systemd-start.sh[8569]: [httpd] ::1 - admin [19/May/2023:12:50:43 +0200] "POST /write?db=SensorData HTTP/1.1 " 204 0 "-" "python-requests/2.21.0" 00fb4539-f633-11ed-81fb-b827eb8c6748 69586
+mai 19 12:50:48 raspberrypi influxd-systemd-start.sh[8569]: [httpd] ::1 - admin [19/May/2023:12:50:48 +0200] "POST /write?db=SensorData HTTP/1.1 " 204 0 "-" "python-requests/2.21.0" 03910fd5-f633-11ed-81fc-b827eb8c6748 27621
+mai 19 12:50:52 raspberrypi influxd-systemd-start.sh[8569]: [httpd] ::1 - admin [19/May/2023:12:50:52 +0200] "POST /write?db=SensorData HTTP/1.1 " 204 0 "-" "python-requests/2.21.0" 05f096e2-f633-11ed-81fd-b827eb8c6748 26788
+mai 19 12:50:56 raspberrypi influxd-systemd-start.sh[8569]: [httpd] ::1 - admin [19/May/2023:12:50:56 +0200] "POST /write?db=SensorData HTTP/1.1 " 204 0 "-" "python-requests/2.21.0" 086f8241-f633-11ed-81fe-b827eb8c6748 54008
+mai 19 12:51:00 raspberrypi influxd-systemd-start.sh[8569]: [httpd] ::1 - admin [19/May/2023:12:51:00 +0200] "POST /write?db=SensorData HTTP/1.1 " 204 0 "-" "python-requests/2.21.0" 0ae2f1de-f633-11ed-81ff-b827eb8c6748 68558
+mai 19 12:51:04 raspberrypi influxd-systemd-start.sh[8569]: [httpd] ::1 - admin [19/May/2023:12:51:04 +0200] "POST /write?db=SensorData HTTP/1.1 " 204 0 "-" "python-requests/2.21.0" 0d594c03-f633-11ed-8200-b827eb8c6748 59758
+mai 19 12:51:08 raspberrypi influxd-systemd-start.sh[8569]: [httpd] ::1 - admin [19/May/2023:12:51:08 +0200] "POST /write?db=SensorData HTTP/1.1 " 204 0 "-" "python-requests/2.21.0" 0fcea973-f633-11ed-8201-b827eb8c6748 70813
+mai 19 12:51:13 raspberrypi influxd-systemd-start.sh[8569]: [httpd] ::1 - admin [19/May/2023:12:51:13 +0200] "POST /write?db=SensorData HTTP/1.1 " 204 0 "-" "python-requests/2.21.0" 12640b22-f633-11ed-8202-b827eb8c6748 57581
+mai 19 12:51:17 raspberrypi influxd-systemd-start.sh[8569]: [httpd] ::1 - admin [19/May/2023:12:51:17 +0200] "POST /write?db=SensorData HTTP/1.1 " 204 0 "-" "python-requests/2.21.0" 14c8e84d-f633-11ed-8203-b827eb8c6748 44226
+mai 19 12:51:21 raspberrypi influxd-systemd-start.sh[8569]: [httpd] ::1 - admin [19/May/2023:12:51:21 +0200] "POST /write?db=SensorData HTTP/1.1 " 204 0 "-" "python-requests/2.21.0" 174ab1b7-f633-11ed-8204-b827eb8c6748 26060
+mai 19 12:51:25 raspberrypi influxd-systemd-start.sh[8569]: [httpd] ::1 - admin [19/May/2023:12:51:25 +0200] "POST /write?db=SensorData HTTP/1.1 " 204 0 "-" "python-requests/2.21.0" 19bd7c15-f633-11ed-8205-b827eb8c6748 48612
+mai 19 12:51:29 raspberrypi influxd-systemd-start.sh[8569]: [httpd] ::1 - admin [19/May/2023:12:51:29 +0200] "POST /write?db=SensorData HTTP/1.1 " 204 0 "-" "python-requests/2.21.0" 1c356d0a-f633-11ed-8206-b827eb8c6748 41835
+mai 19 12:51:33 raspberrypi influxd-systemd-start.sh[8569]: [httpd] ::1 - admin [19/May/2023:12:51:33 +0200] "POST /write?db=SensorData HTTP/1.1 " 204 0 "-" "python-requests/2.21.0" 1ed75f97-f633-11ed-8207-b827eb8c6748 28198
+mai 19 12:51:37 raspberrypi influxd-systemd-start.sh[8569]: [httpd] ::1 - admin [19/May/2023:12:51:37 +0200] "POST /write?db=SensorData HTTP/1.1 " 204 0 "-" "python-requests/2.21.0" 2138b524-f633-11ed-8208-b827eb8c6748 29195
+mai 19 12:51:42 raspberrypi influxd-systemd-start.sh[8569]: [httpd] ::1 - admin [19/May/2023:12:51:42 +0200] "POST /write?db=SensorData HTTP/1.1 " 204 0 "-" "python-requests/2.21.0" 23ba3d83-f633-11ed-8209-b827eb8c6748 60511
+mai 19 12:51:46 raspberrypi influxd-systemd-start.sh[8569]: [httpd] ::1 - admin [19/May/2023:12:51:46 +0200] "POST /write?db=SensorData HTTP/1.1 " 204 0 "-" "python-requests/2.21.0" 26404a1f-f633-11ed-820a-b827eb8c6748 29802
+mai 19 12:51:50 raspberrypi influxd-systemd-start.sh[8569]: [httpd] ::1 - admin [19/May/2023:12:51:50 +0200] "POST /write?db=SensorData HTTP/1.1 " 204 0 "-" "python-requests/2.21.0" 28deb5ce-f633-11ed-820b-b827eb8c6748 40026
+mai 19 12:51:54 raspberrypi influxd-systemd-start.sh[8569]: [httpd] ::1 - admin [19/May/2023:12:51:54 +0200] "POST /write?db=SensorData HTTP/1.1 " 204 0 "-" "python-requests/2.21.0" 2b41bc2b-f633-11ed-820c-b827eb8c6748 26891
+mai 19 12:51:58 raspberrypi influxd-systemd-start.sh[8569]: [httpd] ::1 - admin [19/May/2023:12:51:58 +0200] "POST /write?db=SensorData HTTP/1.1 " 204 0 "-" "python-requests/2.21.0" 2db1a03c-f633-11ed-820d-b827eb8c6748 94492
+mai 19 12:52:02 raspberrypi influxd-systemd-start.sh[8569]: [httpd] ::1 - admin [19/May/2023:12:52:02 +0200] "POST /write?db=SensorData HTTP/1.1 " 204 0 "-" "python-requests/2.21.0" 301cd883-f633-11ed-820e-b827eb8c6748 27525
+mai 19 12:52:07 raspberrypi influxd-systemd-start.sh[8569]: [httpd] ::1 - admin [19/May/2023:12:52:07 +0200] "POST /write?db=SensorData HTTP/1.1 " 204 0 "-" "python-requests/2.21.0" 32acae69-f633-11ed-820f-b827eb8c6748 43472
+mai 19 12:52:11 raspberrypi influxd-systemd-start.sh[8569]: [httpd] ::1 - admin [19/May/2023:12:52:11 +0200] "POST /write?db=SensorData HTTP/1.1 " 204 0 "-" "python-requests/2.21.0" 353ea553-f633-11ed-8210-b827eb8c6748 35699
+mai 19 12:52:15 raspberrypi influxd-systemd-start.sh[8569]: [httpd] ::1 - admin [19/May/2023:12:52:15 +0200] "POST /write?db=SensorData HTTP/1.1 " 204 0 "-" "python-requests/2.21.0" 37a211cb-f633-11ed-8211-b827eb8c6748 42430
+mai 19 12:52:19 raspberrypi influxd-systemd-start.sh[8569]: [httpd] ::1 - admin [19/May/2023:12:52:19 +0200] "POST /write?db=SensorData HTTP/1.1 " 204 0 "-" "python-requests/2.21.0" 3a22b806-f633-11ed-8212-b827eb8c6748 29580
+mai 19 12:52:24 raspberrypi influxd-systemd-start.sh[8569]: [httpd] ::1 - admin [19/May/2023:12:52:24 +0200] "POST /write?db=SensorData HTTP/1.1 " 204 0 "-" "python-requests/2.21.0" 3cb0cb85-f633-11ed-8213-b827eb8c6748 37815
+mai 19 12:52:28 raspberrypi influxd-systemd-start.sh[8569]: [httpd] ::1 - admin [19/May/2023:12:52:28 +0200] "POST /write?db=SensorData HTTP/1.1 " 204 0 "-" "python-requests/2.21.0" 3f4f4e52-f633-11ed-8214-b827eb8c6748 27766
+mai 19 12:52:32 raspberrypi influxd-systemd-start.sh[8569]: [httpd] ::1 - admin [19/May/2023:12:52:32 +0200] "POST /write?db=SensorData HTTP/1.1 " 204 0 "-" "python-requests/2.21.0" 41bf4e72-f633-11ed-8215-b827eb8c6748 45196
+mai 19 12:52:36 raspberrypi influxd-systemd-start.sh[8569]: [httpd] ::1 - admin [19/May/2023:12:52:36 +0200] "POST /write?db=SensorData HTTP/1.1 " 204 0 "-" "python-requests/2.21.0" 44332b69-f633-11ed-8216-b827eb8c6748 40986
+mai 19 12:52:40 raspberrypi influxd-systemd-start.sh[8569]: [httpd] ::1 - admin [19/May/2023:12:52:40 +0200] "POST /write?db=SensorData HTTP/1.1 " 204 0 "-" "python-requests/2.21.0" 46b74732-f633-11ed-8217-b827eb8c6748 33414
+mai 19 12:52:45 raspberrypi influxd-systemd-start.sh[8569]: [httpd] ::1 - admin [19/May/2023:12:52:45 +0200] "POST /write?db=SensorData HTTP/1.1 " 204 0 "-" "python-requests/2.21.0" 493ce986-f633-11ed-8218-b827eb8c6748 40080
+mai 19 12:52:49 raspberrypi influxd-systemd-start.sh[8569]: [httpd] ::1 - admin [19/May/2023:12:52:49 +0200] "POST /write?db=SensorData HTTP/1.1 " 204 0 "-" "python-requests/2.21.0" 4bb06f7c-f633-11ed-8219-b827eb8c6748 25801
+mai 19 12:52:53 raspberrypi influxd-systemd-start.sh[8569]: [httpd] ::1 - admin [19/May/2023:12:52:53 +0200] "POST /write?db=SensorData HTTP/1.1 " 204 0 "-" "python-requests/2.21.0" 4e316372-f633-11ed-821a-b827eb8c6748 30084
+mai 19 12:52:57 raspberrypi influxd-systemd-start.sh[8569]: [httpd] ::1 - admin [19/May/2023:12:52:57 +0200] "POST /write?db=SensorData HTTP/1.1 " 204 0 "-" "python-requests/2.21.0" 50b25d94-f633-11ed-821b-b827eb8c6748 37671
+mai 19 12:53:02 raspberrypi influxd-systemd-start.sh[8569]: [httpd] ::1 - admin [19/May/2023:12:53:02 +0200] "POST /write?db=SensorData HTTP/1.1 " 204 0 "-" "python-requests/2.21.0" 5354bdb7-f633-11ed-821c-b827eb8c6748 29745
+mai 19 12:53:06 raspberrypi influxd-systemd-start.sh[8569]: [httpd] ::1 - admin [19/May/2023:12:53:06 +0200] "POST /write?db=SensorData HTTP/1.1 " 204 0 "-" "python-requests/2.21.0" 55b8adf0-f633-11ed-821d-b827eb8c6748 27054
+mai 19 12:53:10 raspberrypi influxd-systemd-start.sh[8569]: [httpd] ::1 - admin [19/May/2023:12:53:10 +0200] "POST /write?db=SensorData HTTP/1.1 " 204 0 "-" "python-requests/2.21.0" 584a6ea8-f633-11ed-821e-b827eb8c6748 31242
+mai 19 12:53:14 raspberrypi influxd-systemd-start.sh[8569]: [httpd] ::1 - admin [19/May/2023:12:53:14 +0200] "POST /write?db=SensorData HTTP/1.1 " 204 0 "-" "python-requests/2.21.0" 5aad44c3-f633-11ed-821f-b827eb8c6748 27723
+mai 19 12:53:18 raspberrypi influxd-systemd-start.sh[8569]: [httpd] ::1 - admin [19/May/2023:12:53:18 +0200] "POST /write?db=SensorData HTTP/1.1 " 204 0 "-" "python-requests/2.21.0" 5d41c72b-f633-11ed-8220-b827eb8c6748 35079
+mai 19 12:53:23 raspberrypi influxd-systemd-start.sh[8569]: [httpd] ::1 - admin [19/May/2023:12:53:22 +0200] "POST /write?db=SensorData HTTP/1.1 " 204 0 "-" "python-requests/2.21.0" 5fd5f140-f633-11ed-8221-b827eb8c6748 28581
+mai 19 12:53:27 raspberrypi influxd-systemd-start.sh[8569]: [httpd] ::1 - admin [19/May/2023:12:53:27 +0200] "POST /write?db=SensorData HTTP/1.1 " 204 0 "-" "python-requests/2.21.0" 6248dc9d-f633-11ed-8222-b827eb8c6748 28544
+mai 19 12:53:31 raspberrypi influxd-systemd-start.sh[8569]: [httpd] ::1 - admin [19/May/2023:12:53:31 +0200] "POST /write?db=SensorData HTTP/1.1 " 204 0 "-" "python-requests/2.21.0" 64c8d4cf-f633-11ed-8223-b827eb8c6748 27832
+mai 19 12:53:35 raspberrypi influxd-systemd-start.sh[8569]: [httpd] ::1 - admin [19/May/2023:12:53:35 +0200] "POST /write?db=SensorData HTTP/1.1 " 204 0 "-" "python-requests/2.21.0" 673d02b0-f633-11ed-8224-b827eb8c6748 49751
+mai 19 12:53:39 raspberrypi influxd-systemd-start.sh[8569]: [httpd] ::1 - admin [19/May/2023:12:53:39 +0200] "POST /write?db=SensorData HTTP/1.1 " 204 0 "-" "python-requests/2.21.0" 69ed4d98-f633-11ed-8225-b827eb8c6748 69377
+mai 19 12:53:40 raspberrypi influxd-systemd-start.sh[8569]: ts=2023-05-19T10:53:40.385429Z lvl=info msg="Cache snapshot (start)" log_id=0htsw~H0000 engine=tsm1 trace_id=0htv8tdG000 op_name=tsm1_cache_snapshot op_event=start
+mai 19 12:53:42 raspberrypi influxd-systemd-start.sh[8569]: ts=2023-05-19T10:53:42.607068Z lvl=info msg="Error adding new TSM files from snapshot. Removing temp files." log_id=0htsw~H0000 engine=tsm1 trace_id=0htv8tdG000 op_name=tsm1_cache_snapshot error="cannot allocate memory"
+mai 19 12:53:42 raspberrypi influxd-systemd-start.sh[8569]: ts=2023-05-19T10:53:42.607326Z lvl=info msg="Cache snapshot (end)" log_id=0htsw~H0000 engine=tsm1 trace_id=0htv8tdG000 op_name=tsm1_cache_snapshot op_event=end op_elapsed=2221.930ms
+mai 19 12:53:42 raspberrypi influxd-systemd-start.sh[8569]: ts=2023-05-19T10:53:42.607555Z lvl=info msg="Error writing snapshot" log_id=0htsw~H0000 engine=tsm1 error="cannot allocate memory"
+mai 19 12:53:42 raspberrypi influxd-systemd-start.sh[8569]: ts=2023-05-19T10:53:42.607650Z lvl=info msg="Cache snapshot (start)" log_id=0htsw~H0000 engine=tsm1 trace_id=0htv91Jl000 op_name=tsm1_cache_snapshot op_event=start
+mai 19 12:53:45 raspberrypi influxd-systemd-start.sh[8569]: ts=2023-05-19T10:53:45.022138Z lvl=info msg="Error adding new TSM files from snapshot. Removing temp files." log_id=0htsw~H0000 engine=tsm1 trace_id=0htv91Jl000 op_name=tsm1_cache_snapshot error="cannot allocate memory"
+mai 19 12:53:45 raspberrypi influxd-systemd-start.sh[8569]: ts=2023-05-19T10:53:45.022398Z lvl=info msg="Cache snapshot (end)" log_id=0htsw~H0000 engine=tsm1 trace_id=0htv91Jl000 op_name=tsm1_cache_snapshot op_event=end op_elapsed=2414.750ms
+mai 19 12:53:45 raspberrypi influxd-systemd-start.sh[8569]: ts=2023-05-19T10:53:45.022513Z lvl=info msg="Error writing snapshot" log_id=0htsw~H0000 engine=tsm1 error="cannot allocate memory"
+mai 19 12:53:45 raspberrypi influxd-systemd-start.sh[8569]: ts=2023-05-19T10:53:45.022626Z lvl=info msg="Cache snapshot (start)" log_id=0htsw~H0000 engine=tsm1 trace_id=0htv9AkW000 op_name=tsm1_cache_snapshot op_event=start
+mai 19 12:53:45 raspberrypi influxd-systemd-start.sh[8569]: [httpd] ::1 - admin [19/May/2023:12:53:43 +0200] "POST /write?db=SensorData HTTP/1.1 " 204 0 "-" "python-requests/2.21.0" 6c488e6f-f633-11ed-8226-b827eb8c6748 1144162
+mai 19 12:53:46 raspberrypi influxd-systemd-start.sh[8569]: ts=2023-05-19T10:53:46.977534Z lvl=info msg="Error adding new TSM files from snapshot. Removing temp files." log_id=0htsw~H0000 engine=tsm1 trace_id=0htv9AkW000 op_name=tsm1_cache_snapshot error="cannot allocate memory"
+mai 19 12:53:46 raspberrypi influxd-systemd-start.sh[8569]: ts=2023-05-19T10:53:46.977755Z lvl=info msg="Cache snapshot (end)" log_id=0htsw~H0000 engine=tsm1 trace_id=0htv9AkW000 op_name=tsm1_cache_snapshot op_event=end op_elapsed=1955.138ms
+mai 19 12:53:46 raspberrypi influxd-systemd-start.sh[8569]: ts=2023-05-19T10:53:46.977844Z lvl=info msg="Error writing snapshot" log_id=0htsw~H0000 engine=tsm1 error="cannot allocate memory"
+mai 19 12:53:46 raspberrypi influxd-systemd-start.sh[8569]: ts=2023-05-19T10:53:46.977914Z lvl=info msg="Cache snapshot (start)" log_id=0htsw~H0000 engine=tsm1 trace_id=0htv9IOG000 op_name=tsm1_cache_snapshot op_event=start
+mai 19 12:53:47 raspberrypi influxd-systemd-start.sh[8569]: [httpd] ::1 - admin [19/May/2023:12:53:47 +0200] "POST /write?db=SensorData HTTP/1.1 " 204 0 "-" "python-requests/2.21.0" 6eacbbc2-f633-11ed-8227-b827eb8c6748 33290
+mai 19 12:53:48 raspberrypi influxd-systemd-start.sh[8569]: ts=2023-05-19T10:53:48.969333Z lvl=info msg="Error adding new TSM files from snapshot. Removing temp files." log_id=0htsw~H0000 engine=tsm1 trace_id=0htv9IOG000 op_name=tsm1_cache_snapshot error="cannot allocate memory"
+mai 19 12:53:48 raspberrypi influxd-systemd-start.sh[8569]: ts=2023-05-19T10:53:48.969531Z lvl=info msg="Cache snapshot (end)" log_id=0htsw~H0000 engine=tsm1 trace_id=0htv9IOG000 op_name=tsm1_cache_snapshot op_event=end op_elapsed=1991.622ms
+mai 19 12:53:48 raspberrypi influxd-systemd-start.sh[8569]: ts=2023-05-19T10:53:48.969608Z lvl=info msg="Error writing snapshot" log_id=0htsw~H0000 engine=tsm1 error="cannot allocate memory"
+mai 19 12:53:48 raspberrypi influxd-systemd-start.sh[8569]: ts=2023-05-19T10:53:48.969677Z lvl=info msg="Cache snapshot (start)" log_id=0htsw~H0000 engine=tsm1 trace_id=0htv9QAG000 op_name=tsm1_cache_snapshot op_event=start
+mai 19 12:53:50 raspberrypi influxd-systemd-start.sh[8569]: ts=2023-05-19T10:53:50.934750Z lvl=info msg="Error adding new TSM files from snapshot. Removing temp files." log_id=0htsw~H0000 engine=tsm1 trace_id=0htv9QAG000 op_name=tsm1_cache_snapshot error="cannot allocate memory"
+mai 19 12:53:50 raspberrypi influxd-systemd-start.sh[8569]: ts=2023-05-19T10:53:50.936133Z lvl=info msg="Cache snapshot (end)" log_id=0htsw~H0000 engine=tsm1 trace_id=0htv9QAG000 op_name=tsm1_cache_snapshot op_event=end op_elapsed=1966.444ms
+mai 19 12:53:50 raspberrypi influxd-systemd-start.sh[8569]: ts=2023-05-19T10:53:50.936882Z lvl=info msg="Error writing snapshot" log_id=0htsw~H0000 engine=tsm1 error="cannot allocate memory"
+mai 19 12:53:50 raspberrypi influxd-systemd-start.sh[8569]: ts=2023-05-19T10:53:50.937702Z lvl=info msg="Cache snapshot (start)" log_id=0htsw~H0000 engine=tsm1 trace_id=0htv9XrG000 op_name=tsm1_cache_snapshot op_event=start
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: runtime: out of memory: cannot allocate 14942208-byte block (531070976 in use)
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: fatal error: out of memory
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: runtime stack:
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: runtime.throw(0xfebdde, 0xd)
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /usr/local/go/src/runtime/panic.go:774 +0x5c
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: runtime.largeAlloc(0xe3eb21, 0x3840101, 0x71968)
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /usr/local/go/src/runtime/malloc.go:1140 +0x124
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: runtime.mallocgc.func1()
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /usr/local/go/src/runtime/malloc.go:1033 +0x38
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: runtime.systemstack(0x384e1e0)
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /usr/local/go/src/runtime/asm_arm.s:354 +0x84
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: runtime.mstart()
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /usr/local/go/src/runtime/proc.go:1146
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: goroutine 84890 [running]:
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: runtime.systemstack_switch()
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /usr/local/go/src/runtime/asm_arm.s:298 +0x4 fp=0x590ac8c sp=0x590ac88 pc=0x718d8
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: runtime.mallocgc(0xe3eb21, 0xe1f330, 0x3b44001, 0x3b4e008)
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /usr/local/go/src/runtime/malloc.go:1032 +0x8d0 fp=0x590acf4 sp=0x590ac8c pc=0x1bb70
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: runtime.makeslice(0xe1f330, 0xe3eb21, 0xe3eb21, 0x0)
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /usr/local/go/src/runtime/slice.go:49 +0x6c fp=0x590ad08 sp=0x590acf4 pc=0x5928c
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: github.com/influxdata/influxdb/vendor/github.com/golang/snappy.Encode(0x0, 0x0, 0x0, 0x1c1e8000, 0xc35bb8, 0xc9a000, 0x7597630, 0x1, 0x0)
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /go/src/github.com/influxdata/influxdb/vendor/github.com/golang/snappy/encode.go:22 +0x2b8 fp=0x590ad40 sp=0x590ad08 pc=0x558d70
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: github.com/influxdata/influxdb/tsdb/engine/tsm1.(*StringEncoder).Bytes(...)
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /go/src/github.com/influxdata/influxdb/tsdb/engine/tsm1/string.go:56
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: github.com/influxdata/influxdb/tsdb/engine/tsm1.encodeStringBlockUsing(0x0, 0x0, 0x0, 0x88cc000, 0x3e8, 0x550, 0x1ec0f50, 0x3b376e0, 0x1c1e8000, 0xc35bb8, ...)
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /go/src/github.com/influxdata/influxdb/tsdb/engine/tsm1/encoding.go:875 +0x134 fp=0x590ada8 sp=0x590ad40 pc=0xcc0c80
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: github.com/influxdata/influxdb/tsdb/engine/tsm1.(*cacheKeyIterator).encode.func1(0xaac2b00, 0x1, 0x44, 0xc82f700)
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /go/src/github.com/influxdata/influxdb/tsdb/engine/tsm1/compact.go:2011 +0x674 fp=0x590afdc sp=0x590ada8 pc=0xd14150
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: runtime.goexit()
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /usr/local/go/src/runtime/asm_arm.s:868 +0x4 fp=0x590afdc sp=0x590afdc pc=0x73610
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: created by github.com/influxdata/influxdb/tsdb/engine/tsm1.(*cacheKeyIterator).encode
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /go/src/github.com/influxdata/influxdb/tsdb/engine/tsm1/compact.go:1965 +0x80
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: goroutine 1 [chan receive, 38 minutes]:
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: main.(*Main).Run(0x3ab3f8c, 0x388e108, 0x2, 0x3, 0x2b7a8f8, 0x388a030)
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /go/src/github.com/influxdata/influxdb/cmd/influxd/main.go:90 +0x228
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: main.main()
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /go/src/github.com/influxdata/influxdb/cmd/influxd/main.go:45 +0x140
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: goroutine 18 [syscall, 38 minutes]:
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: os/signal.signal_recv(0x0)
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /usr/local/go/src/runtime/sigqueue.go:147 +0x130
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: os/signal.loop()
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /usr/local/go/src/os/signal/signal_unix.go:23 +0x14
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: created by os/signal.init.0
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /usr/local/go/src/os/signal/signal_unix.go:29 +0x30
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: goroutine 6 [select]:
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: github.com/influxdata/influxdb/vendor/go.opencensus.io/stats/view.(*worker).start(0x3adc6c0)
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /go/src/github.com/influxdata/influxdb/vendor/go.opencensus.io/stats/view/worker.go:154 +0xb0
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: created by github.com/influxdata/influxdb/vendor/go.opencensus.io/stats/view.init.0
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /go/src/github.com/influxdata/influxdb/vendor/go.opencensus.io/stats/view/worker.go:32 +0x48
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: goroutine 7 [IO wait, 38 minutes]:
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: internal/poll.runtime_pollWait(0x66b40fa0, 0x72, 0x0)
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /usr/local/go/src/runtime/netpoll.go:184 +0x44
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: internal/poll.(*pollDesc).wait(0x3836ba4, 0x72, 0x0, 0x0, 0xfe25d8)
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /usr/local/go/src/internal/poll/fd_poll_runtime.go:87 +0x30
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: internal/poll.(*pollDesc).waitRead(...)
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /usr/local/go/src/internal/poll/fd_poll_runtime.go:92
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: internal/poll.(*FD).Accept(0x3836b90, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0)
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /usr/local/go/src/internal/poll/fd_unix.go:384 +0x1a8
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: net.(*netFD).accept(0x3836b90, 0x0, 0xa8001, 0x0)
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /usr/local/go/src/net/fd_unix.go:238 +0x20
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: net.(*TCPListener).accept(0x3b35310, 0x3b46a40, 0x40000000, 0x0)
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /usr/local/go/src/net/tcpsock_posix.go:139 +0x20
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: net.(*TCPListener).Accept(0x3b35310, 0x0, 0x0, 0x0, 0x0)
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /usr/local/go/src/net/tcpsock.go:261 +0x3c
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: github.com/influxdata/influxdb/tcp.(*Mux).Serve(0x3b46a40, 0x1ec3ff0, 0x3b35310, 0x3b35310, 0x0)
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /go/src/github.com/influxdata/influxdb/tcp/mux.go:75 +0x64
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: created by github.com/influxdata/influxdb/cmd/influxd/run.(*Server).Open
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /go/src/github.com/influxdata/influxdb/cmd/influxd/run/server.go:395 +0x1f0
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: goroutine 462 [IO wait]:
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: internal/poll.runtime_pollWait(0x66b40f1c, 0x72, 0xffffffff)
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /usr/local/go/src/runtime/netpoll.go:184 +0x44
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: internal/poll.(*pollDesc).wait(0x3924014, 0x72, 0x1000, 0x1000, 0xffffffff)
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /usr/local/go/src/internal/poll/fd_poll_runtime.go:87 +0x30
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: internal/poll.(*pollDesc).waitRead(...)
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /usr/local/go/src/internal/poll/fd_poll_runtime.go:92
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: internal/poll.(*FD).Read(0x3924000, 0x5e2e000, 0x1000, 0x1000, 0x0, 0x0, 0x0)
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /usr/local/go/src/internal/poll/fd_unix.go:169 +0x178
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: net.(*netFD).Read(0x3924000, 0x5e2e000, 0x1000, 0x1000, 0x6c63c01, 0x0, 0x33ebf0)
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /usr/local/go/src/net/fd_unix.go:202 +0x38
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: net.(*conn).Read(0x3b8c088, 0x5e2e000, 0x1000, 0x1000, 0x0, 0x0, 0x0)
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /usr/local/go/src/net/net.go:184 +0x58
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: net/http.(*connReader).Read(0xe6f5b20, 0x5e2e000, 0x1000, 0x1000, 0x21b, 0x2b7a8f8, 0x0)
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /usr/local/go/src/net/http/server.go:785 +0x15c
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: bufio.(*Reader).fill(0x8bac4e0)
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /usr/local/go/src/bufio/bufio.go:100 +0x108
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: bufio.(*Reader).Peek(0x8bac4e0, 0x4, 0x0, 0x0, 0x0, 0x0, 0x0)
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /usr/local/go/src/bufio/bufio.go:138 +0x38
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: net/http.(*conn).readRequest(0x38c2cc0, 0x1ec65b0, 0xe6f5b00, 0x0, 0x0, 0x0)
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /usr/local/go/src/net/http/server.go:962 +0xae8
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: net/http.(*conn).serve(0x38c2cc0, 0x1ec65b0, 0xe6f5b00)
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /usr/local/go/src/net/http/server.go:1817 +0x644
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: created by net/http.(*Server).Serve
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /usr/local/go/src/net/http/server.go:2928 +0x2e4
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: goroutine 563 [select]:
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: github.com/influxdata/influxdb/coordinator.(*PointsWriter).WritePointsPrivilegedWithContext(0x3836b40, 0x1ec65d0, 0x38a603c, 0xfe55fd, 0x9, 0xfe2dd4, 0x7, 0x0, 0x6fe2000, 0x14a, ...)
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /go/src/github.com/influxdata/influxdb/coordinator/points_writer.go:440 +0x558
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: github.com/influxdata/influxdb/coordinator.(*PointsWriter).WritePointsPrivileged(...)
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /go/src/github.com/influxdata/influxdb/coordinator/points_writer.go:358
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: github.com/influxdata/influxdb/cmd/influxd/run.(*monitorPointsWriter).WritePoints(0x3836b40, 0xfe55fd, 0x9, 0xfe2dd4, 0x7, 0x6fe2000, 0x14a, 0x1388, 0x5268a00, 0x6573e40)
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /go/src/github.com/influxdata/influxdb/cmd/influxd/run/server.go:651 +0x70
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: github.com/influxdata/influxdb/monitor.(*Monitor).writePoints(0x3b39d40, 0x6fe2000, 0x14a, 0x1388, 0x0, 0x0)
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /go/src/github.com/influxdata/influxdb/monitor/service.go:154 +0xb8
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: github.com/influxdata/influxdb/monitor.(*Monitor).storeStatistics(0x3b39d40)
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /go/src/github.com/influxdata/influxdb/monitor/service.go:467 +0x648
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: created by github.com/influxdata/influxdb/monitor.(*Monitor).Open
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /go/src/github.com/influxdata/influxdb/monitor/service.go:126 +0x278
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: goroutine 490 [select]:
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: github.com/influxdata/influxdb/tsdb/engine/tsm1.(*Engine).compactCache(0x39dd8c0)
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /go/src/github.com/influxdata/influxdb/tsdb/engine/tsm1/engine.go:2044 +0xe4
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: github.com/influxdata/influxdb/tsdb/engine/tsm1.(*Engine).enableSnapshotCompactions.func1(0x5918120, 0x39dd8c0)
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /go/src/github.com/influxdata/influxdb/tsdb/engine/tsm1/engine.go:508 +0x48
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: created by github.com/influxdata/influxdb/tsdb/engine/tsm1.(*Engine).enableSnapshotCompactions
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /go/src/github.com/influxdata/influxdb/tsdb/engine/tsm1/engine.go:508 +0xfc
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: goroutine 569 [select]:
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: github.com/influxdata/influxdb/tsdb.(*PointBatcher).Start.func2(0xa5267c0, 0xe3f02a0, 0xe3f0280, 0x872cb10)
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /go/src/github.com/influxdata/influxdb/tsdb/batcher.go:87 +0xd4
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: created by github.com/influxdata/influxdb/tsdb.(*PointBatcher).Start
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /go/src/github.com/influxdata/influxdb/tsdb/batcher.go:84 +0x11c
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: goroutine 570 [IO wait]:
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: internal/poll.runtime_pollWait(0x66b40e98, 0x72, 0x0)
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /usr/local/go/src/runtime/netpoll.go:184 +0x44
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: internal/poll.(*pollDesc).wait(0x389eb04, 0x72, 0x500, 0x5ac, 0x0)
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /usr/local/go/src/internal/poll/fd_poll_runtime.go:87 +0x30
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: internal/poll.(*pollDesc).waitRead(...)
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /usr/local/go/src/internal/poll/fd_poll_runtime.go:92
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: internal/poll.(*FD).ReadFrom(0x389eaf0, 0x5e10000, 0x5ac, 0x5ac, 0x0, 0x0, 0x0, 0x0, 0x0)
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /usr/local/go/src/internal/poll/fd_unix.go:219 +0x164
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: net.(*netFD).readFrom(0x389eaf0, 0x5e10000, 0x5ac, 0x5ac, 0x521, 0x156e8, 0x15a4c, 0x60d2d50, 0x0)
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /usr/local/go/src/net/fd_unix.go:208 +0x38
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: net.(*UDPConn).readFrom(0x5c29e38, 0x5e10000, 0x5ac, 0x5ac, 0x0, 0x1, 0x11ee0, 0x67bb84)
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /usr/local/go/src/net/udpsock_posix.go:47 +0x38
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: net.(*UDPConn).ReadFromUDP(0x5c29e38, 0x5e10000, 0x5ac, 0x5ac, 0x0, 0x99221a0, 0x0, 0x0)
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /usr/local/go/src/net/udpsock.go:109 +0x40
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: github.com/influxdata/influxdb/services/collectd.(*Service).serve(0x3a23e30)
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /go/src/github.com/influxdata/influxdb/services/collectd/service.go:348 +0x7c
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: github.com/influxdata/influxdb/services/collectd.(*Service).Open.func2(0x3a23e30)
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /go/src/github.com/influxdata/influxdb/services/collectd/service.go:208 +0x50
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: created by github.com/influxdata/influxdb/services/collectd.(*Service).Open
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /go/src/github.com/influxdata/influxdb/services/collectd/service.go:208 +0x500
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: goroutine 566 [select]:
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: github.com/influxdata/influxdb/services/continuous_querier.(*Service).backgroundLoop(0x3b9c0c0)
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /go/src/github.com/influxdata/influxdb/services/continuous_querier/service.go:215 +0x114
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: created by github.com/influxdata/influxdb/services/continuous_querier.(*Service).Open
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /go/src/github.com/influxdata/influxdb/services/continuous_querier/service.go:133 +0xf0
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: goroutine 547 [select]:
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: github.com/influxdata/influxdb/tsdb/engine/tsm1.(*Engine).compact(0x39ddb00, 0x51cfd00)
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /go/src/github.com/influxdata/influxdb/tsdb/engine/tsm1/engine.go:2093 +0xf0
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: github.com/influxdata/influxdb/tsdb/engine/tsm1.(*Engine).enableLevelCompactions.func1(0x51cfd00, 0x39ddb00)
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /go/src/github.com/influxdata/influxdb/tsdb/engine/tsm1/engine.go:429 +0x50
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: created by github.com/influxdata/influxdb/tsdb/engine/tsm1.(*Engine).enableLevelCompactions
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /go/src/github.com/influxdata/influxdb/tsdb/engine/tsm1/engine.go:429 +0x114
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: goroutine 487 [select]:
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: github.com/influxdata/influxdb/tsdb/engine/tsm1.(*Engine).compact(0x57920c0, 0x59180f0)
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /go/src/github.com/influxdata/influxdb/tsdb/engine/tsm1/engine.go:2093 +0xf0
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: github.com/influxdata/influxdb/tsdb/engine/tsm1.(*Engine).enableLevelCompactions.func1(0x59180f0, 0x57920c0)
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /go/src/github.com/influxdata/influxdb/tsdb/engine/tsm1/engine.go:429 +0x50
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: created by github.com/influxdata/influxdb/tsdb/engine/tsm1.(*Engine).enableLevelCompactions
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /go/src/github.com/influxdata/influxdb/tsdb/engine/tsm1/engine.go:429 +0x114
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: goroutine 548 [select]:
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: github.com/influxdata/influxdb/tsdb/engine/tsm1.(*Engine).compactCache(0x548c000)
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /go/src/github.com/influxdata/influxdb/tsdb/engine/tsm1/engine.go:2044 +0xe4
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: github.com/influxdata/influxdb/tsdb/engine/tsm1.(*Engine).enableSnapshotCompactions.func1(0x51cfd10, 0x548c000)
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /go/src/github.com/influxdata/influxdb/tsdb/engine/tsm1/engine.go:508 +0x48
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: created by github.com/influxdata/influxdb/tsdb/engine/tsm1.(*Engine).enableSnapshotCompactions
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /go/src/github.com/influxdata/influxdb/tsdb/engine/tsm1/engine.go:508 +0xfc
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: goroutine 422 [select]:
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: github.com/influxdata/influxdb/tsdb/engine/tsm1.(*Engine).compactCache(0x5793bc0)
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /go/src/github.com/influxdata/influxdb/tsdb/engine/tsm1/engine.go:2044 +0xe4
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: github.com/influxdata/influxdb/tsdb/engine/tsm1.(*Engine).enableSnapshotCompactions.func1(0x51cfa30, 0x5793bc0)
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /go/src/github.com/influxdata/influxdb/tsdb/engine/tsm1/engine.go:508 +0x48
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: created by github.com/influxdata/influxdb/tsdb/engine/tsm1.(*Engine).enableSnapshotCompactions
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /go/src/github.com/influxdata/influxdb/tsdb/engine/tsm1/engine.go:508 +0xfc
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: goroutine 546 [select]:
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: github.com/influxdata/influxdb/tsdb/engine/tsm1.(*Engine).compactCache(0x39ddb00)
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /go/src/github.com/influxdata/influxdb/tsdb/engine/tsm1/engine.go:2044 +0xe4
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: github.com/influxdata/influxdb/tsdb/engine/tsm1.(*Engine).enableSnapshotCompactions.func1(0x51cfcf0, 0x39ddb00)
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /go/src/github.com/influxdata/influxdb/tsdb/engine/tsm1/engine.go:508 +0x48
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: created by github.com/influxdata/influxdb/tsdb/engine/tsm1.(*Engine).enableSnapshotCompactions
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /go/src/github.com/influxdata/influxdb/tsdb/engine/tsm1/engine.go:508 +0xfc
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: goroutine 493 [select]:
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: github.com/influxdata/influxdb/tsdb/engine/tsm1.(*Engine).compact(0x4eb2000, 0x5918150)
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /go/src/github.com/influxdata/influxdb/tsdb/engine/tsm1/engine.go:2093 +0xf0
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: github.com/influxdata/influxdb/tsdb/engine/tsm1.(*Engine).enableLevelCompactions.func1(0x5918150, 0x4eb2000)
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /go/src/github.com/influxdata/influxdb/tsdb/engine/tsm1/engine.go:429 +0x50
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: created by github.com/influxdata/influxdb/tsdb/engine/tsm1.(*Engine).enableLevelCompactions
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /go/src/github.com/influxdata/influxdb/tsdb/engine/tsm1/engine.go:429 +0x114
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: goroutine 562 [select, 19 minutes]:
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: github.com/influxdata/influxdb/services/subscriber.(*Service).waitForMetaUpdates(0x39f2d80)
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /go/src/github.com/influxdata/influxdb/services/subscriber/service.go:165 +0x8c
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: github.com/influxdata/influxdb/services/subscriber.(*Service).Open.func2(0x39f2d80)
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /go/src/github.com/influxdata/influxdb/services/subscriber/service.go:102 +0x50
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: created by github.com/influxdata/influxdb/services/subscriber.(*Service).Open
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /go/src/github.com/influxdata/influxdb/services/subscriber/service.go:100 +0x160
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: goroutine 565 [select, 38 minutes]:
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: github.com/influxdata/influxdb/tcp.(*listener).Accept(0x3b9a5a0, 0x0, 0x0, 0x0, 0x0)
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /go/src/github.com/influxdata/influxdb/tcp/mux.go:240 +0xe0
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: github.com/influxdata/influxdb/services/snapshotter.(*Service).serve(0x3b9a270)
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /go/src/github.com/influxdata/influxdb/services/snapshotter/service.go:102 +0x5c
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: created by github.com/influxdata/influxdb/services/snapshotter.(*Service).Open
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /go/src/github.com/influxdata/influxdb/services/snapshotter/service.go:76 +0x74
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: goroutine 423 [select]:
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: github.com/influxdata/influxdb/tsdb/engine/tsm1.(*Engine).compact(0x5793bc0, 0x51cfa40)
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /go/src/github.com/influxdata/influxdb/tsdb/engine/tsm1/engine.go:2093 +0xf0
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: github.com/influxdata/influxdb/tsdb/engine/tsm1.(*Engine).enableLevelCompactions.func1(0x51cfa40, 0x5793bc0)
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /go/src/github.com/influxdata/influxdb/tsdb/engine/tsm1/engine.go:429 +0x50
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: created by github.com/influxdata/influxdb/tsdb/engine/tsm1.(*Engine).enableLevelCompactions
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /go/src/github.com/influxdata/influxdb/tsdb/engine/tsm1/engine.go:429 +0x114
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: goroutine 486 [select]:
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: github.com/influxdata/influxdb/tsdb/engine/tsm1.(*Engine).compactCache(0x57920c0)
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /go/src/github.com/influxdata/influxdb/tsdb/engine/tsm1/engine.go:2044 +0xe4
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: github.com/influxdata/influxdb/tsdb/engine/tsm1.(*Engine).enableSnapshotCompactions.func1(0x59180e0, 0x57920c0)
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /go/src/github.com/influxdata/influxdb/tsdb/engine/tsm1/engine.go:508 +0x48
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: created by github.com/influxdata/influxdb/tsdb/engine/tsm1.(*Engine).enableSnapshotCompactions
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /go/src/github.com/influxdata/influxdb/tsdb/engine/tsm1/engine.go:508 +0xfc
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: goroutine 564 [select, 8 minutes]:
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: github.com/influxdata/influxdb/services/precreator.(*Service).runPrecreation(0x3b9a210)
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /go/src/github.com/influxdata/influxdb/services/precreator/service.go:76 +0xc8
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: created by github.com/influxdata/influxdb/services/precreator.(*Service).Open
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /go/src/github.com/influxdata/influxdb/services/precreator/service.go:54 +0x164
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: goroutine 444 [select]:
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: github.com/influxdata/influxdb/tsdb/engine/tsm1.(*Engine).compact(0x5156e40, 0x591c010)
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /go/src/github.com/influxdata/influxdb/tsdb/engine/tsm1/engine.go:2093 +0xf0
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: github.com/influxdata/influxdb/tsdb/engine/tsm1.(*Engine).enableLevelCompactions.func1(0x591c010, 0x5156e40)
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /go/src/github.com/influxdata/influxdb/tsdb/engine/tsm1/engine.go:429 +0x50
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: created by github.com/influxdata/influxdb/tsdb/engine/tsm1.(*Engine).enableLevelCompactions
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /go/src/github.com/influxdata/influxdb/tsdb/engine/tsm1/engine.go:429 +0x114
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: goroutine 443 [chan receive]:
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: github.com/influxdata/influxdb/tsdb/engine/tsm1.(*Compactor).WriteSnapshot(0x3b9d920, 0x4a36600, 0x4b1da4f7, 0x4d90, 0x387de07b, 0x6467553e, 0x387de07b)
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /go/src/github.com/influxdata/influxdb/tsdb/engine/tsm1/compact.go:869 +0x278
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: github.com/influxdata/influxdb/tsdb/engine/tsm1.(*Engine).writeSnapshotAndCommit(0x5156e40, 0x75962d0, 0xb50efe0, 0x4, 0x4, 0x4a36600, 0x0, 0x0)
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /go/src/github.com/influxdata/influxdb/tsdb/engine/tsm1/engine.go:2001 +0x70
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: github.com/influxdata/influxdb/tsdb/engine/tsm1.(*Engine).WriteSnapshot(0x5156e40, 0x0, 0x0)
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /go/src/github.com/influxdata/influxdb/tsdb/engine/tsm1/engine.go:1961 +0x2c4
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: github.com/influxdata/influxdb/tsdb/engine/tsm1.(*Engine).compactCache(0x5156e40)
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /go/src/github.com/influxdata/influxdb/tsdb/engine/tsm1/engine.go:2053 +0x20c
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: github.com/influxdata/influxdb/tsdb/engine/tsm1.(*Engine).enableSnapshotCompactions.func1(0x591c000, 0x5156e40)
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /go/src/github.com/influxdata/influxdb/tsdb/engine/tsm1/engine.go:508 +0x48
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: created by github.com/influxdata/influxdb/tsdb/engine/tsm1.(*Engine).enableSnapshotCompactions
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /go/src/github.com/influxdata/influxdb/tsdb/engine/tsm1/engine.go:508 +0xfc
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: goroutine 560 [select]:
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: github.com/influxdata/influxdb/tsdb.(*Store).monitorShards(0x39c6140)
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /go/src/github.com/influxdata/influxdb/tsdb/store.go:1984 +0x118
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: github.com/influxdata/influxdb/tsdb.(*Store).Open.func1(0x39c6140)
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /go/src/github.com/influxdata/influxdb/tsdb/store.go:231 +0x38
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: created by github.com/influxdata/influxdb/tsdb.(*Store).Open
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /go/src/github.com/influxdata/influxdb/tsdb/store.go:229 +0x218
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: goroutine 492 [select]:
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: github.com/influxdata/influxdb/tsdb/engine/tsm1.(*Engine).compactCache(0x4eb2000)
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /go/src/github.com/influxdata/influxdb/tsdb/engine/tsm1/engine.go:2044 +0xe4
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: github.com/influxdata/influxdb/tsdb/engine/tsm1.(*Engine).enableSnapshotCompactions.func1(0x5918140, 0x4eb2000)
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /go/src/github.com/influxdata/influxdb/tsdb/engine/tsm1/engine.go:508 +0x48
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: created by github.com/influxdata/influxdb/tsdb/engine/tsm1.(*Engine).enableSnapshotCompactions
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /go/src/github.com/influxdata/influxdb/tsdb/engine/tsm1/engine.go:508 +0xfc
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: goroutine 561 [select]:
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: github.com/influxdata/influxdb/services/subscriber.(*Service).run(0x39f2d80)
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /go/src/github.com/influxdata/influxdb/services/subscriber/service.go:239 +0x1f0
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: github.com/influxdata/influxdb/services/subscriber.(*Service).Open.func1(0x39f2d80)
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /go/src/github.com/influxdata/influxdb/services/subscriber/service.go:98 +0x50
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: created by github.com/influxdata/influxdb/services/subscriber.(*Service).Open
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /go/src/github.com/influxdata/influxdb/services/subscriber/service.go:96 +0x144
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: goroutine 491 [select]:
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: github.com/influxdata/influxdb/tsdb/engine/tsm1.(*Engine).compact(0x39dd8c0, 0x5918130)
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /go/src/github.com/influxdata/influxdb/tsdb/engine/tsm1/engine.go:2093 +0xf0
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: github.com/influxdata/influxdb/tsdb/engine/tsm1.(*Engine).enableLevelCompactions.func1(0x5918130, 0x39dd8c0)
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /go/src/github.com/influxdata/influxdb/tsdb/engine/tsm1/engine.go:429 +0x50
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: created by github.com/influxdata/influxdb/tsdb/engine/tsm1.(*Engine).enableLevelCompactions
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /go/src/github.com/influxdata/influxdb/tsdb/engine/tsm1/engine.go:429 +0x114
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: goroutine 549 [select]:
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: github.com/influxdata/influxdb/tsdb/engine/tsm1.(*Engine).compact(0x548c000, 0x51cfd20)
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /go/src/github.com/influxdata/influxdb/tsdb/engine/tsm1/engine.go:2093 +0xf0
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: github.com/influxdata/influxdb/tsdb/engine/tsm1.(*Engine).enableLevelCompactions.func1(0x51cfd20, 0x548c000)
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /go/src/github.com/influxdata/influxdb/tsdb/engine/tsm1/engine.go:429 +0x50
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: created by github.com/influxdata/influxdb/tsdb/engine/tsm1.(*Engine).enableLevelCompactions
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /go/src/github.com/influxdata/influxdb/tsdb/engine/tsm1/engine.go:429 +0x114
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: goroutine 85073 [chan receive]:
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: github.com/influxdata/influxdb/tsdb/engine/tsm1.(*cacheKeyIterator).Next(0xc82f700, 0xa116b)
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /go/src/github.com/influxdata/influxdb/tsdb/engine/tsm1/compact.go:2050 +0xe8
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: github.com/influxdata/influxdb/tsdb/engine/tsm1.(*Compactor).write(0x3b9d920, 0x93c0dc0, 0x4c, 0x1ec9938, 0xc82f700, 0xb77a101, 0x0, 0x0)
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /go/src/github.com/influxdata/influxdb/tsdb/engine/tsm1/compact.go:1141 +0x150
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: github.com/influxdata/influxdb/tsdb/engine/tsm1.(*Compactor).writeNewFiles(0x3b9d920, 0x8, 0x1, 0x0, 0x0, 0x0, 0x1ec9938, 0xc82f700, 0x1, 0x0, ...)
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /go/src/github.com/influxdata/influxdb/tsdb/engine/tsm1/compact.go:1045 +0x11c
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: github.com/influxdata/influxdb/tsdb/engine/tsm1.(*Compactor).WriteSnapshot.func1(0x8b50fc0, 0x3b9d920, 0x9b057ba, 0xc82f600, 0x4a36600)
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /go/src/github.com/influxdata/influxdb/tsdb/engine/tsm1/compact.go:860 +0x94
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: created by github.com/influxdata/influxdb/tsdb/engine/tsm1.(*Compactor).WriteSnapshot
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /go/src/github.com/influxdata/influxdb/tsdb/engine/tsm1/compact.go:858 +0x16c
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: goroutine 567 [IO wait, 38 minutes]:
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: internal/poll.runtime_pollWait(0x66b40e14, 0x72, 0x0)
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /usr/local/go/src/runtime/netpoll.go:184 +0x44
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: internal/poll.(*pollDesc).wait(0x389ea64, 0x72, 0x0, 0x0, 0xfe25d8)
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /usr/local/go/src/internal/poll/fd_poll_runtime.go:87 +0x30
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: internal/poll.(*pollDesc).waitRead(...)
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /usr/local/go/src/internal/poll/fd_poll_runtime.go:92
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: internal/poll.(*FD).Accept(0x389ea50, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0)
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /usr/local/go/src/internal/poll/fd_unix.go:384 +0x1a8
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: net.(*netFD).accept(0x389ea50, 0x2b8c880, 0x0, 0x1)
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /usr/local/go/src/net/fd_unix.go:238 +0x20
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: net.(*TCPListener).accept(0xe3f0260, 0x71b0100, 0x674c4900, 0x4b074)
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /usr/local/go/src/net/tcpsock_posix.go:139 +0x20
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: net.(*TCPListener).Accept(0xe3f0260, 0x39a5edc, 0xc, 0x38768c0, 0x347b5c)
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /usr/local/go/src/net/tcpsock.go:261 +0x3c
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: net/http.(*Server).Serve(0x3801b50, 0x1ec3ff0, 0xe3f0260, 0x0, 0x0)
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /usr/local/go/src/net/http/server.go:2896 +0x214
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: github.com/influxdata/influxdb/services/httpd.(*Service).serve(0x3801b20, 0x1ec3ff0, 0xe3f0260)
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /go/src/github.com/influxdata/influxdb/services/httpd/service.go:264 +0x34
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: github.com/influxdata/influxdb/services/httpd.(*Service).serveTCP(0x3801b20)
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /go/src/github.com/influxdata/influxdb/services/httpd/service.go:252 +0x2c
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: created by github.com/influxdata/influxdb/services/httpd.(*Service).Open
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /go/src/github.com/influxdata/influxdb/services/httpd/service.go:194 +0x45c
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: goroutine 568 [select, 8 minutes]:
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: github.com/influxdata/influxdb/services/retention.(*Service).run(0x3b9a540)
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /go/src/github.com/influxdata/influxdb/services/retention/service.go:78 +0x77c
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: github.com/influxdata/influxdb/services/retention.(*Service).Open.func1(0x3b9a540)
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /go/src/github.com/influxdata/influxdb/services/retention/service.go:51 +0x50
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: created by github.com/influxdata/influxdb/services/retention.(*Service).Open
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /go/src/github.com/influxdata/influxdb/services/retention/service.go:51 +0x130
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: goroutine 571 [select]:
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: github.com/influxdata/influxdb/services/collectd.(*Service).writePoints(0x3a23e30)
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /go/src/github.com/influxdata/influxdb/services/collectd/service.go:392 +0x98
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: github.com/influxdata/influxdb/services/collectd.(*Service).Open.func3(0x3a23e30)
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /go/src/github.com/influxdata/influxdb/services/collectd/service.go:209 +0x50
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: created by github.com/influxdata/influxdb/services/collectd.(*Service).Open
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /go/src/github.com/influxdata/influxdb/services/collectd/service.go:209 +0x51c
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: goroutine 572 [select, 38 minutes]:
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: github.com/influxdata/influxdb/cmd/influxd/run.(*Server).startServerReporting(0x39c2320)
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /go/src/github.com/influxdata/influxdb/cmd/influxd/run/server.go:523 +0xd0
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: created by github.com/influxdata/influxdb/cmd/influxd/run.(*Server).Open
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /go/src/github.com/influxdata/influxdb/cmd/influxd/run/server.go:468 +0xb8c
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: goroutine 573 [select, 38 minutes]:
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: github.com/influxdata/influxdb/cmd/influxd/run.(*Command).monitorServerErrors(0x39d97a0)
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /go/src/github.com/influxdata/influxdb/cmd/influxd/run/command.go:174 +0x134
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: created by github.com/influxdata/influxdb/cmd/influxd/run.(*Command).Run
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /go/src/github.com/influxdata/influxdb/cmd/influxd/run/command.go:155 +0x8d8
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: goroutine 85075 [runnable]:
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: github.com/influxdata/influxdb/tsdb/engine/tsm1.(*Engine).WritePointsWithContext(0x548c000, 0x1ec6610, 0x9923a80, 0x3a28000, 0x14a, 0x14a, 0x0, 0x0)
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /go/src/github.com/influxdata/influxdb/tsdb/engine/tsm1/engine.go:1400 +0x390
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: github.com/influxdata/influxdb/tsdb.(*Shard).WritePointsWithContext(0x38c5ce0, 0x1ec6610, 0x9923a80, 0x3a28000, 0x14a, 0x14a, 0x0, 0x0)
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /go/src/github.com/influxdata/influxdb/tsdb/shard.go:553 +0x460
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: github.com/influxdata/influxdb/tsdb.(*Store).WriteToShardWithContext(0x39c6140, 0x1ec6610, 0x9923a80, 0x2b, 0x0, 0x3a28000, 0x14a, 0x14a, 0x0, 0x0)
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /go/src/github.com/influxdata/influxdb/tsdb/store.go:1453 +0x1dc
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: github.com/influxdata/influxdb/coordinator.(*PointsWriter).writeToShardWithContext.func1(0x383e470, 0x14a)
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /go/src/github.com/influxdata/influxdb/coordinator/points_writer.go:472 +0x134
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: github.com/influxdata/influxdb/coordinator.(*PointsWriter).writeToShardWithContext(0x3836b40, 0x1ec6610, 0x9923a80, 0x9923a00, 0xfe55fd, 0x9, 0xfe2dd4, 0x7, 0x3a28000, 0x14a, ...)
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /go/src/github.com/influxdata/influxdb/coordinator/points_writer.go:484 +0x94
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: github.com/influxdata/influxdb/coordinator.(*PointsWriter).WritePointsPrivilegedWithContext.func1(0x3836b40, 0x6573e80, 0x1ec6610, 0x9923a80, 0x9923a00, 0xfe55fd, 0x9, 0xfe2dd4, 0x7, 0x3a28000, ...)
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /go/src/github.com/influxdata/influxdb/coordinator/points_writer.go:393 +0x104
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: created by github.com/influxdata/influxdb/coordinator.(*PointsWriter).WritePointsPrivilegedWithContext
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /go/src/github.com/influxdata/influxdb/coordinator/points_writer.go:388 +0x22c
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: goroutine 84892 [runnable]:
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: github.com/influxdata/influxdb/vendor/github.com/golang/snappy.emitCopy(0x1b83335b, 0x9b30a7, 0x9b30a7, 0x22, 0x4, 0x3)
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /go/src/github.com/influxdata/influxdb/vendor/github.com/golang/snappy/encode_other.go:50 +0x1cc
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: github.com/influxdata/influxdb/vendor/github.com/golang/snappy.encodeBlock(0x1b82da86, 0x9b897c, 0x9b897c, 0x1a526000, 0x10000, 0x8b4000, 0xa9c3)
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /go/src/github.com/influxdata/influxdb/vendor/github.com/golang/snappy/encode_other.go:207 +0x388
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: github.com/influxdata/influxdb/vendor/github.com/golang/snappy.Encode(0x1b7ee000, 0x9f8402, 0x9f8402, 0x1a536000, 0x81ba30, 0x8a4000, 0x75972d0, 0x1, 0x0)
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /go/src/github.com/influxdata/influxdb/vendor/github.com/golang/snappy/encode.go:37 +0x264
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: github.com/influxdata/influxdb/tsdb/engine/tsm1.(*StringEncoder).Bytes(...)
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /go/src/github.com/influxdata/influxdb/tsdb/engine/tsm1/string.go:56
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: github.com/influxdata/influxdb/tsdb/engine/tsm1.encodeStringBlockUsing(0x0, 0x0, 0x0, 0x47c2000, 0x8c, 0x100, 0x1ec0f50, 0x3b376c0, 0x1a4c6000, 0x88ba30, ...)
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /go/src/github.com/influxdata/influxdb/tsdb/engine/tsm1/encoding.go:875 +0x134
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: github.com/influxdata/influxdb/tsdb/engine/tsm1.(*cacheKeyIterator).encode.func1(0xaac2b00, 0x1, 0x44, 0xc82f700)
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /go/src/github.com/influxdata/influxdb/tsdb/engine/tsm1/compact.go:2011 +0x674
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]: created by github.com/influxdata/influxdb/tsdb/engine/tsm1.(*cacheKeyIterator).encode
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[8569]:         /go/src/github.com/influxdata/influxdb/tsdb/engine/tsm1/compact.go:1965 +0x80
+mai 19 12:53:51 raspberrypi systemd[1]: influxdb.service: Main process exited, code=exited, status=2/INVALIDARGUMENT
+mai 19 12:53:51 raspberrypi systemd[1]: influxdb.service: Failed with result 'exit-code'.
+mai 19 12:53:51 raspberrypi systemd[1]: influxdb.service: Service RestartSec=100ms expired, scheduling restart.
+mai 19 12:53:51 raspberrypi systemd[1]: influxdb.service: Scheduled restart job, restart counter is at 35.
+mai 19 12:53:51 raspberrypi systemd[1]: Stopped InfluxDB is an open-source, distributed, time series database.
+mai 19 12:53:51 raspberrypi systemd[1]: Starting InfluxDB is an open-source, distributed, time series database...
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[20577]: Merging with configuration at: /etc/influxdb/influxdb.conf
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:51.884557Z lvl=info msg="InfluxDB starting" log_id=0htv9aZ0000 version=1.8.10 branch=1.8 commit=688e697c51fd
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:51.884666Z lvl=info msg="Go runtime" log_id=0htv9aZ0000 version=go1.13.8 maxprocs=4
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[20577]: Merging with configuration at: /etc/influxdb/influxdb.conf
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:51.987613Z lvl=info msg="Using data dir" log_id=0htv9aZ0000 service=store path=/data/influxdb/data
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:51.987767Z lvl=info msg="Compaction settings" log_id=0htv9aZ0000 service=store max_concurrent_compactions=1 throughput_bytes_per_second=50331648 throughput_bytes_per_second_burst=50331648
+mai 19 12:53:51 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:51.987838Z lvl=info msg="Open store (start)" log_id=0htv9aZ0000 service=store trace_id=0htv9axl000 op_name=tsdb_open op_event=start
+mai 19 12:53:52 raspberrypi influxd-systemd-start.sh[20577]: InfluxDB API unavailable after 1 attempts...
+mai 19 12:53:52 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:52.108126Z lvl=info msg="index opened with 8 partitions" log_id=0htv9aZ0000 index=tsi
+mai 19 12:53:52 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:52.120353Z lvl=info msg="Opened file" log_id=0htv9aZ0000 engine=tsm1 service=filestore path=/data/influxdb/data/SensorData/short_duration/40/000000004-000000002.tsm id=0 duration=0.434ms
+mai 19 12:53:52 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:52.130096Z lvl=info msg="Opened shard" log_id=0htv9aZ0000 service=store trace_id=0htv9axl000 op_name=tsdb_open index_version=tsi1 path=/data/influxdb/data/SensorData/short_duration/40 duration=136.781ms
+mai 19 12:53:52 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:52.137583Z lvl=info msg="index opened with 8 partitions" log_id=0htv9aZ0000 index=tsi
+mai 19 12:53:52 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:52.140198Z lvl=info msg="Opened file" log_id=0htv9aZ0000 engine=tsm1 service=filestore path=/data/influxdb/data/SensorData/short_duration/42/000000004-000000002.tsm id=0 duration=0.487ms
+mai 19 12:53:52 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:52.145501Z lvl=info msg="Opened shard" log_id=0htv9aZ0000 service=store trace_id=0htv9axl000 op_name=tsdb_open index_version=tsi1 path=/data/influxdb/data/SensorData/short_duration/42 duration=152.077ms
+mai 19 12:53:52 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:52.155513Z lvl=info msg="index opened with 8 partitions" log_id=0htv9aZ0000 index=tsi
+mai 19 12:53:52 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:52.158765Z lvl=info msg="Opened shard" log_id=0htv9aZ0000 service=store trace_id=0htv9axl000 op_name=tsdb_open index_version=tsi1 path=/data/influxdb/data/SensorData/short_duration/38 duration=165.656ms
+mai 19 12:53:52 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:52.165203Z lvl=info msg="index opened with 8 partitions" log_id=0htv9aZ0000 index=tsi
+mai 19 12:53:52 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:52.169650Z lvl=info msg="Opened file" log_id=0htv9aZ0000 engine=tsm1 service=filestore path=/data/influxdb/data/SensorData/short_duration/54/000000004-000000002.tsm id=0 duration=1.337ms
+mai 19 12:53:52 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:52.172138Z lvl=info msg="Opened shard" log_id=0htv9aZ0000 service=store trace_id=0htv9axl000 op_name=tsdb_open index_version=tsi1 path=/data/influxdb/data/SensorData/short_duration/54 duration=178.909ms
+mai 19 12:53:52 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:52.208234Z lvl=info msg="index opened with 8 partitions" log_id=0htv9aZ0000 index=tsi
+mai 19 12:53:52 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:52.211686Z lvl=info msg="Opened file" log_id=0htv9aZ0000 engine=tsm1 service=filestore path=/data/influxdb/data/SensorData/short_duration/57/000000005-000000001.tsm id=3 duration=0.402ms
+mai 19 12:53:52 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:52.212348Z lvl=info msg="Opened file" log_id=0htv9aZ0000 engine=tsm1 service=filestore path=/data/influxdb/data/SensorData/short_duration/57/000000001-000000001.tsm id=0 duration=0.368ms
+mai 19 12:53:52 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:52.213253Z lvl=info msg="Opened file" log_id=0htv9aZ0000 engine=tsm1 service=filestore path=/data/influxdb/data/SensorData/short_duration/57/000000002-000000001.tsm id=1 duration=0.684ms
+mai 19 12:53:52 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:52.213467Z lvl=info msg="Opened file" log_id=0htv9aZ0000 engine=tsm1 service=filestore path=/data/influxdb/data/SensorData/short_duration/57/000000004-000000001.tsm id=2 duration=0.709ms
+mai 19 12:53:52 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:52.215542Z lvl=info msg="Opened shard" log_id=0htv9aZ0000 service=store trace_id=0htv9axl000 op_name=tsdb_open index_version=tsi1 path=/data/influxdb/data/SensorData/short_duration/57 duration=85.240ms
+mai 19 12:53:52 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:52.221465Z lvl=info msg="index opened with 8 partitions" log_id=0htv9aZ0000 index=tsi
+mai 19 12:53:52 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:52.225301Z lvl=info msg="Opened file" log_id=0htv9aZ0000 engine=tsm1 service=filestore path=/data/influxdb/data/SensorData/short_duration/10/000000003-000000002.tsm id=0 duration=0.323ms
+mai 19 12:53:52 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:52.225758Z lvl=info msg="Opened shard" log_id=0htv9aZ0000 service=store trace_id=0htv9axl000 op_name=tsdb_open index_version=tsi1 path=/data/influxdb/data/SensorData/short_duration/10 duration=79.993ms
+mai 19 12:53:52 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:52.241008Z lvl=info msg="index opened with 8 partitions" log_id=0htv9aZ0000 index=tsi
+mai 19 12:53:52 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:52.247540Z lvl=info msg="Opened file" log_id=0htv9aZ0000 engine=tsm1 service=filestore path=/data/influxdb/data/SensorData/short_duration/12/000000003-000000002.tsm id=0 duration=3.862ms
+mai 19 12:53:52 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:52.248385Z lvl=info msg="Opened shard" log_id=0htv9aZ0000 service=store trace_id=0htv9axl000 op_name=tsdb_open index_version=tsi1 path=/data/influxdb/data/SensorData/short_duration/12 duration=89.441ms
+mai 19 12:53:52 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:52.277602Z lvl=info msg="index opened with 8 partitions" log_id=0htv9aZ0000 index=tsi
+mai 19 12:53:52 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:52.290479Z lvl=info msg="Opened file" log_id=0htv9aZ0000 engine=tsm1 service=filestore path=/data/influxdb/data/SensorData/short_duration/14/000000003-000000002.tsm id=0 duration=1.094ms
+mai 19 12:53:52 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:52.291674Z lvl=info msg="Opened shard" log_id=0htv9aZ0000 service=store trace_id=0htv9axl000 op_name=tsdb_open index_version=tsi1 path=/data/influxdb/data/SensorData/short_duration/14 duration=119.174ms
+mai 19 12:53:52 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:52.303385Z lvl=info msg="index opened with 8 partitions" log_id=0htv9aZ0000 index=tsi
+mai 19 12:53:52 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:52.306233Z lvl=info msg="Opened file" log_id=0htv9aZ0000 engine=tsm1 service=filestore path=/data/influxdb/data/SensorData/short_duration/59/000000006-000000001.tsm id=3 duration=0.494ms
+mai 19 12:53:52 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:52.307246Z lvl=info msg="Opened file" log_id=0htv9aZ0000 engine=tsm1 service=filestore path=/data/influxdb/data/SensorData/short_duration/59/000000001-000000001.tsm id=0 duration=0.576ms
+mai 19 12:53:52 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:52.308170Z lvl=info msg="Opened file" log_id=0htv9aZ0000 engine=tsm1 service=filestore path=/data/influxdb/data/SensorData/short_duration/59/000000003-000000001.tsm id=1 duration=0.510ms
+mai 19 12:53:52 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:52.309340Z lvl=info msg="Opened file" log_id=0htv9aZ0000 engine=tsm1 service=filestore path=/data/influxdb/data/SensorData/short_duration/59/000000005-000000001.tsm id=2 duration=0.727ms
+mai 19 12:53:52 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:52.311717Z lvl=info msg="Opened shard" log_id=0htv9aZ0000 service=store trace_id=0htv9axl000 op_name=tsdb_open index_version=tsi1 path=/data/influxdb/data/SensorData/short_duration/59 duration=95.887ms
+mai 19 12:53:52 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:52.354668Z lvl=info msg="index opened with 8 partitions" log_id=0htv9aZ0000 index=tsi
+mai 19 12:53:52 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:52.360635Z lvl=info msg="Opened shard" log_id=0htv9aZ0000 service=store trace_id=0htv9axl000 op_name=tsdb_open index_version=tsi1 path=/data/influxdb/data/SensorData/short_duration/6 duration=134.746ms
+mai 19 12:53:52 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:52.391253Z lvl=info msg="index opened with 8 partitions" log_id=0htv9aZ0000 index=tsi
+mai 19 12:53:52 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:52.401629Z lvl=info msg="Opened file" log_id=0htv9aZ0000 engine=tsm1 service=filestore path=/data/influxdb/data/SensorData/short_duration/60/000000008-000000001.tsm id=4 duration=0.739ms
+mai 19 12:53:52 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:52.404897Z lvl=info msg="Opened file" log_id=0htv9aZ0000 engine=tsm1 service=filestore path=/data/influxdb/data/SensorData/short_duration/60/000000004-000000001.tsm id=2 duration=0.907ms
+mai 19 12:53:52 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:52.406446Z lvl=info msg="Opened file" log_id=0htv9aZ0000 engine=tsm1 service=filestore path=/data/influxdb/data/SensorData/short_duration/60/000000003-000000001.tsm id=1 duration=2.630ms
+mai 19 12:53:52 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:52.405009Z lvl=info msg="Opened file" log_id=0htv9aZ0000 engine=tsm1 service=filestore path=/data/influxdb/data/SensorData/short_duration/60/000000001-000000001.tsm id=0 duration=1.515ms
+mai 19 12:53:52 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:52.402830Z lvl=info msg="index opened with 8 partitions" log_id=0htv9aZ0000 index=tsi
+mai 19 12:53:52 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:52.405575Z lvl=info msg="Opened file" log_id=0htv9aZ0000 engine=tsm1 service=filestore path=/data/influxdb/data/SensorData/short_duration/60/000000006-000000001.tsm id=3 duration=0.851ms
+mai 19 12:53:52 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:52.413056Z lvl=info msg="Opened file" log_id=0htv9aZ0000 engine=tsm1 service=filestore path=/data/influxdb/data/SensorData/short_duration/62/000000001-000000001.tsm id=0 duration=0.422ms
+mai 19 12:53:52 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:52.413919Z lvl=info msg="Opened file" log_id=0htv9aZ0000 engine=tsm1 service=filestore path=/data/influxdb/data/SensorData/short_duration/62/000000003-000000001.tsm id=1 duration=0.456ms
+mai 19 12:53:52 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:52.414730Z lvl=info msg="Opened file" log_id=0htv9aZ0000 engine=tsm1 service=filestore path=/data/influxdb/data/SensorData/short_duration/62/000000005-000000001.tsm id=2 duration=0.472ms
+mai 19 12:53:52 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:52.412404Z lvl=info msg="Opened file" log_id=0htv9aZ0000 engine=tsm1 service=filestore path=/data/influxdb/data/SensorData/short_duration/62/000000007-000000001.tsm id=3 duration=0.440ms
+mai 19 12:53:52 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:52.417315Z lvl=info msg="Opened shard" log_id=0htv9aZ0000 service=store trace_id=0htv9axl000 op_name=tsdb_open index_version=tsi1 path=/data/influxdb/data/SensorData/short_duration/62 duration=125.426ms
+mai 19 12:53:52 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:52.426662Z lvl=info msg="Opened shard" log_id=0htv9aZ0000 service=store trace_id=0htv9axl000 op_name=tsdb_open index_version=tsi1 path=/data/influxdb/data/SensorData/short_duration/60 duration=177.325ms
+mai 19 12:53:52 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:52.458842Z lvl=info msg="index opened with 8 partitions" log_id=0htv9aZ0000 index=tsi
+mai 19 12:53:52 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:52.462685Z lvl=info msg="Opened file" log_id=0htv9aZ0000 engine=tsm1 service=filestore path=/data/influxdb/data/SensorData/short_duration/66/000000002-000000001.tsm id=1 duration=0.531ms
+mai 19 12:53:52 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:52.463919Z lvl=info msg="Opened file" log_id=0htv9aZ0000 engine=tsm1 service=filestore path=/data/influxdb/data/SensorData/short_duration/66/000000001-000000001.tsm id=0 duration=0.788ms
+mai 19 12:53:52 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:52.465025Z lvl=info msg="Reading file" log_id=0htv9aZ0000 engine=tsm1 service=cacheloader path=/data/influxdb/wal/SensorData/short_duration/66/_00005.wal size=10492559
+mai 19 12:53:52 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:52.479243Z lvl=info msg="index opened with 8 partitions" log_id=0htv9aZ0000 index=tsi
+mai 19 12:53:52 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:52.485280Z lvl=info msg="Opened file" log_id=0htv9aZ0000 engine=tsm1 service=filestore path=/data/influxdb/data/SensorData/short_duration/64/000000001-000000001.tsm id=0 duration=0.559ms
+mai 19 12:53:52 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:52.487920Z lvl=info msg="Opened shard" log_id=0htv9aZ0000 service=store trace_id=0htv9axl000 op_name=tsdb_open index_version=tsi1 path=/data/influxdb/data/SensorData/short_duration/64 duration=176.022ms
+mai 19 12:53:52 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:52.520658Z lvl=info msg="index opened with 8 partitions" log_id=0htv9aZ0000 index=tsi
+mai 19 12:53:52 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:52.523488Z lvl=info msg="Opened file" log_id=0htv9aZ0000 engine=tsm1 service=filestore path=/data/influxdb/data/SensorData/short_duration/49/000000004-000000002.tsm id=0 duration=0.543ms
+mai 19 12:53:52 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:52.524454Z lvl=info msg="Opened shard" log_id=0htv9aZ0000 service=store trace_id=0htv9axl000 op_name=tsdb_open index_version=tsi1 path=/data/influxdb/data/SensorData/short_duration/49 duration=95.660ms
+mai 19 12:53:52 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:52.535239Z lvl=info msg="index opened with 8 partitions" log_id=0htv9aZ0000 index=tsi
+mai 19 12:53:52 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:52.558884Z lvl=info msg="Opened shard" log_id=0htv9aZ0000 service=store trace_id=0htv9axl000 op_name=tsdb_open index_version=tsi1 path=/data/influxdb/data/SensorData/short_duration/8 duration=141.381ms
+mai 19 12:53:52 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:52.598810Z lvl=info msg="index opened with 8 partitions" log_id=0htv9aZ0000 index=tsi
+mai 19 12:53:52 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:52.601850Z lvl=info msg="Opened file" log_id=0htv9aZ0000 engine=tsm1 service=filestore path=/data/influxdb/data/SensorData/short_duration/51/000000004-000000002.tsm id=0 duration=0.479ms
+mai 19 12:53:52 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:52.602570Z lvl=info msg="Opened shard" log_id=0htv9aZ0000 service=store trace_id=0htv9axl000 op_name=tsdb_open index_version=tsi1 path=/data/influxdb/data/SensorData/short_duration/51 duration=77.924ms
+mai 19 12:53:52 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:52.612267Z lvl=info msg="index opened with 8 partitions" log_id=0htv9aZ0000 index=tsi
+mai 19 12:53:52 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:52.614996Z lvl=info msg="Opened file" log_id=0htv9aZ0000 engine=tsm1 service=filestore path=/data/influxdb/data/SensorData/short_duration/47/000000004-000000002.tsm id=0 duration=0.539ms
+mai 19 12:53:52 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:52.615794Z lvl=info msg="Opened shard" log_id=0htv9aZ0000 service=store trace_id=0htv9axl000 op_name=tsdb_open index_version=tsi1 path=/data/influxdb/data/SensorData/short_duration/47 duration=126.131ms
+mai 19 12:53:52 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:52.641029Z lvl=info msg="index opened with 8 partitions" log_id=0htv9aZ0000 index=tsi
+mai 19 12:53:52 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:52.644417Z lvl=info msg="Opened shard" log_id=0htv9aZ0000 service=store trace_id=0htv9axl000 op_name=tsdb_open index_version=tsi1 path=/data/influxdb/data/SensorData/short_duration/45 duration=85.298ms
+mai 19 12:53:52 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:52.662178Z lvl=info msg="index opened with 8 partitions" log_id=0htv9aZ0000 index=tsi
+mai 19 12:53:52 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:52.669261Z lvl=info msg="Opened file" log_id=0htv9aZ0000 engine=tsm1 service=filestore path=/data/influxdb/data/SensorData/short_duration/26/000000003-000000002.tsm id=0 duration=0.389ms
+mai 19 12:53:52 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:52.670656Z lvl=info msg="Opened shard" log_id=0htv9aZ0000 service=store trace_id=0htv9axl000 op_name=tsdb_open index_version=tsi1 path=/data/influxdb/data/SensorData/short_duration/26 duration=67.684ms
+mai 19 12:53:52 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:52.687302Z lvl=info msg="index opened with 8 partitions" log_id=0htv9aZ0000 index=tsi
+mai 19 12:53:52 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:52.718506Z lvl=info msg="Opened file" log_id=0htv9aZ0000 engine=tsm1 service=filestore path=/data/influxdb/data/SensorData/short_duration/52/000000006-000000002.tsm id=0 duration=0.494ms
+mai 19 12:53:52 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:52.720026Z lvl=info msg="Opened shard" log_id=0htv9aZ0000 service=store trace_id=0htv9axl000 op_name=tsdb_open index_version=tsi1 path=/data/influxdb/data/SensorData/short_duration/52 duration=103.812ms
+mai 19 12:53:52 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:52.760144Z lvl=info msg="index opened with 8 partitions" log_id=0htv9aZ0000 index=tsi
+mai 19 12:53:52 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:52.763318Z lvl=info msg="Opened file" log_id=0htv9aZ0000 engine=tsm1 service=filestore path=/data/influxdb/data/SensorData/short_duration/22/000000003-000000002.tsm id=0 duration=0.416ms
+mai 19 12:53:52 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:52.764282Z lvl=info msg="Opened shard" log_id=0htv9aZ0000 service=store trace_id=0htv9axl000 op_name=tsdb_open index_version=tsi1 path=/data/influxdb/data/SensorData/short_duration/22 duration=92.622ms
+mai 19 12:53:52 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:52.779948Z lvl=info msg="index opened with 8 partitions" log_id=0htv9aZ0000 index=tsi
+mai 19 12:53:52 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:52.812088Z lvl=info msg="index opened with 8 partitions" log_id=0htv9aZ0000 index=tsi
+mai 19 12:53:52 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:52.839302Z lvl=info msg="Opened file" log_id=0htv9aZ0000 engine=tsm1 service=filestore path=/data/influxdb/data/SensorData/short_duration/18/000000003-000000002.tsm id=0 duration=0.404ms
+mai 19 12:53:52 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:52.839784Z lvl=info msg="Opened shard" log_id=0htv9aZ0000 service=store trace_id=0htv9axl000 op_name=tsdb_open index_version=tsi1 path=/data/influxdb/data/SensorData/short_duration/18 duration=194.371ms
+mai 19 12:53:52 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:52.841546Z lvl=info msg="Opened file" log_id=0htv9aZ0000 engine=tsm1 service=filestore path=/data/influxdb/data/SensorData/short_duration/20/000000003-000000002.tsm id=0 duration=0.373ms
+mai 19 12:53:52 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:52.849710Z lvl=info msg="Opened shard" log_id=0htv9aZ0000 service=store trace_id=0htv9axl000 op_name=tsdb_open index_version=tsi1 path=/data/influxdb/data/SensorData/short_duration/20 duration=128.761ms
+mai 19 12:53:52 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:52.887756Z lvl=info msg="index opened with 8 partitions" log_id=0htv9aZ0000 index=tsi
+mai 19 12:53:52 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:52.891767Z lvl=info msg="Opened file" log_id=0htv9aZ0000 engine=tsm1 service=filestore path=/data/influxdb/data/SensorData/short_duration/24/000000003-000000002.tsm id=0 duration=0.570ms
+mai 19 12:53:52 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:52.894114Z lvl=info msg="Opened shard" log_id=0htv9aZ0000 service=store trace_id=0htv9axl000 op_name=tsdb_open index_version=tsi1 path=/data/influxdb/data/SensorData/short_duration/24 duration=129.649ms
+mai 19 12:53:52 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:52.923424Z lvl=info msg="index opened with 8 partitions" log_id=0htv9aZ0000 index=tsi
+mai 19 12:53:52 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:52.927809Z lvl=info msg="Opened file" log_id=0htv9aZ0000 engine=tsm1 service=filestore path=/data/influxdb/data/SensorData/short_duration/16/000000003-000000002.tsm id=0 duration=0.444ms
+mai 19 12:53:52 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:52.928540Z lvl=info msg="Opened shard" log_id=0htv9aZ0000 service=store trace_id=0htv9axl000 op_name=tsdb_open index_version=tsi1 path=/data/influxdb/data/SensorData/short_duration/16 duration=78.650ms
+mai 19 12:53:52 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:52.929599Z lvl=info msg="index opened with 8 partitions" log_id=0htv9aZ0000 index=tsi
+mai 19 12:53:52 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:52.931763Z lvl=info msg="Opened file" log_id=0htv9aZ0000 engine=tsm1 service=filestore path=/data/influxdb/data/SensorData/short_duration/28/000000003-000000002.tsm id=0 duration=0.310ms
+mai 19 12:53:52 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:52.940053Z lvl=info msg="Opened shard" log_id=0htv9aZ0000 service=store trace_id=0htv9axl000 op_name=tsdb_open index_version=tsi1 path=/data/influxdb/data/SensorData/short_duration/28 duration=100.116ms
+mai 19 12:53:52 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:52.960519Z lvl=info msg="index opened with 8 partitions" log_id=0htv9aZ0000 index=tsi
+mai 19 12:53:52 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:52.963831Z lvl=info msg="Opened file" log_id=0htv9aZ0000 engine=tsm1 service=filestore path=/data/influxdb/data/SensorData/short_duration/30/000000003-000000002.tsm id=0 duration=0.649ms
+mai 19 12:53:52 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:52.965613Z lvl=info msg="Opened shard" log_id=0htv9aZ0000 service=store trace_id=0htv9axl000 op_name=tsdb_open index_version=tsi1 path=/data/influxdb/data/SensorData/short_duration/30 duration=71.236ms
+mai 19 12:53:53 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:53.019856Z lvl=info msg="index opened with 8 partitions" log_id=0htv9aZ0000 index=tsi
+mai 19 12:53:53 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:53.025981Z lvl=info msg="Opened file" log_id=0htv9aZ0000 engine=tsm1 service=filestore path=/data/influxdb/data/SensorData/short_duration/34/000000003-000000002.tsm id=0 duration=0.713ms
+mai 19 12:53:53 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:53.027949Z lvl=info msg="Opened shard" log_id=0htv9aZ0000 service=store trace_id=0htv9axl000 op_name=tsdb_open index_version=tsi1 path=/data/influxdb/data/SensorData/short_duration/34 duration=99.205ms
+mai 19 12:53:53 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:53.030608Z lvl=info msg="index opened with 8 partitions" log_id=0htv9aZ0000 index=tsi
+mai 19 12:53:53 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:53.020110Z lvl=info msg="index opened with 8 partitions" log_id=0htv9aZ0000 index=tsi
+mai 19 12:53:53 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:53.039203Z lvl=info msg="Opened file" log_id=0htv9aZ0000 engine=tsm1 service=filestore path=/data/influxdb/data/SensorData/short_duration/32/000000004-000000002.tsm id=0 duration=5.092ms
+mai 19 12:53:53 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:53.042963Z lvl=error msg="Cannot read corrupt tsm file, renaming" log_id=0htv9aZ0000 engine=tsm1 service=filestore path=/data/influxdb/data/SensorData/short_duration/32/000000004-000000002.tsm id=0 error="cannot allocate memory"
+mai 19 12:53:53 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:53.050643Z lvl=info msg="Failed to open shard" log_id=0htv9aZ0000 service=store trace_id=0htv9axl000 op_name=tsdb_open db_shard_id=32 error="[shard 32] cannot read corrupt file /data/influxdb/data/SensorData/short_duration/32/000000004-000000002.tsm: cannot allocate memory"
+mai 19 12:53:53 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:53.065209Z lvl=info msg="Opened shard" log_id=0htv9aZ0000 service=store trace_id=0htv9axl000 op_name=tsdb_open index_version=tsi1 path=/data/influxdb/data/SensorData/short_duration/36 duration=124.373ms
+mai 19 12:53:53 raspberrypi influxd-systemd-start.sh[20577]: InfluxDB API unavailable after 2 attempts...
+mai 19 12:53:53 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:53.130377Z lvl=info msg="index opened with 8 partitions" log_id=0htv9aZ0000 index=tsi
+mai 19 12:53:53 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:53.139548Z lvl=info msg="Opened file" log_id=0htv9aZ0000 engine=tsm1 service=filestore path=/data/influxdb/data/_internal/monitor/43/000000004-000000001.tsm id=2 duration=1.730ms
+mai 19 12:53:53 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:53.143830Z lvl=info msg="Opened file" log_id=0htv9aZ0000 engine=tsm1 service=filestore path=/data/influxdb/data/_internal/monitor/43/000000001-000000001.tsm id=0 duration=7.045ms
+mai 19 12:53:53 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:53.150811Z lvl=info msg="Opened file" log_id=0htv9aZ0000 engine=tsm1 service=filestore path=/data/influxdb/data/_internal/monitor/43/000000012-000000001.tsm id=6 duration=14.262ms
+mai 19 12:53:53 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:53.165520Z lvl=info msg="Opened file" log_id=0htv9aZ0000 engine=tsm1 service=filestore path=/data/influxdb/data/_internal/monitor/43/000000008-000000001.tsm id=4 duration=12.109ms
+mai 19 12:53:53 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:53.141607Z lvl=info msg="Opened file" log_id=0htv9aZ0000 engine=tsm1 service=filestore path=/data/influxdb/data/_internal/monitor/43/000000006-000000001.tsm id=3 duration=1.648ms
+mai 19 12:53:53 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:53.167423Z lvl=info msg="Opened file" log_id=0htv9aZ0000 engine=tsm1 service=filestore path=/data/influxdb/data/_internal/monitor/43/000000003-000000001.tsm id=1 duration=29.948ms
+mai 19 12:53:53 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:53.167737Z lvl=info msg="Opened file" log_id=0htv9aZ0000 engine=tsm1 service=filestore path=/data/influxdb/data/_internal/monitor/43/000000010-000000001.tsm id=5 duration=1.894ms
+mai 19 12:53:53 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:53.168321Z lvl=info msg="Reading file" log_id=0htv9aZ0000 engine=tsm1 service=cacheloader path=/data/influxdb/wal/_internal/monitor/43/_00029.wal size=5649129
+mai 19 12:53:53 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:53.174515Z lvl=info msg="index opened with 8 partitions" log_id=0htv9aZ0000 index=tsi
+mai 19 12:53:53 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:53.178664Z lvl=info msg="Opened file" log_id=0htv9aZ0000 engine=tsm1 service=filestore path=/data/influxdb/data/collectd/autogen/11/000000001-000000001.tsm id=0 duration=0.572ms
+mai 19 12:53:53 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:53.180046Z lvl=info msg="Opened shard" log_id=0htv9aZ0000 service=store trace_id=0htv9axl000 op_name=tsdb_open index_version=tsi1 path=/data/influxdb/data/collectd/autogen/11 duration=113.817ms
+mai 19 12:53:53 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:53.175498Z lvl=info msg="index opened with 8 partitions" log_id=0htv9aZ0000 index=tsi
+mai 19 12:53:53 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:53.191560Z lvl=info msg="Opened file" log_id=0htv9aZ0000 engine=tsm1 service=filestore path=/data/influxdb/data/_internal/monitor/1/000000006-000000002.tsm id=0 duration=2.043ms
+mai 19 12:53:53 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:53.192679Z lvl=info msg="Opened shard" log_id=0htv9aZ0000 service=store trace_id=0htv9axl000 op_name=tsdb_open index_version=tsi1 path=/data/influxdb/data/_internal/monitor/1 duration=140.599ms
+mai 19 12:53:53 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:53.241403Z lvl=info msg="index opened with 8 partitions" log_id=0htv9aZ0000 index=tsi
+mai 19 12:53:53 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:53.245163Z lvl=info msg="Opened file" log_id=0htv9aZ0000 engine=tsm1 service=filestore path=/data/influxdb/data/collectd/autogen/15/000000001-000000001.tsm id=0 duration=0.458ms
+mai 19 12:53:53 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:53.246753Z lvl=info msg="Opened shard" log_id=0htv9aZ0000 service=store trace_id=0htv9axl000 op_name=tsdb_open index_version=tsi1 path=/data/influxdb/data/collectd/autogen/15 duration=65.765ms
+mai 19 12:53:53 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:53.286504Z lvl=info msg="index opened with 8 partitions" log_id=0htv9aZ0000 index=tsi
+mai 19 12:53:53 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:53.293697Z lvl=info msg="Opened file" log_id=0htv9aZ0000 engine=tsm1 service=filestore path=/data/influxdb/data/collectd/autogen/13/000000001-000000001.tsm id=0 duration=0.713ms
+mai 19 12:53:53 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:53.295460Z lvl=info msg="Opened shard" log_id=0htv9aZ0000 service=store trace_id=0htv9axl000 op_name=tsdb_open index_version=tsi1 path=/data/influxdb/data/collectd/autogen/13 duration=102.581ms
+mai 19 12:53:53 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:53.365013Z lvl=info msg="index opened with 8 partitions" log_id=0htv9aZ0000 index=tsi
+mai 19 12:53:53 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:53.367779Z lvl=info msg="Opened file" log_id=0htv9aZ0000 engine=tsm1 service=filestore path=/data/influxdb/data/collectd/autogen/19/000000001-000000001.tsm id=0 duration=0.401ms
+mai 19 12:53:53 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:53.390611Z lvl=info msg="Opened shard" log_id=0htv9aZ0000 service=store trace_id=0htv9axl000 op_name=tsdb_open index_version=tsi1 path=/data/influxdb/data/collectd/autogen/19 duration=142.736ms
+mai 19 12:53:53 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:53.435230Z lvl=info msg="index opened with 8 partitions" log_id=0htv9aZ0000 index=tsi
+mai 19 12:53:53 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:53.462180Z lvl=info msg="Opened file" log_id=0htv9aZ0000 engine=tsm1 service=filestore path=/data/influxdb/data/collectd/autogen/17/000000001-000000001.tsm id=0 duration=0.460ms
+mai 19 12:53:53 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:53.462769Z lvl=info msg="Opened shard" log_id=0htv9aZ0000 service=store trace_id=0htv9axl000 op_name=tsdb_open index_version=tsi1 path=/data/influxdb/data/collectd/autogen/17 duration=166.234ms
+mai 19 12:53:53 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:53.518365Z lvl=info msg="index opened with 8 partitions" log_id=0htv9aZ0000 index=tsi
+mai 19 12:53:53 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:53.523509Z lvl=info msg="index opened with 8 partitions" log_id=0htv9aZ0000 index=tsi
+mai 19 12:53:53 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:53.531112Z lvl=info msg="Opened file" log_id=0htv9aZ0000 engine=tsm1 service=filestore path=/data/influxdb/data/collectd/autogen/21/000000001-000000001.tsm id=0 duration=0.607ms
+mai 19 12:53:53 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:53.532164Z lvl=info msg="Opened shard" log_id=0htv9aZ0000 service=store trace_id=0htv9axl000 op_name=tsdb_open index_version=tsi1 path=/data/influxdb/data/collectd/autogen/21 duration=69.199ms
+mai 19 12:53:53 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:53.534302Z lvl=info msg="Opened file" log_id=0htv9aZ0000 engine=tsm1 service=filestore path=/data/influxdb/data/collectd/autogen/9/000000001-000000001.tsm id=0 duration=0.448ms
+mai 19 12:53:53 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:53.548368Z lvl=info msg="Opened shard" log_id=0htv9aZ0000 service=store trace_id=0htv9axl000 op_name=tsdb_open index_version=tsi1 path=/data/influxdb/data/collectd/autogen/9 duration=157.533ms
+mai 19 12:53:53 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:53.573914Z lvl=info msg="Reading file" log_id=0htv9aZ0000 engine=tsm1 service=cacheloader path=/data/influxdb/wal/SensorData/short_duration/66/_00006.wal size=5403174
+mai 19 12:53:53 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:53.633011Z lvl=info msg="index opened with 8 partitions" log_id=0htv9aZ0000 index=tsi
+mai 19 12:53:53 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:53.636409Z lvl=info msg="Opened file" log_id=0htv9aZ0000 engine=tsm1 service=filestore path=/data/influxdb/data/collectd/autogen/23/000000001-000000001.tsm id=0 duration=0.648ms
+mai 19 12:53:53 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:53.637355Z lvl=info msg="Opened shard" log_id=0htv9aZ0000 service=store trace_id=0htv9axl000 op_name=tsdb_open index_version=tsi1 path=/data/influxdb/data/collectd/autogen/23 duration=104.852ms
+mai 19 12:53:53 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:53.713862Z lvl=info msg="index opened with 8 partitions" log_id=0htv9aZ0000 index=tsi
+mai 19 12:53:53 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:53.716723Z lvl=info msg="Opened file" log_id=0htv9aZ0000 engine=tsm1 service=filestore path=/data/influxdb/data/collectd/autogen/25/000000001-000000001.tsm id=0 duration=0.499ms
+mai 19 12:53:53 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:53.717754Z lvl=info msg="Opened shard" log_id=0htv9aZ0000 service=store trace_id=0htv9axl000 op_name=tsdb_open index_version=tsi1 path=/data/influxdb/data/collectd/autogen/25 duration=167.647ms
+mai 19 12:53:53 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:53.764784Z lvl=info msg="index opened with 8 partitions" log_id=0htv9aZ0000 index=tsi
+mai 19 12:53:53 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:53.768691Z lvl=info msg="Opened file" log_id=0htv9aZ0000 engine=tsm1 service=filestore path=/data/influxdb/data/collectd/autogen/27/000000001-000000001.tsm id=0 duration=0.449ms
+mai 19 12:53:53 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:53.770174Z lvl=info msg="Opened shard" log_id=0htv9aZ0000 service=store trace_id=0htv9axl000 op_name=tsdb_open index_version=tsi1 path=/data/influxdb/data/collectd/autogen/27 duration=132.537ms
+mai 19 12:53:53 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:53.818785Z lvl=info msg="index opened with 8 partitions" log_id=0htv9aZ0000 index=tsi
+mai 19 12:53:53 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:53.821017Z lvl=info msg="Opened file" log_id=0htv9aZ0000 engine=tsm1 service=filestore path=/data/influxdb/data/collectd/autogen/29/000000001-000000001.tsm id=0 duration=0.537ms
+mai 19 12:53:53 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:53.821797Z lvl=info msg="Opened shard" log_id=0htv9aZ0000 service=store trace_id=0htv9axl000 op_name=tsdb_open index_version=tsi1 path=/data/influxdb/data/collectd/autogen/29 duration=103.830ms
+mai 19 12:53:53 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:53.830021Z lvl=info msg="index opened with 8 partitions" log_id=0htv9aZ0000 index=tsi
+mai 19 12:53:53 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:53.833795Z lvl=info msg="Opened file" log_id=0htv9aZ0000 engine=tsm1 service=filestore path=/data/influxdb/data/collectd/autogen/31/000000001-000000001.tsm id=0 duration=0.683ms
+mai 19 12:53:53 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:53.837280Z lvl=info msg="Opened shard" log_id=0htv9aZ0000 service=store trace_id=0htv9axl000 op_name=tsdb_open index_version=tsi1 path=/data/influxdb/data/collectd/autogen/31 duration=66.221ms
+mai 19 12:53:53 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:53.886745Z lvl=info msg="index opened with 8 partitions" log_id=0htv9aZ0000 index=tsi
+mai 19 12:53:53 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:53.891656Z lvl=info msg="Opened file" log_id=0htv9aZ0000 engine=tsm1 service=filestore path=/data/influxdb/data/collectd/autogen/33/000000001-000000001.tsm id=0 duration=0.504ms
+mai 19 12:53:53 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:53.895146Z lvl=info msg="Opened shard" log_id=0htv9aZ0000 service=store trace_id=0htv9axl000 op_name=tsdb_open index_version=tsi1 path=/data/influxdb/data/collectd/autogen/33 duration=72.964ms
+mai 19 12:53:53 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:53.949964Z lvl=info msg="index opened with 8 partitions" log_id=0htv9aZ0000 index=tsi
+mai 19 12:53:53 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:53.960027Z lvl=info msg="Opened file" log_id=0htv9aZ0000 engine=tsm1 service=filestore path=/data/influxdb/data/collectd/autogen/37/000000001-000000001.tsm id=0 duration=1.291ms
+mai 19 12:53:53 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:53.969111Z lvl=info msg="Opened shard" log_id=0htv9aZ0000 service=store trace_id=0htv9axl000 op_name=tsdb_open index_version=tsi1 path=/data/influxdb/data/collectd/autogen/37 duration=72.313ms
+mai 19 12:53:53 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:53.968531Z lvl=info msg="index opened with 8 partitions" log_id=0htv9aZ0000 index=tsi
+mai 19 12:53:53 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:53.989130Z lvl=info msg="Opened file" log_id=0htv9aZ0000 engine=tsm1 service=filestore path=/data/influxdb/data/collectd/autogen/35/000000001-000000001.tsm id=0 duration=0.610ms
+mai 19 12:53:53 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:53.990086Z lvl=info msg="Opened shard" log_id=0htv9aZ0000 service=store trace_id=0htv9axl000 op_name=tsdb_open index_version=tsi1 path=/data/influxdb/data/collectd/autogen/35 duration=152.567ms
+mai 19 12:53:54 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:54.046538Z lvl=info msg="index opened with 8 partitions" log_id=0htv9aZ0000 index=tsi
+mai 19 12:53:54 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:54.049818Z lvl=info msg="Opened file" log_id=0htv9aZ0000 engine=tsm1 service=filestore path=/data/influxdb/data/collectd/autogen/39/000000001-000000001.tsm id=0 duration=0.448ms
+mai 19 12:53:54 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:54.050477Z lvl=info msg="Opened shard" log_id=0htv9aZ0000 service=store trace_id=0htv9axl000 op_name=tsdb_open index_version=tsi1 path=/data/influxdb/data/collectd/autogen/39 duration=81.080ms
+mai 19 12:53:54 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:54.086853Z lvl=info msg="index opened with 8 partitions" log_id=0htv9aZ0000 index=tsi
+mai 19 12:53:54 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:54.089983Z lvl=info msg="Opened file" log_id=0htv9aZ0000 engine=tsm1 service=filestore path=/data/influxdb/data/collectd/autogen/4/000000001-000000001.tsm id=0 duration=0.531ms
+mai 19 12:53:54 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:54.091582Z lvl=info msg="Opened shard" log_id=0htv9aZ0000 service=store trace_id=0htv9axl000 op_name=tsdb_open index_version=tsi1 path=/data/influxdb/data/collectd/autogen/4 duration=101.290ms
+mai 19 12:53:54 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:54.115258Z lvl=info msg="index opened with 8 partitions" log_id=0htv9aZ0000 index=tsi
+mai 19 12:53:54 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:54.117800Z lvl=info msg="Opened file" log_id=0htv9aZ0000 engine=tsm1 service=filestore path=/data/influxdb/data/collectd/autogen/41/000000001-000000001.tsm id=0 duration=0.416ms
+mai 19 12:53:54 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:54.118603Z lvl=info msg="Opened shard" log_id=0htv9aZ0000 service=store trace_id=0htv9axl000 op_name=tsdb_open index_version=tsi1 path=/data/influxdb/data/collectd/autogen/41 duration=67.730ms
+mai 19 12:53:54 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:54.121143Z lvl=info msg="Reading file" log_id=0htv9aZ0000 engine=tsm1 service=cacheloader path=/data/influxdb/wal/SensorData/short_duration/66/_00007.wal size=131119
+mai 19 12:53:54 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:54.127677Z lvl=info msg="Reading file" log_id=0htv9aZ0000 engine=tsm1 service=cacheloader path=/data/influxdb/wal/SensorData/short_duration/66/_00008.wal size=33342
+mai 19 12:53:54 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:54.130948Z lvl=info msg="Opened shard" log_id=0htv9aZ0000 service=store trace_id=0htv9axl000 op_name=tsdb_open index_version=tsi1 path=/data/influxdb/data/SensorData/short_duration/66 duration=1758.234ms
+mai 19 12:53:54 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:54.145471Z lvl=info msg="index opened with 8 partitions" log_id=0htv9aZ0000 index=tsi
+mai 19 12:53:54 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:54.190780Z lvl=info msg="Opened file" log_id=0htv9aZ0000 engine=tsm1 service=filestore path=/data/influxdb/data/collectd/autogen/44/000000001-000000001.tsm id=0 duration=0.369ms
+mai 19 12:53:54 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:54.191380Z lvl=info msg="Opened shard" log_id=0htv9aZ0000 service=store trace_id=0htv9axl000 op_name=tsdb_open index_version=tsi1 path=/data/influxdb/data/collectd/autogen/44 duration=98.864ms
+mai 19 12:53:54 raspberrypi influxd-systemd-start.sh[20577]: InfluxDB API unavailable after 3 attempts...
+mai 19 12:53:54 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:54.224757Z lvl=info msg="index opened with 8 partitions" log_id=0htv9aZ0000 index=tsi
+mai 19 12:53:54 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:54.227179Z lvl=info msg="Opened file" log_id=0htv9aZ0000 engine=tsm1 service=filestore path=/data/influxdb/data/collectd/autogen/46/000000001-000000001.tsm id=0 duration=0.476ms
+mai 19 12:53:54 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:54.227907Z lvl=info msg="Opened shard" log_id=0htv9aZ0000 service=store trace_id=0htv9axl000 op_name=tsdb_open index_version=tsi1 path=/data/influxdb/data/collectd/autogen/46 duration=109.037ms
+mai 19 12:53:54 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:54.240910Z lvl=info msg="index opened with 8 partitions" log_id=0htv9aZ0000 index=tsi
+mai 19 12:53:54 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:54.243052Z lvl=info msg="Opened file" log_id=0htv9aZ0000 engine=tsm1 service=filestore path=/data/influxdb/data/collectd/autogen/5/000000001-000000001.tsm id=0 duration=0.428ms
+mai 19 12:53:54 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:54.247726Z lvl=info msg="Opened shard" log_id=0htv9aZ0000 service=store trace_id=0htv9axl000 op_name=tsdb_open index_version=tsi1 path=/data/influxdb/data/collectd/autogen/5 duration=56.173ms
+mai 19 12:53:54 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:54.249592Z lvl=info msg="index opened with 8 partitions" log_id=0htv9aZ0000 index=tsi
+mai 19 12:53:54 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:54.252707Z lvl=info msg="Opened file" log_id=0htv9aZ0000 engine=tsm1 service=filestore path=/data/influxdb/data/collectd/autogen/48/000000001-000000001.tsm id=0 duration=0.468ms
+mai 19 12:53:54 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:54.254384Z lvl=info msg="Opened shard" log_id=0htv9aZ0000 service=store trace_id=0htv9axl000 op_name=tsdb_open index_version=tsi1 path=/data/influxdb/data/collectd/autogen/48 duration=123.183ms
+mai 19 12:53:54 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:54.289417Z lvl=info msg="index opened with 8 partitions" log_id=0htv9aZ0000 index=tsi
+mai 19 12:53:54 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:54.295695Z lvl=info msg="Opened file" log_id=0htv9aZ0000 engine=tsm1 service=filestore path=/data/influxdb/data/collectd/autogen/50/000000001-000000001.tsm id=0 duration=1.394ms
+mai 19 12:53:54 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:54.298251Z lvl=info msg="Opened shard" log_id=0htv9aZ0000 service=store trace_id=0htv9axl000 op_name=tsdb_open index_version=tsi1 path=/data/influxdb/data/collectd/autogen/50 duration=69.846ms
+mai 19 12:53:54 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:54.301606Z lvl=info msg="index opened with 8 partitions" log_id=0htv9aZ0000 index=tsi
+mai 19 12:53:54 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:54.304677Z lvl=info msg="Opened file" log_id=0htv9aZ0000 engine=tsm1 service=filestore path=/data/influxdb/data/collectd/autogen/55/000000001-000000001.tsm id=0 duration=0.695ms
+mai 19 12:53:54 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:54.314195Z lvl=info msg="Opened shard" log_id=0htv9aZ0000 service=store trace_id=0htv9axl000 op_name=tsdb_open index_version=tsi1 path=/data/influxdb/data/collectd/autogen/55 duration=58.691ms
+mai 19 12:53:54 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:54.332364Z lvl=info msg="index opened with 8 partitions" log_id=0htv9aZ0000 index=tsi
+mai 19 12:53:54 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:54.334960Z lvl=info msg="Opened file" log_id=0htv9aZ0000 engine=tsm1 service=filestore path=/data/influxdb/data/collectd/autogen/53/000000001-000000001.tsm id=0 duration=0.434ms
+mai 19 12:53:54 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:54.335983Z lvl=info msg="Opened shard" log_id=0htv9aZ0000 service=store trace_id=0htv9axl000 op_name=tsdb_open index_version=tsi1 path=/data/influxdb/data/collectd/autogen/53 duration=88.047ms
+mai 19 12:53:54 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:54.416285Z lvl=info msg="index opened with 8 partitions" log_id=0htv9aZ0000 index=tsi
+mai 19 12:53:54 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:54.420861Z lvl=info msg="index opened with 8 partitions" log_id=0htv9aZ0000 index=tsi
+mai 19 12:53:54 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:54.424656Z lvl=info msg="Opened file" log_id=0htv9aZ0000 engine=tsm1 service=filestore path=/data/influxdb/data/collectd/autogen/56/000000001-000000001.tsm id=0 duration=1.809ms
+mai 19 12:53:54 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:54.427903Z lvl=info msg="Opened file" log_id=0htv9aZ0000 engine=tsm1 service=filestore path=/data/influxdb/data/collectd/autogen/58/000000001-000000001.tsm id=0 duration=2.468ms
+mai 19 12:53:54 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:54.430618Z lvl=info msg="Opened shard" log_id=0htv9aZ0000 service=store trace_id=0htv9axl000 op_name=tsdb_open index_version=tsi1 path=/data/influxdb/data/collectd/autogen/58 duration=116.195ms
+mai 19 12:53:54 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:54.428258Z lvl=info msg="Opened shard" log_id=0htv9aZ0000 service=store trace_id=0htv9axl000 op_name=tsdb_open index_version=tsi1 path=/data/influxdb/data/collectd/autogen/56 duration=129.747ms
+mai 19 12:53:54 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:54.459985Z lvl=info msg="index opened with 8 partitions" log_id=0htv9aZ0000 index=tsi
+mai 19 12:53:54 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:54.486016Z lvl=info msg="Opened file" log_id=0htv9aZ0000 engine=tsm1 service=filestore path=/data/influxdb/data/collectd/autogen/61/000000001-000000001.tsm id=0 duration=0.508ms
+mai 19 12:53:54 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:54.488122Z lvl=info msg="Opened shard" log_id=0htv9aZ0000 service=store trace_id=0htv9axl000 op_name=tsdb_open index_version=tsi1 path=/data/influxdb/data/collectd/autogen/61 duration=151.905ms
+mai 19 12:53:54 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:54.557502Z lvl=info msg="index opened with 8 partitions" log_id=0htv9aZ0000 index=tsi
+mai 19 12:53:54 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:54.560771Z lvl=info msg="Reading file" log_id=0htv9aZ0000 engine=tsm1 service=cacheloader path=/data/influxdb/wal/collectd/autogen/65/_00001.wal size=901924
+mai 19 12:53:54 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:54.565850Z lvl=info msg="index opened with 8 partitions" log_id=0htv9aZ0000 index=tsi
+mai 19 12:53:54 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:54.583285Z lvl=info msg="Opened file" log_id=0htv9aZ0000 engine=tsm1 service=filestore path=/data/influxdb/data/collectd/autogen/63/000000001-000000001.tsm id=0 duration=0.656ms
+mai 19 12:53:54 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:54.603639Z lvl=info msg="Opened shard" log_id=0htv9aZ0000 service=store trace_id=0htv9axl000 op_name=tsdb_open index_version=tsi1 path=/data/influxdb/data/collectd/autogen/63 duration=146.488ms
+mai 19 12:53:54 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:54.619513Z lvl=info msg="index opened with 8 partitions" log_id=0htv9aZ0000 index=tsi
+mai 19 12:53:54 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:54.621942Z lvl=info msg="Opened file" log_id=0htv9aZ0000 engine=tsm1 service=filestore path=/data/influxdb/data/collectd/autogen/7/000000001-000000001.tsm id=0 duration=0.374ms
+mai 19 12:53:54 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:54.622669Z lvl=info msg="Opened shard" log_id=0htv9aZ0000 service=store trace_id=0htv9axl000 op_name=tsdb_open index_version=tsi1 path=/data/influxdb/data/collectd/autogen/7 duration=133.058ms
+mai 19 12:53:55 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:55.101203Z lvl=info msg="Opened shard" log_id=0htv9aZ0000 service=store trace_id=0htv9axl000 op_name=tsdb_open index_version=tsi1 path=/data/influxdb/data/collectd/autogen/65 duration=631.518ms
+mai 19 12:53:55 raspberrypi influxd-systemd-start.sh[20577]: InfluxDB API unavailable after 4 attempts...
+mai 19 12:53:56 raspberrypi influxd-systemd-start.sh[20577]: InfluxDB API unavailable after 5 attempts...
+mai 19 12:53:57 raspberrypi influxd-systemd-start.sh[20577]: InfluxDB API unavailable after 6 attempts...
+mai 19 12:53:58 raspberrypi influxd-systemd-start.sh[20577]: InfluxDB API unavailable after 7 attempts...
+mai 19 12:53:58 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:58.585752Z lvl=info msg="Opened shard" log_id=0htv9aZ0000 service=store trace_id=0htv9axl000 op_name=tsdb_open index_version=tsi1 path=/data/influxdb/data/_internal/monitor/43 duration=5556.503ms
+mai 19 12:53:58 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:58.591364Z lvl=info msg="Open store (end)" log_id=0htv9aZ0000 service=store trace_id=0htv9axl000 op_name=tsdb_open op_event=end op_elapsed=6603.527ms
+mai 19 12:53:58 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:58.591590Z lvl=info msg="Opened service" log_id=0htv9aZ0000 service=subscriber
+mai 19 12:53:58 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:58.591631Z lvl=info msg="Starting monitor service" log_id=0htv9aZ0000 service=monitor
+mai 19 12:53:58 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:58.591669Z lvl=info msg="Registered diagnostics client" log_id=0htv9aZ0000 service=monitor name=build
+mai 19 12:53:58 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:58.591699Z lvl=info msg="Registered diagnostics client" log_id=0htv9aZ0000 service=monitor name=runtime
+mai 19 12:53:58 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:58.591747Z lvl=info msg="Registered diagnostics client" log_id=0htv9aZ0000 service=monitor name=network
+mai 19 12:53:58 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:58.591778Z lvl=info msg="Registered diagnostics client" log_id=0htv9aZ0000 service=monitor name=system
+mai 19 12:53:58 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:58.592306Z lvl=info msg="Starting precreation service" log_id=0htv9aZ0000 service=shard-precreation check_interval=10m advance_period=30m
+mai 19 12:53:58 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:58.592366Z lvl=info msg="Starting snapshot service" log_id=0htv9aZ0000 service=snapshot
+mai 19 12:53:58 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:58.592402Z lvl=info msg="Starting continuous query service" log_id=0htv9aZ0000 service=continuous_querier
+mai 19 12:53:58 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:58.592449Z lvl=info msg="Starting HTTP service" log_id=0htv9aZ0000 service=httpd authentication=false
+mai 19 12:53:58 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:58.592448Z lvl=info msg="Storing statistics" log_id=0htv9aZ0000 service=monitor db_instance=_internal db_rp=monitor interval=10s
+mai 19 12:53:58 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:58.592479Z lvl=info msg="opened HTTP access log" log_id=0htv9aZ0000 service=httpd path=stderr
+mai 19 12:53:58 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:58.593112Z lvl=info msg="Listening on HTTP" log_id=0htv9aZ0000 service=httpd addr=[::]:8086 https=false
+mai 19 12:53:58 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:58.593455Z lvl=info msg="Starting retention policy enforcement service" log_id=0htv9aZ0000 service=retention check_interval=30m
+mai 19 12:53:58 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:58.593835Z lvl=info msg="Starting collectd service" log_id=0htv9aZ0000 service=collectd
+mai 19 12:53:58 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:58.593925Z lvl=info msg="Loading types from file" log_id=0htv9aZ0000 service=collectd path=/usr/share/collectd/types.db
+mai 19 12:53:58 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:58.600715Z lvl=info msg="Listening on UDP" log_id=0htv9aZ0000 service=collectd addr=[::]:25826
+mai 19 12:53:58 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:58.602107Z lvl=info msg="Listening for signals" log_id=0htv9aZ0000
+mai 19 12:53:58 raspberrypi influxd-systemd-start.sh[20577]: [httpd] ::1 - admin [19/May/2023:12:53:58 +0200] "POST /write?db=SensorData HTTP/1.1 " 204 0 "-" "python-requests/2.21.0" 751061f5-f633-11ed-8001-b827eb8c6748 170719
+mai 19 12:53:59 raspberrypi influxd-systemd-start.sh[20577]: [httpd] ::1 - - [19/May/2023:12:53:59 +0200] "GET /health HTTP/1.1" 200 107 "-" "curl/7.64.0" 759c714f-f633-11ed-8002-b827eb8c6748 248
+mai 19 12:53:59 raspberrypi influxd-systemd-start.sh[20577]: InfluxDB started
+mai 19 12:53:59 raspberrypi systemd[1]: Started InfluxDB is an open-source, distributed, time series database.
+mai 19 12:53:59 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:59.575113Z lvl=info msg="Sending usage statistics to usage.influxdata.com" log_id=0htv9aZ0000
+mai 19 12:53:59 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:53:59.591531Z lvl=info msg="Cache snapshot (start)" log_id=0htv9aZ0000 engine=tsm1 trace_id=0htvA3el000 op_name=tsm1_cache_snapshot op_event=start
+mai 19 12:54:01 raspberrypi influxd-systemd-start.sh[20577]: [httpd] ::1 - admin [19/May/2023:12:54:00 +0200] "POST /write?db=SensorData HTTP/1.1 " 204 0 "-" "python-requests/2.21.0" 767517bc-f633-11ed-8003-b827eb8c6748 730858
+mai 19 12:54:01 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:54:01.717615Z lvl=info msg="Snapshot for path written" log_id=0htv9aZ0000 engine=tsm1 trace_id=0htvA3el000 op_name=tsm1_cache_snapshot path=/data/influxdb/data/SensorData/short_duration/66 duration=2126.598ms
+mai 19 12:54:01 raspberrypi influxd-systemd-start.sh[20577]: ts=2023-05-19T10:54:01.718106Z lvl=info msg="Cache snapshot (end)" log_id=0htv9aZ0000 engine=tsm1 trace_id=0htvA3el000 op_name=tsm1_cache_snapshot op_event=end op_elapsed=2127.002ms
+mai 19 12:54:05 raspberrypi influxd-systemd-start.sh[20577]: [httpd] ::1 - admin [19/May/2023:12:54:05 +0200] "POST /write?db=SensorData HTTP/1.1 " 204 0 "-" "python-requests/2.21.0" 7914ab59-f633-11ed-8004-b827eb8c6748 37070
+mai 19 12:54:09 raspberrypi influxd-systemd-start.sh[20577]: [httpd] ::1 - admin [19/May/2023:12:54:09 +0200] "POST /write?db=SensorData HTTP/1.1 " 204 0 "-" "python-requests/2.21.0" 7b945d6d-f633-11ed-8005-b827eb8c6748 27243
+mai 19 12:54:13 raspberrypi influxd-systemd-start.sh[20577]: [httpd] ::1 - admin [19/May/2023:12:54:13 +0200] "POST /write?db=SensorData HTTP/1.1 " 204 0 "-" "python-requests/2.21.0" 7e031865-f633-11ed-8006-b827eb8c6748 45945
+mai 19 12:54:17 raspberrypi influxd-systemd-start.sh[20577]: [httpd] ::1 - admin [19/May/2023:12:54:17 +0200] "POST /write?db=SensorData HTTP/1.1 " 204 0 "-" "python-requests/2.21.0" 80756e07-f633-11ed-8007-b827eb8c6748 40415
+mai 19 12:54:22 raspberrypi influxd-systemd-start.sh[20577]: [httpd] ::1 - admin [19/May/2023:12:54:22 +0200] "POST /write?db=SensorData HTTP/1.1 " 204 0 "-" "python-requests/2.21.0" 83159c3d-f633-11ed-8008-b827eb8c6748 39430
+mai 19 12:54:26 raspberrypi influxd-systemd-start.sh[20577]: [httpd] ::1 - admin [19/May/2023:12:54:26 +0200] "POST /write?db=SensorData HTTP/1.1 " 204 0 "-" "python-requests/2.21.0" 85a7d7f3-f633-11ed-8009-b827eb8c6748 35074
+mai 19 12:54:30 raspberrypi influxd-systemd-start.sh[20577]: [httpd] ::1 - admin [19/May/2023:12:54:30 +0200] "POST /write?db=SensorData HTTP/1.1 " 204 0 "-" "python-requests/2.21.0" 87fa9884-f633-11ed-800a-b827eb8c6748 27756
+mai 19 12:54:34 raspberrypi influxd-systemd-start.sh[20577]: [httpd] ::1 - admin [19/May/2023:12:54:34 +0200] "POST /write?db=SensorData HTTP/1.1 " 204 0 "-" "python-requests/2.21.0" 8a88e3c6-f633-11ed-800b-b827eb8c6748 42104
+mai 19 12:54:38 raspberrypi influxd-systemd-start.sh[20577]: [httpd] ::1 - admin [19/May/2023:12:54:38 +0200] "POST /write?db=SensorData HTTP/1.1 " 204 0 "-" "python-requests/2.21.0" 8d1a852f-f633-11ed-800c-b827eb8c6748 45032
+mai 19 12:54:43 raspberrypi influxd-systemd-start.sh[20577]: [httpd] ::1 - admin [19/May/2023:12:54:43 +0200] "POST /write?db=SensorData HTTP/1.1 " 204 0 "-" "python-requests/2.21.0" 8f9ca661-f633-11ed-800d-b827eb8c6748 67369
+mai 19 12:54:47 raspberrypi influxd-systemd-start.sh[20577]: [httpd] ::1 - admin [19/May/2023:12:54:47 +0200] "POST /write?db=SensorData HTTP/1.1 " 204 0 "-" "python-requests/2.21.0" 92036e5d-f633-11ed-800e-b827eb8c6748 34186
+mai 19 12:54:51 raspberrypi influxd-systemd-start.sh[20577]: [httpd] ::1 - admin [19/May/2023:12:54:51 +0200] "POST /write?db=SensorData HTTP/1.1 " 204 0 "-" "python-requests/2.21.0" 94842db2-f633-11ed-800f-b827eb8c6748 32332
+mai 19 12:54:55 raspberrypi influxd-systemd-start.sh[20577]: [httpd] ::1 - admin [19/May/2023:12:54:55 +0200] "POST /write?db=SensorData HTTP/1.1 " 204 0 "-" "python-requests/2.21.0" 97156550-f633-11ed-8010-b827eb8c6748 32450
+mai 19 12:54:59 raspberrypi influxd-systemd-start.sh[20577]: [httpd] ::1 - admin [19/May/2023:12:54:59 +0200] "POST /write?db=SensorData HTTP/1.1 " 204 0 "-" "python-requests/2.21.0" 9976ba79-f633-11ed-8011-b827eb8c6748 62032
+mai 19 12:55:04 raspberrypi influxd-systemd-start.sh[20577]: [httpd] ::1 - admin [19/May/2023:12:55:04 +0200] "POST /write?db=SensorData HTTP/1.1 " 204 0 "-" "python-requests/2.21.0" 9c1ac6ac-f633-11ed-8012-b827eb8c6748 37516
+mai 19 12:55:08 raspberrypi influxd-systemd-start.sh[20577]: [httpd] ::1 - admin [19/May/2023:12:55:08 +0200] "POST /write?db=SensorData HTTP/1.1 " 204 0 "-" "python-requests/2.21.0" 9e8d5174-f633-11ed-8013-b827eb8c6748 43123
+mai 19 12:55:12 raspberrypi influxd-systemd-start.sh[20577]: [httpd] ::1 - admin [19/May/2023:12:55:12 +0200] "POST /write?db=SensorData HTTP/1.1 " 204 0 "-" "python-requests/2.21.0" a1003756-f633-11ed-8014-b827eb8c6748 49036
+mai 19 12:55:16 raspberrypi influxd-systemd-start.sh[20577]: [httpd] ::1 - admin [19/May/2023:12:55:16 +0200] "POST /write?db=SensorData HTTP/1.1 " 204 0 "-" "python-requests/2.21.0" a3747a0a-f633-11ed-8015-b827eb8c6748 40956
+mai 19 12:55:20 raspberrypi influxd-systemd-start.sh[20577]: [httpd] ::1 - admin [19/May/2023:12:55:20 +0200] "POST /write?db=SensorData HTTP/1.1 " 204 0 "-" "python-requests/2.21.0" a5f80064-f633-11ed-8016-b827eb8c6748 51076
+mai 19 12:55:25 raspberrypi influxd-systemd-start.sh[20577]: [httpd] ::1 - admin [19/May/2023:12:55:24 +0200] "POST /write?db=SensorData HTTP/1.1 " 204 0 "-" "python-requests/2.21.0" a88a6f59-f633-11ed-8017-b827eb8c6748 27472
+mai 19 12:55:29 raspberrypi influxd-systemd-start.sh[20577]: [httpd] ::1 - admin [19/May/2023:12:55:29 +0200] "POST /write?db=SensorData HTTP/1.1 " 204 0 "-" "python-requests/2.21.0" ab0a0380-f633-11ed-8018-b827eb8c6748 28290
+mai 19 12:55:33 raspberrypi influxd-systemd-start.sh[20577]: [httpd] ::1 - admin [19/May/2023:12:55:33 +0200] "POST /write?db=SensorData HTTP/1.1 " 204 0 "-" "python-requests/2.21.0" ad7bd06e-f633-11ed-8019-b827eb8c6748 64447
+mai 19 12:55:37 raspberrypi influxd-systemd-start.sh[20577]: [httpd] ::1 - admin [19/May/2023:12:55:37 +0200] "POST /write?db=SensorData HTTP/1.1 " 204 0 "-" "python-requests/2.21.0" aff1a600-f633-11ed-801a-b827eb8c6748 39549
+mai 19 12:55:41 raspberrypi influxd-systemd-start.sh[20577]: [httpd] ::1 - admin [19/May/2023:12:55:41 +0200] "POST /write?db=SensorData HTTP/1.1 " 204 0 "-" "python-requests/2.21.0" b292a5dd-f633-11ed-801b-b827eb8c6748 38181
+mai 19 12:55:46 raspberrypi influxd-systemd-start.sh[20577]: [httpd] ::1 - admin [19/May/2023:12:55:46 +0200] "POST /write?db=SensorData HTTP/1.1 " 204 0 "-" "python-requests/2.21.0" b513a43e-f633-11ed-801c-b827eb8c6748 56124
+mai 19 12:55:49 raspberrypi influxd-systemd-start.sh[20577]: [httpd] ::1 - admin [19/May/2023:12:55:49 +0200] "POST /write?db=SensorData HTTP/1.1 " 204 0 "-" "python-requests/2.21.0" b7698706-f633-11ed-801d-b827eb8c6748 43730
+mai 19 12:55:54 raspberrypi influxd-systemd-start.sh[20577]: [httpd] ::1 - admin [19/May/2023:12:55:54 +0200] "POST /write?db=SensorData HTTP/1.1 " 204 0 "-" "python-requests/2.21.0" b9db7d4e-f633-11ed-801e-b827eb8c6748 32290
+mai 19 12:55:58 raspberrypi influxd-systemd-start.sh[20577]: [httpd] ::1 - admin [19/May/2023:12:55:58 +0200] "POST /write?db=SensorData HTTP/1.1 " 204 0 "-" "python-requests/2.21.0" bc6ad8b0-f633-11ed-801f-b827eb8c6748 112410
+mai 19 12:56:02 raspberrypi influxd-systemd-start.sh[20577]: [httpd] ::1 - admin [19/May/2023:12:56:02 +0200] "POST /write?db=SensorData HTTP/1.1 " 204 0 "-" "python-requests/2.21.0" bf073a3c-f633-11ed-8020-b827eb8c6748 26092
+mai 19 12:56:06 raspberrypi influxd-systemd-start.sh[20577]: [httpd] ::1 - admin [19/May/2023:12:56:06 +0200] "POST /write?db=SensorData HTTP/1.1 " 204 0 "-" "python-requests/2.21.0" c169737d-f633-11ed-8021-b827eb8c6748 42553
+mai 19 12:56:10 raspberrypi influxd-systemd-start.sh[20577]: [httpd] ::1 - admin [19/May/2023:12:56:10 +0200] "POST /write?db=SensorData HTTP/1.1 " 204 0 "-" "python-requests/2.21.0" c3dd220b-f633-11ed-8022-b827eb8c6748 42309
+mai 19 12:56:15 raspberrypi influxd-systemd-start.sh[20577]: [httpd] ::1 - admin [19/May/2023:12:56:15 +0200] "POST /write?db=SensorData HTTP/1.1 " 204 0 "-" "python-requests/2.21.0" c67e56cb-f633-11ed-8023-b827eb8c6748 48895
+mai 19 12:56:19 raspberrypi influxd-systemd-start.sh[20577]: [httpd] ::1 - admin [19/May/2023:12:56:19 +0200] "POST /write?db=SensorData HTTP/1.1 " 204 0 "-" "python-requests/2.21.0" c8e29fd4-f633-11ed-8024-b827eb8c6748 74858
+mai 19 12:56:23 raspberrypi influxd-systemd-start.sh[20577]: [httpd] ::1 - admin [19/May/2023:12:56:23 +0200] "POST /write?db=SensorData HTTP/1.1 " 204 0 "-" "python-requests/2.21.0" cb78dab3-f633-11ed-8025-b827eb8c6748 36323
+mai 19 12:56:27 raspberrypi influxd-systemd-start.sh[20577]: [httpd] ::1 - admin [19/May/2023:12:56:27 +0200] "POST /write?db=SensorData HTTP/1.1 " 204 0 "-" "python-requests/2.21.0" cdcfbf62-f633-11ed-8026-b827eb8c6748 38935
+mai 19 12:56:31 raspberrypi influxd-systemd-start.sh[20577]: [httpd] ::1 - admin [19/May/2023:12:56:31 +0200] "POST /write?db=SensorData HTTP/1.1 " 204 0 "-" "python-requests/2.21.0" d06f1c66-f633-11ed-8027-b827eb8c6748 26659
+mai 19 12:56:36 raspberrypi influxd-systemd-start.sh[20577]: [httpd] ::1 - admin [19/May/2023:12:56:35 +0200] "POST /write?db=SensorData HTTP/1.1 " 204 0 "-" "python-requests/2.21.0" d2def15a-f633-11ed-8028-b827eb8c6748 46281
+mai 19 12:56:40 raspberrypi influxd-systemd-start.sh[20577]: [httpd] ::1 - admin [19/May/2023:12:56:40 +0200] "POST /write?db=SensorData HTTP/1.1 " 204 0 "-" "python-requests/2.21.0" d553712a-f633-11ed-8029-b827eb8c6748 55339
+mai 19 12:56:44 raspberrypi influxd-systemd-start.sh[20577]: [httpd] ::1 - admin [19/May/2023:12:56:44 +0200] "POST /write?db=SensorData HTTP/1.1 " 204 0 "-" "python-requests/2.21.0" d7da450b-f633-11ed-802a-b827eb8c6748 37333
+mai 19 12:56:48 raspberrypi influxd-systemd-start.sh[20577]: [httpd] ::1 - admin [19/May/2023:12:56:48 +0200] "POST /write?db=SensorData HTTP/1.1 " 204 0 "-" "python-requests/2.21.0" da5d8d8d-f633-11ed-802b-b827eb8c6748 48419
+mai 19 12:56:52 raspberrypi influxd-systemd-start.sh[20577]: [httpd] ::1 - admin [19/May/2023:12:56:52 +0200] "POST /write?db=SensorData HTTP/1.1 " 204 0 "-" "python-requests/2.21.0" dcd284e2-f633-11ed-802c-b827eb8c6748 41521
+mai 19 12:56:56 raspberrypi influxd-systemd-start.sh[20577]: [httpd] ::1 - admin [19/May/2023:12:56:56 +0200] "POST /write?db=SensorData HTTP/1.1 " 204 0 "-" "python-requests/2.21.0" df45002a-f633-11ed-802d-b827eb8c6748 75166
+mai 19 12:57:01 raspberrypi influxd-systemd-start.sh[20577]: [httpd] ::1 - admin [19/May/2023:12:57:01 +0200] "POST /write?db=SensorData HTTP/1.1 " 204 0 "-" "python-requests/2.21.0" e1db1b85-f633-11ed-802e-b827eb8c6748 29012
+mai 19 12:57:05 raspberrypi influxd-systemd-start.sh[20577]: [httpd] ::1 - admin [19/May/2023:12:57:05 +0200] "POST /write?db=SensorData HTTP/1.1 " 204 0 "-" "python-requests/2.21.0" e44b5ff5-f633-11ed-802f-b827eb8c6748 58372
+mai 19 12:57:09 raspberrypi influxd-systemd-start.sh[20577]: [httpd] ::1 - admin [19/May/2023:12:57:09 +0200] "POST /write?db=SensorData HTTP/1.1 " 204 0 "-" "python-requests/2.21.0" e6c135d9-f633-11ed-8030-b827eb8c6748 70394
+mai 19 12:57:13 raspberrypi influxd-systemd-start.sh[20577]: [httpd] ::1 - admin [19/May/2023:12:57:13 +0200] "POST /write?db=SensorData HTTP/1.1 " 204 0 "-" "python-requests/2.21.0" e93812e2-f633-11ed-8031-b827eb8c6748 40642
+mai 19 12:57:17 raspberrypi influxd-systemd-start.sh[20577]: [httpd] ::1 - admin [19/May/2023:12:57:17 +0200] "POST /write?db=SensorData HTTP/1.1 " 204 0 "-" "python-requests/2.21.0" ebd9001b-f633-11ed-8032-b827eb8c6748 26566
+mai 19 12:57:22 raspberrypi influxd-systemd-start.sh[20577]: [httpd] ::1 - admin [19/May/2023:12:57:22 +0200] "POST /write?db=SensorData HTTP/1.1 " 204 0 "-" "python-requests/2.21.0" ee58362d-f633-11ed-8033-b827eb8c6748 41017
+mai 19 12:57:26 raspberrypi influxd-systemd-start.sh[20577]: [httpd] ::1 - admin [19/May/2023:12:57:26 +0200] "POST /write?db=SensorData HTTP/1.1 " 204 0 "-" "python-requests/2.21.0" f0bc1e2f-f633-11ed-8034-b827eb8c6748 42449
+mai 19 12:57:30 raspberrypi influxd-systemd-start.sh[20577]: [httpd] ::1 - admin [19/May/2023:12:57:30 +0200] "POST /write?db=SensorData HTTP/1.1 " 204 0 "-" "python-requests/2.21.0" f33edcb1-f633-11ed-8035-b827eb8c6748 26729
+mai 19 12:57:34 raspberrypi influxd-systemd-start.sh[20577]: [httpd] ::1 - admin [19/May/2023:12:57:34 +0200] "POST /write?db=SensorData HTTP/1.1 " 204 0 "-" "python-requests/2.21.0" f5fd990d-f633-11ed-8036-b827eb8c6748 30235
+mai 19 12:57:38 raspberrypi influxd-systemd-start.sh[20577]: [httpd] ::1 - admin [19/May/2023:12:57:38 +0200] "POST /write?db=SensorData HTTP/1.1 " 204 0 "-" "python-requests/2.21.0" f8601591-f633-11ed-8037-b827eb8c6748 43729
+mai 19 12:57:43 raspberrypi influxd-systemd-start.sh[20577]: [httpd] ::1 - admin [19/May/2023:12:57:43 +0200] "POST /write?db=SensorData HTTP/1.1 " 204 0 "-" "python-requests/2.21.0" fad344dd-f633-11ed-8038-b827eb8c6748 56152
+mai 19 12:57:47 raspberrypi influxd-systemd-start.sh[20577]: [httpd] ::1 - admin [19/May/2023:12:57:47 +0200] "POST /write?db=SensorData HTTP/1.1 " 204 0 "-" "python-requests/2.21.0" fd396d8f-f633-11ed-8039-b827eb8c6748 44754
+mai 19 12:57:51 raspberrypi influxd-systemd-start.sh[20577]: [httpd] ::1 - admin [19/May/2023:12:57:51 +0200] "POST /write?db=SensorData HTTP/1.1 " 204 0 "-" "python-requests/2.21.0" ffcf501a-f633-11ed-803a-b827eb8c6748 27872
+mai 19 12:57:55 raspberrypi influxd-systemd-start.sh[20577]: [httpd] ::1 - admin [19/May/2023:12:57:55 +0200] "POST /write?db=SensorData HTTP/1.1 " 204 0 "-" "python-requests/2.21.0" 026ff1f6-f634-11ed-803b-b827eb8c6748 84073
+mai 19 12:57:59 raspberrypi influxd-systemd-start.sh[20577]: [httpd] ::1 - admin [19/May/2023:12:57:59 +0200] "POST /write?db=SensorData HTTP/1.1 " 204 0 "-" "python-requests/2.21.0" 04ddbb87-f634-11ed-803c-b827eb8c6748 45535
+mai 19 12:58:03 raspberrypi influxd-systemd-start.sh[20577]: [httpd] ::1 - admin [19/May/2023:12:58:03 +0200] "POST /write?db=SensorData HTTP/1.1 " 204 0 "-" "python-requests/2.21.0" 07412a3d-f634-11ed-803d-b827eb8c6748 38659
