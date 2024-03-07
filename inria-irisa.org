@@ -17,9 +17,6 @@
 *** TODO Déployer WordPress sur un cluster de Raspberry
 - Permettrait de valider le résultat obtenu dans les étapes précédentes
 - Et de rencontrer les problèmes éventuels liés aux architectures processeurs
-*** TODO SmartSense: Corriger le bug de récupération de la valeur `sector` dans une trame MQTT
-- Un test unitaire a mis en lumière qu'en absence d'un champ `sector` dans une trame MQTT, c'est la valeur du champ `sub_sector` qui est utilisé instead
-- Corriger cela
 *** TODO SmartSense: Étudier la mise en place d'un schéma de fichier de config
 - L'initialisation des noeuds reposent sur un fichier config.ini
 - Pour le moment, je le retro-ingénérie pour identifier les différentes options possibles
@@ -70,8 +67,33 @@
 *** TODO Lire *OZCAR: The French Network of Critical Zone Observatories*
 - Ammar m'a recommandé cet article pour en apprendre plus sur les observatoires et leurs buts
 - Le consulter
+*** TODO SmartSense: Corriger le formatage des entrées pour InfluxDB
+- InfluxDB définit et utilise le line protocol comme format d'entrée pour les données
+  - https://docs.influxdata.com/influxdb/v1/write_protocols/line_protocol_reference/
+- Le noeud formate donc les données récupérées de la sorte
+- En expérimentant avec le stockage des données sous forme de fichier, me suis rendu compte qu'on gérait incorrectement les chaînes de caractères
+  - Pas de ""
+  - cf. [[file:files/influxdb-example-import.txt]]
+- Dans la majorité des cas, InfluxDB accepte tout de même les données
+- MAIS rencontré une erreur bloquante dans le cas de la valeur `unknow` pour le champ `leptonVersion`
+  - [[file:files/influxdb-example-import.txt]]:69
+- Lors de l'import de cette ligne, InfluxDB rencontrait une erreur
+  - L'entrée était perdue
+  - Et la commande d'import indiquait que l'ensemble des entrées n'avaient pas pu être insérées
+  - Dans les faits, seule la ligne incriminée avait l'air manquante
+- Identifier où le formatage s'effectue
+- Corriger la gestion des chaînes de caractères
 ** Semaine du <2024-03-04 Mon> au <2024-03-08 Fri>
 *** Planned
+**** DONE SmartSense: Corriger le bug de récupération de la valeur `sector` dans une trame MQTT
+CLOSED: [2024-03-06 Wed 10:43]
+- Un test unitaire a mis en lumière qu'en absence d'un champ `sector` dans une trame MQTT, c'est la valeur du champ `sub_sector` qui est utilisé instead
+- Corriger cela
+**** DONE SmartSense: Explorer le remplacement de l'instance locale d'InfluxDB par le système de fichiers
+CLOSED: [2024-03-07 Thu 14:09]
+- Suis curieux de voir la complexité de remplacer InfluxDB par un fichier
+- Et si on peut facilement importer les données par la suite dans l'instance InfluxDB d'un serveur
+- Permettrait aussi de déterminer si la solution est viable d'un point de vue ressources, notamment en stockage
 **** IN-PROGRESS SmartSense: Intégrer la branche *refactor/main-app*
 - MàJ par rapport à *refactor/mqtt-interface-remove-inheritance*
 - Faire la MR
@@ -180,20 +202,69 @@
       - Noeud sert de relai pour le réseau WiFi
       - Diminue le débit du réseau
         - Puisque le noeud utilise la même interface pour recevoir/diffuser le signal, divise par 2
+  - Impact de la fréquence
+    - Plus la fréquence est faible, plus on a :
+      - Meilleure distance
+      - Meilleure pénétration du signal
+    - Plus la fréquence est élevée, plus on a :
+      - Meilleur débit
+    - Quid de l'impact de la fréquence sur l'énergie ?
   - Long Range WiFi 2.4GHz
     - Distance
+      - 802.11g : 140m
+      - 802.11n : 250m
     - Débit
       - 100Mbps -> 11.92Mo/s
+      - 802.11g : 6.5 - 54Mbps
+      - 802.11n : 6.5 - 150Mbps
+      - Dépend in fine de la distance et de la largeur de bande
     - Consommation énergétique
   - Long Range WiFi 5GHz
     - Distance
+      - 802.11ac, qui utilise uniquement la fréquence 5GHz, est noté comme ayant une portée de 300m
+        - Curieux des conditions pour atteindre cette portée
     - Débit
       - 1Gbps -> 119.2Mos/s
+      - 802.11ac : 8.5Mbps à 3.4Gbps
+      - Là aussi, à mettre en lien avec la distance, la largeur de bande, etc.
     - Consommation énergétique
   - WiFi Halow
+    - Norme IEEE 802.11ah
+      - Récente : 2017
+      - Y a l'air d'y avoir des modules supportant cette norme
+      - Mais est-ce que l'antenne dont on dispose la supporte ?
+    - Utilise fréquences < 1GHz
+      - A pas l'air d'être une bande de fréquences pour laquelle un standard international est défini
+      - A vu passer le commentaire que c'est très US-centric du coup comme norme
+      - Sujet à creuser
     - Distance
+      - D'après Wiki FR, 100m
+      - D'après Wiki EN, ???
+      - D'après article, spécification indique 1.5km
+      - D'après article, expérience concluante dans 260-750m
     - Débit
+      - En théorie, peut atteindre jusqu'à 43Mo/s (347Mbps)
+      - D'après article, spécification indique 15 Mbps
+      - D'après article, expérience indique ~0.5 à ~5Mbps
     - Consommation énergétique
+  - Gain
+    - Curieux de comment évolue en fonction du gain :
+      - La portée
+      - La consommation énergétique
+  - Détails à prendre en compte
+    - Finalement, s'agit d'un ensemble de tradeoffs
+    - Capacité de pénétration du signal et distance vs débit
+    - Largeur de bande et débit vs consommation énergie
+    - Gain et distance vs consommation énergie
+  - Besoin de définir nos requirements
+    - Distance ?
+    - LOS ?
+    - Débit ?
+    - Consommation énergie ?
+    - Version/Norme supportée par l'antenne ?
+  - Tableau récapitulatif
+    - Trouvé sur Wikipedia
+      - [[file:img/wifi-caracteristiques.png]]
 - SmartSense: Monitorer le fonctionnement d'InfluxDB v1.8.10
   - Après 1j de fonctionnement, crash de la DB <2024-03-05 Tue> vers 08:20
     - [[file:logs/2024-03-05-crash-influxdb.log]]
@@ -208,6 +279,93 @@
   - Voir si la BD interrompt son démarrage si le compteur dépasse un seuil
   - Après quelques minutes de fonctionnement, est retombé dans sa boucle de compaction d'un shard, crash, redémarrage
     - [[file:logs/2024-03-05-crash-influxdb-2.log]]
+- SmartSense: Corriger le bug de récupération de la valeur `sector` dans une trame MQTT
+  - Exemple de trame problématique
+    - mode=production,location=external,sub_sector=2
+  - Comment éviter un faux-positif ?
+  - Peut vérifier si le caractère précédant la clé est un séparateur
+  - Reste à gérer le cas limite où la clé est au début de la trame
+  - Modification du code de `get_value_from_key` en conséquence
+  - Ajout de tests unitaires dédiés à `get_value_from_key()`
+  - Push de la branche : https://gitlab.inria.fr/smartsense/3douest/node-app/smartsense-node-app/-/tree/fix/get-value-from-key?ref_type=heads
+- SmartSense: Traiter les problèmes relevés lors de l'uniformisation du code
+  - Suppression du module *sensor_board*
+    - Push de la branche : https://gitlab.inria.fr/smartsense/3douest/node-app/smartsense-node-app/-/tree/chore/remove-sensor-board-manager?ref_type=heads
+- SmartSense: Explorer le remplacement de l'instance locale d'InfluxDB par le système de fichiers
+  - L'utilisation naïve du système de fichiers à la place d'InfluxDB s'effectue facilement
+    - Juste append dans un fichier
+      #+BEGIN_PLAIN
+with open("/data/test-storage.txt", "a") as writer:
+    writer.write("\n".join(self.data))
+      #+END_PLAIN
+  - Problématiques
+    - Taille du buffer
+      - À quelle fréquence écrire sur le disque ?
+      - Trop fréquent => usure de la SD, lenteurs dûes aux accès disques
+      - Peu fréquent => perte de données en cas de panne/coupure du système, consommation mémoire
+    - Taille du fichier
+      - Est-ce qu'on utilise un seul et unique fichier ?
+        - Simple d'utilisation
+        - Mais quid de la consommation mémoire ?
+          - Est-ce coûteux d'ouvrir en écriture un fichier volumineux ?
+      - Ou on split les écritures dans plusieurs fichiers ?
+        - Par measurements ? Par nombre d'entrées ?
+  - A déployé rapidement cette version
+  - Reste à voir comment import ensuite les données
+  - Le CLI permet cela avec l'option import
+  - Mais fichier doit respecter formalisme
+  - Exemple fichier valide
+    - [[file:files/influxdb-example-import.txt]]
+  - Entête du fichier
+    - Les lignes en commentaire SONT NÉCESSAIRES
+  - Commande
+    - influx -username admin -password <password> -import -path=test-storage.txt
+  - MAIS affiche un message d'erreur
+    - [[file:img/2024-03-07-influxdb-result-import-cmd.png]]
+  - MAIS les records sont bels et bien dans l'état après coup
+    - [[file:img/2024-03-07-influxdb-actual-state-after-import.png]]
+  - En creusant le sujet, me suis rendu compte que c'était une entrée qui était invalide
+    - N'était pas insérée finalement dans la DB
+  - Et qui avait pour effet de polluer le message de retour de l'import
+  - Entrée en question
+    - meta_thermalImgHd,admin=p,mode=production,location=External,sector=1,subsector=1,node=b8:27:eb:8c:67:48,board=sensorBoard,mcu=thermal name="thermalImgHd",revision="3.00.00",period=1000,status="NOK",leptonVersion=unknow 1684526714284582016
+  - Le problème provient du non-respect du formalisme du line protocol et de la valeur du field leptonVersion
+  - En tant que tel, InfluxDB doit interpréter la valeur unknown comme une valeur particulière
+  - En utilisant des "" pour préciser qu'il s'agit d'une chaîne de caractères, l'import fonctionne
+  - Peut effectuer plusieurs imports sur la même base en utilisant la même entête
+  - Peut donc
+    - Importer au fur et à mesure les données de cette manière
+    - Split un fichier unique de records en une multitude pour importer sans brusquer InfluxDB
+      - C.f. https://docs.influxdata.com/influxdb/v1/tools/shell/#import-data-from-a-file-with--import
+        #+BEGIN_QUOTE
+If your data file has more than 5,000 points, it may be necessary to split that file into several files in order to write your data in batches to InfluxDB.
+We recommend writing points in batches of 5,000 to 10,000 points.
+Smaller batches, and more HTTP requests, will result in sub-optimal performance.
+By default, the HTTP request times out after five seconds.
+InfluxDB will still attempt to write the points after that time out but there will be no confirmation that they were successfully written.
+        #+END_QUOTE
+  - Métriques
+    - Constaté une production de ~1,5Mo/min de données
+    - A laissé tourner cette version durant 16h
+    - A produit un fichier de 1.7Go de données
+    - Serait intéressant de mettre en place des mécanismes de compression
+  - J'ai regardé, la mise en place de la compression gzip se fait aisément en python
+    - Exemple
+      #+BEGIN_PLAIN
+import gzip
+
+with open("influxdb-example-import.txt", "rt") as reader:
+    writer.write("\n".join(self.data))
+      #+END_PLAIN
+  - Déployé cette nouvelle version
+    - À 17:56, heure du noeud
+    - À ~11:45, heure réelle
+  - Métriques
+    - Au bout de 2:10, obtient un fichier de ~65Mo
+    - D'où ~0.5Mo/min, 30Mo/h, 720Mo/j
+    - Divise par 3 grosso modo la taille du fichier
+    - C'est rentable
+    - À titre de comparaison, les shards de 1h atteignaient une taille de 40Mo
 ** Semaine du <2024-02-26 Mon> au <2024-03-01 Fri>
 *** Planned
 **** DONE SmartSense: Résoudre le problème de monitoring du noeud
