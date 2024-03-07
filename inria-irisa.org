@@ -83,17 +83,8 @@
   - Dans les faits, seule la ligne incriminée avait l'air manquante
 - Identifier où le formatage s'effectue
 - Corriger la gestion des chaînes de caractères
-** Semaine du <2024-03-04 Mon> au <2024-03-08 Fri>
+** Semaine du <2024-03-11 Mon> au <2024-03-15 Fri>
 *** Planned
-**** DONE SmartSense: Corriger le bug de récupération de la valeur `sector` dans une trame MQTT
-CLOSED: [2024-03-06 Wed 10:43]
-- Un test unitaire a mis en lumière qu'en absence d'un champ `sector` dans une trame MQTT, c'est la valeur du champ `sub_sector` qui est utilisé instead
-- Corriger cela
-**** DONE SmartSense: Explorer le remplacement de l'instance locale d'InfluxDB par le système de fichiers
-CLOSED: [2024-03-07 Thu 14:09]
-- Suis curieux de voir la complexité de remplacer InfluxDB par un fichier
-- Et si on peut facilement importer les données par la suite dans l'instance InfluxDB d'un serveur
-- Permettrait aussi de déterminer si la solution est viable d'un point de vue ressources, notamment en stockage
 **** IN-PROGRESS SmartSense: Intégrer la branche *refactor/main-app*
 - MàJ par rapport à *refactor/mqtt-interface-remove-inheritance*
 - Faire la MR
@@ -123,9 +114,80 @@ CLOSED: [2024-03-07 Thu 14:09]
     - Voir si on peut aussi factoriser du code à l'aide de fonctions
   - Corriger ces problèmes
     - Ou si pas de solution claire et rapide, créer une issue correspondante
-**** IN-PROGRESS SmartSense: Étudier la mise en place d'une interface WiFi
+**** IN-PROGRESS SmartSense: Mettre en place une nouvelle version système du noeud
+- Un retour effectué par plusieurs personnes est qu'influxdb fonctionne mieux sur un OS 64-bits
+  - Plus précisément, InfluxDB a pris la décision à la version 1.8.x de ne supporter que ces systèmes
+- Ça tombe bien, désormais il existe des versions de Raspbian 64-bits
+- Permettrait au passage de mettre à jour l'OS
+  - Utile pour les paquets/dépendances
+  - Mais aussi les drivers pour périphériques WiFi
+- Nécessite cependant d'établir le processus de setup d'un noeud
+  - Quels logiciels sont requis ?
+  - Quelles modifications de la configuration par défaut sont effectuées ?
+- Peut être l'occasion de mettre ça au propre
+- Et de paver la voie pour la mise en place d'un outil de déploiement et configuration des noeuds
+  - Ansible ? Nix ?
+**** TODO SmartSense: Identifier des devices WiFi pour le noeud
+- Maintenant que je m'y retrouve un peu mieux dans les différentes normes WiFi
+- Peut faire une première sélection de dongles
+- Caractéristiques à prendre en considération
+  - Norme
+  - Antenne directionnelle
+  - Bandes de fréquences utilisées
+  - Débit
+  - Portée
+  - Consommation énergie
+**** TODO SmartSense: Mise en place d'un processus de CI
+- Mettre en place des tests, c'était un bon début
+- Mettre en place un processus de CI, ça serait mieux
+  - Garantirait la reproductibilité de l'environnement de tests
+  - Et que j'oublie pas de les faire tourner avant l'intégration
+- Voir comment GitLab gère ça
+*** Done
+** Semaine du <2024-03-04 Mon> au <2024-03-07 Thu>
+*** Planned
+**** DONE SmartSense: Corriger le bug de récupération de la valeur `sector` dans une trame MQTT
+CLOSED: [2024-03-06 Wed 10:43]
+- Un test unitaire a mis en lumière qu'en absence d'un champ `sector` dans une trame MQTT, c'est la valeur du champ `sub_sector` qui est utilisé instead
+- Corriger cela
+**** DONE SmartSense: Explorer le remplacement de l'instance locale d'InfluxDB par le système de fichiers
+CLOSED: [2024-03-07 Thu 14:09]
+- Suis curieux de voir la complexité de remplacer InfluxDB par un fichier
+- Et si on peut facilement importer les données par la suite dans l'instance InfluxDB d'un serveur
+- Permettrait aussi de déterminer si la solution est viable d'un point de vue ressources, notamment en stockage
+**** DONE SmartSense: Étudier la mise en place d'une interface WiFi
+CLOSED: [2024-03-07 Thu 15:22]
 - Voir si un hardware donné est conseillé pour la Raspberry CM3
 - Et comment ça s'utiliserait d'un POV logiciel
+**** IN-PROGRESS SmartSense: Intégrer la branche *refactor/main-app*
+- MàJ par rapport à *refactor/mqtt-interface-remove-inheritance*
+- Faire la MR
+**** IN-PROGRESS SmartSense: Intégrer la branche *refactor/naming-conventions*
+- Préparer la MR, en attendant l'intégration de *refactor/main-app*
+**** IN-PROGRESS SmartSense: Intégrer la branche *refactor/usb-board-manager*
+- Faire la MR
+**** IN-PROGRESS SmartSense: Traiter les problèmes relevés lors de l'uniformisation du code
+- J'ai noté plusieurs points problématiques au cours de mon passage sur l'ensemble des modules
+  - Le module *sensor_board* est inutilisé
+    - Code obsolète à supprimer ?
+  - La librairie *telnetlib* est dépréciée
+    - Passer à https://pypi.org/project/telnetlib3/ ?
+  - Une conditionnelle étrange est effectuée dans le module *tlc59108_manager*
+    - https://gitlab.inria.fr/smartsense/3douest/node-app/smartsense-node-app/-/blob/3feb5c56dc5e74dcea9eb2f2ba98bec40029acdf/TLC59108Manager.py#L370
+    - Revient à `if data[0]`
+    - `and` est-il l'opérateur désiré ?
+    - Simplifier/corriger
+  - Les appels à *OpenOCDManager.update()* dans *test_ocd* manquent d'un paramètre
+    - J'ai l'impression que c'est le paramètre *board*
+    - Ajouter les valeurs correctes ?
+  - *USBBoardManager.read_data()* et *parse_to_mqtt()* sont particulièrement sujets aux retours de Pylint
+    - Trop d'instructions
+    - Trop de branchements
+    - Trop de blocs imbriqués
+    - Refactorer pour améliorer la lisibilité du code ?
+    - Voir si on peut aussi factoriser du code à l'aide de fonctions
+  - Corriger ces problèmes
+    - Ou si pas de solution claire et rapide, créer une issue correspondante
 **** IN-PROGRESS SmartSense: Mettre en place une nouvelle version système du noeud
 - Un retour effectué par plusieurs personnes est qu'influxdb fonctionne mieux sur un OS 64-bits
   - Plus précisément, InfluxDB a pris la décision à la version 1.8.x de ne supporter que ces systèmes
@@ -145,7 +207,7 @@ CLOSED: [2024-03-07 Thu 14:09]
     - Revoir du côté de Qemu
   - [ ] Lister les dépendances, logiciels et configurations déployés sur le noeud SmartSense
   - [ ] Reproduire l'environnement sur la VM
-- Lister les dépendances, logiciels et configurations déployés sur le noeud SmartSense
+- SmartSense: Lister les dépendances, logiciels et configurations déployés sur le noeud
   - Pour le moment, a identifié
     - collectd
       - Fichiers de configuration à /etc/collectd/collectd.conf et /etc/collectd/collectd.conf.d
@@ -185,6 +247,11 @@ CLOSED: [2024-03-07 Thu 14:09]
   - En monitorant les ressources du noeud SmartSence ce matin <2024-03-04 Mon>
   - J'ai constaté que la taille du swap avait diminué (1Go -> 558Mo)
   - Quelle est cette sorcellerie ?
+  - Finalement, je pense avoir trouvé d'où vient ce phénomène
+  - La partition sur lequel le swap est allouée était saturée au démarrage du système
+  - Ainsi, le système ne pouvait que récupérer 500Mo d'espace pour le swap
+  - J'ai re-déplacé les backups d'InfluxDB sur la partition /data
+  - Voir si je retrouve 1Go de swap après redémarrage
 - SmartSense: Étudier la mise en place d'une interface WiFi
   - J'ai pas encore clairement identifié/documenté les performances de Long Range WiFi
   - Temps de corriger cela
