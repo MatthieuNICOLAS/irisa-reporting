@@ -83,6 +83,16 @@
   - Dans les faits, seule la ligne incriminée avait l'air manquante
 - Identifier où le formatage s'effectue
 - Corriger la gestion des chaînes de caractères
+*** TODO SmartSense: Créer issue au sujet de la dépréciation de telnetlib
+- Librairie dépréciée
+  - c.f. https://peps.python.org/pep-0594/#deprecated-modules
+- Nécessaire de passer à une des librairies suggérées
+- Créer l'issue correspondante
+**** TODO SmartSense: Fix `test_ocd`
+- Dans ce module, appelle plusieurs fois la méthode `open_ocd_manager.update()`
+- Malheureusement, appels erronés puisque manque un paramètre
+  - IMO le paramètre `board`
+- Renseigner les valeurs correctes
 ** Semaine du <2024-03-11 Mon> au <2024-03-15 Fri>
 *** Planned
 **** IN-PROGRESS SmartSense: Intégrer la branche *refactor/main-app*
@@ -127,7 +137,7 @@
 - Peut être l'occasion de mettre ça au propre
 - Et de paver la voie pour la mise en place d'un outil de déploiement et configuration des noeuds
   - Ansible ? Nix ?
-**** TODO SmartSense: Identifier des devices WiFi pour le noeud
+**** IN-PROGRESS SmartSense: Identifier des devices WiFi pour le noeud
 - Maintenant que je m'y retrouve un peu mieux dans les différentes normes WiFi
 - Peut faire une première sélection de dongles
 - Caractéristiques à prendre en considération
@@ -144,6 +154,109 @@
   - Et que j'oublie pas de les faire tourner avant l'intégration
 - Voir comment GitLab gère ça
 *** Done
+- Réunion du <2024-03-12 Tue>
+  - Réunion avec Guillaume en amont de la réunion avec les autres
+  - Objectifs
+    - Convenir de la suite
+      - Détails supplémentaires sur sa reprise du travail ?
+      - Continuer SmartSense à 100% pour le moment ou recommencer à me pencher sur LivingFog ?
+- Réunion du <2024-03-13 Wed>
+  - Points à aborder
+    - InfluxDB
+      - Quel est le rôle de l'instance locale ?
+      - Si c'est juste stocker, pourquoi utiliser InfluxDB et pas un outil plus léger ?
+        - Notamment, si on fait évoluer la version utilisée par le serveur, est-ce qu'on pourra mettre à jour celle du noeud autonome ?
+    - WiFi
+      - Quelles sont les spécifications de l'antenne ?
+        - Distance par rapport à la Croix Verte ?
+        - Norme WiFi ?
+      - Savoir si ça vaut le coup de regarder du côté de HaLow
+  - Récapitulatif du débit en données
+    - InfluxDB : ~40Mo/h
+    - Line protocol, fichier txt : 75Mo/h
+      - 1.5Mo/min
+      - 25Ko/s
+    - Line protocol, fichier gzip : 25Mo/h
+      - 0.5Mo/min
+      - ~9Ko/s
+    - MQTT, fichier gzip : 36Mo/h
+      - 0.58Mo/min
+      - 10Ko/s
+- SmartSense: Monotoring du noeud SmartSense
+  - J'ai lancé tourné de <2024-03-07 Thu> après-midi jusqu'à <2024-03-11 Mon> le noeud SmartSense
+  - En stockant les données à l'aide d'un fichier.gz plutôt que dans Influx
+  - InfluxDB et mainApp ont tourné correctement tout le week-end
+  - Observe que la taille du fichier augmente à environ 0,8Go/j
+    - Parait raccord avec les estimations que j'avais fait
+  - Reste à voir comment se passe l'import d'un tel volume de données
+    - 2.7Go gzippé
+    - Donc environ le triple en réalité
+  - Pour le moment, a récupéré le fichier
+    - [[file:~/Downloads/test-storage.txt.gz]]
+  - Pose par contre la question de l'utilité de passer par un import manuel
+    - Le système gère déjà l'enregistrement en BD des messages via le broker
+  - Est-ce que ça serait pas plus simple que le noeud enregistre ses messages
+  - Et qu'un script les diffusent ensuite au broker
+  - P-e plus coûteux
+    - Au moment de l'exécution du script, aurait un pic de messages
+    - Est-ce que cela pourrait saturer le message broker ?
+      - Mickaël mentionnait le besoin de mettre en place plusieurs brokers car un seul saturait
+      - Ce qui en soit paraît étrange/suspect que le broker soit le premier bottleneck du système
+  - A relancé l'application, mais en skippant /parseMqtt()/
+- SmartSense: Identifier des devices WiFi pour le noeud
+  - ALFA Network WiFi HaLow HAT
+    - https://www.sparkfun.com/products/19956
+    - Norme : 802.11ah
+    - Bandes de fréquence : < 1GHz
+    - Range : Longue
+    - Débit : 150Kbps à 15Mbps
+    - Antenne : Port dispo
+      - Attention à la fréquence, pas la même en fonction de la région
+      - Pour EU, besoin de : https://alfa-network.eu/aoa-868-5acm
+    - Out of the box : Pense pas
+      - Probablement besoin de mettre en place notre propre antenne de réception si on part sur du HaLow
+    - Chipset : Newracom™ NRC7292
+  - Panda Wireless PAU0B
+    - https://www.amazon.com/dp/B08NPX2X4Z/?tag=pandaw-20
+    - Norme : 802.11ac
+    - Bandes de fréquence : 2.4GHz et 5GHz
+    - Range : Longue
+      - Pas de précisions supplémentaires sur le site
+    - Débit : Jusqu'à 433Mbps en 5GHz, probablement 150Mbps en 2.4GHz
+    - Antenne : Oui
+    - Gain : Parle de /high-gain antenna/, sans précisions supplémentaires
+    - Out of the box : Semblerait
+    - Modes de fonctionnement : AP (seulement?)
+    - Possèdent aussi d'autres devices du genre, correspondant aux normes précédentes
+      - http://www.pandawireless.com/Specs%20|%20Panda%20Wireless.html
+    - Chipset : MediaTek MT7610U
+  - Alfa AWUS036ACHM
+    - https://www.amazon.com/AWUS036ACHM-802-11ac-Range-Boost-Adapter/dp/B08SJBV1N3
+    - Norme : 802.11ac
+    - Bandes de fréquence : 2.4GHz et 5GHz
+    - Range : Longue
+      - Pas de précisions supplémentaires sur le site
+    - Débit : 150Mbps en 2.4GHz, 433Mbps en 5GHz
+    - Antenne : Oui
+    - Gain : Parle de /high-gain antenna/, sans précisions
+    - Out of the box : Commentaire confirme fonctionnement sur versions récentes de Raspberry
+    - Modes de fonctionnement : AP (seulement?)
+    - Chipset : MediaTek MT7610U
+- Discussion avec François
+  - Martin m'a recommandé de parler avec François au sujet du WiFi Long Range
+  - Celui-ci m'a expliqué les choses suivantes
+  - WiFi Halow correspond bien à ce qu'on veut
+    - Mais nécessite du travail
+    - Peu de matos actuellement
+      - Notamment pas avec dongle usb
+      - Et besoin de faire l'antenne
+    - Mais s'accompagne de features intéressantes pour notre use case
+      - Notamment Target Wake-up Time (TWT) qui permet de réduire la conso électrique
+  - Le reste des normes WiFi risque d'être limitant/pas adapté pour nous
+  - A mentionné sinon des alternatives
+    - Narrowband IOT
+    - LoRa
+    - Pycom
 ** Semaine du <2024-03-04 Mon> au <2024-03-07 Thu>
 *** Planned
 **** DONE SmartSense: Corriger le bug de récupération de la valeur `sector` dans une trame MQTT
@@ -159,14 +272,8 @@ CLOSED: [2024-03-07 Thu 14:09]
 CLOSED: [2024-03-07 Thu 15:22]
 - Voir si un hardware donné est conseillé pour la Raspberry CM3
 - Et comment ça s'utiliserait d'un POV logiciel
-**** IN-PROGRESS SmartSense: Intégrer la branche *refactor/main-app*
-- MàJ par rapport à *refactor/mqtt-interface-remove-inheritance*
-- Faire la MR
-**** IN-PROGRESS SmartSense: Intégrer la branche *refactor/naming-conventions*
-- Préparer la MR, en attendant l'intégration de *refactor/main-app*
-**** IN-PROGRESS SmartSense: Intégrer la branche *refactor/usb-board-manager*
-- Faire la MR
-**** IN-PROGRESS SmartSense: Traiter les problèmes relevés lors de l'uniformisation du code
+**** DONE SmartSense: Traiter les problèmes relevés lors de l'uniformisation du code
+CLOSED: [2024-03-07 Thu 16:40]
 - J'ai noté plusieurs points problématiques au cours de mon passage sur l'ensemble des modules
   - Le module *sensor_board* est inutilisé
     - Code obsolète à supprimer ?
@@ -188,6 +295,13 @@ CLOSED: [2024-03-07 Thu 15:22]
     - Voir si on peut aussi factoriser du code à l'aide de fonctions
   - Corriger ces problèmes
     - Ou si pas de solution claire et rapide, créer une issue correspondante
+**** IN-PROGRESS SmartSense: Intégrer la branche *refactor/main-app*
+- MàJ par rapport à *refactor/mqtt-interface-remove-inheritance*
+- Faire la MR
+**** IN-PROGRESS SmartSense: Intégrer la branche *refactor/naming-conventions*
+- Préparer la MR, en attendant l'intégration de *refactor/main-app*
+**** IN-PROGRESS SmartSense: Intégrer la branche *refactor/usb-board-manager*
+- Faire la MR
 **** IN-PROGRESS SmartSense: Mettre en place une nouvelle version système du noeud
 - Un retour effectué par plusieurs personnes est qu'influxdb fonctionne mieux sur un OS 64-bits
   - Plus précisément, InfluxDB a pris la décision à la version 1.8.x de ne supporter que ces systèmes
@@ -358,6 +472,9 @@ CLOSED: [2024-03-07 Thu 15:22]
 - SmartSense: Traiter les problèmes relevés lors de l'uniformisation du code
   - Suppression du module *sensor_board*
     - Push de la branche : https://gitlab.inria.fr/smartsense/3douest/node-app/smartsense-node-app/-/tree/chore/remove-sensor-board-manager?ref_type=heads
+  - Utilisation de l'opérateur bitwise AND
+    - Push de la branche : https://gitlab.inria.fr/smartsense/3douest/node-app/smartsense-node-app/-/commits/fix/use-bitwise-and
+  - Ajout de tâches spécifiques aux problèmes restants
 - SmartSense: Explorer le remplacement de l'instance locale d'InfluxDB par le système de fichiers
   - L'utilisation naïve du système de fichiers à la place d'InfluxDB s'effectue facilement
     - Juste append dans un fichier
