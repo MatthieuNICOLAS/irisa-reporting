@@ -95,6 +95,11 @@
 - Renseigner les valeurs correctes
 ** Semaine du <2024-03-11 Mon> au <2024-03-15 Fri>
 *** Planned
+**** DONE SmartSense: Rédaction du CR de la réunion du <2024-03-13 Wed>
+CLOSED: [2024-03-14 Thu 09:37]
+- Olivier ne pouvant être présent, souhaite un compte rendu de la réunion
+- Éric a expliqué que cela serait utile aussi pour le suivi du projet de conserver une trace écrite de nos réunions
+- Rédiger et partager le CR de cette réunion
 **** IN-PROGRESS SmartSense: Intégrer la branche *refactor/main-app*
 - MàJ par rapport à *refactor/mqtt-interface-remove-inheritance*
 - Faire la MR
@@ -154,14 +159,89 @@
   - Et que j'oublie pas de les faire tourner avant l'intégration
 - Voir comment GitLab gère ça
 *** Done
+- SmartSense: Rédaction du CR de la réunion du <2024-03-13 Wed>
+  - Me rend compte que je n'ai pas rédigé de CR auparavant
+  - Pars sur le format des réunions Coast
+  - A partagé la 1ère version du CR : https://notes.inria.fr/o2KRXqWIQQmdlrZdVVmTPQ
+- Récapitulatif
+  - Équipe Taran m'a donné accès au projet SmartSense
+  - Plus particulièrement au code tournant sur les noeuds
+  - Objectif initial a été de prendre en main le programme
+  - Problèmes
+    - Aucune documentation du code
+      - Documentation haut niveau, e.g. description du protocole de message
+      - Mais à pas jour
+    - Aucun outil de qualité du code
+      - Linter, autoformat
+    - Aucun test
+    - Aucun environnement de dev
+      - Programme ne pouvant démarrer que sur Rpi, avec MQTT et InfluxDB d'installé
+    - Aucune documentation de l'env de dev
+    - Et qualité du code variable
+  - Mise en place d'outils
+    - Linter, tests, codeformatter
+  - Mise en place de tests unitaires et d'intégration
+    - MQTT, InfluxDB
+  - Refactoring de ces modules
+  - Refactoring du module principal pour le rendre plus lisible et testable
+  - Mise en place de tests unitaires pour ce module
+  - Depuis, 2 tâches principales
+  - InfluxDB
+    - Instance locale d'InfluxDB plante au bout d'un moment
+    - Problème
+      - Aucune trace autour de ce bug
+      - Quoi crash exactement ?
+        - InfluxDB ? L'application ?
+      - Pourquoi ?
+        - Message de commit accuse mécanisme de compression des shards
+        - Mais rien pour étayer cette accusation
+      - Quel est l'état du système ensuite ?
+        - InfluxDB redémarre ?
+    - A confirmé que c'était bien le mécanisme de compression
+      - Trop gourmand en RAM
+    - Diverses tentatives pour borner son coût, sans succès
+    - Voir la version 64-bits
+    - À la recherche sinon d'alternative
+      - File System
+      - Telegraf?
+  - Wi-Fi
+- Récapitulatif du débit en données d'un noeud
+  - InfluxDB : ~40Mo/h
+  - Line protocol, fichier txt : 75Mo/h
+    - 1.5Mo/min
+    - 25Ko/s
+  - Line protocol, fichier gzip : 25Mo/h
+    - 0.5Mo/min
+    - ~9Ko/s
+  - MQTT, fichier gzip : 36Mo/h
+    - 0.58Mo/min
+    - 10Ko/s
+  - MQTT, fichier txt : 108Mo/h (je suppose x3 par rapport au gzip)
+    - 1.8Mo/min
+    - 30Kos/s
 - Réunion du <2024-03-12 Tue>
   - Réunion avec Guillaume en amont de la réunion avec les autres
   - Objectifs
     - Convenir de la suite
       - Détails supplémentaires sur sa reprise du travail ?
       - Continuer SmartSense à 100% pour le moment ou recommencer à me pencher sur LivingFog ?
+    - Parler de l'antenne
+      - Wi-Fi HaLow a l'air suited to our needs
+      - Mais nécessiterait de rendre compatible les noeuds mais aussi l'antenne
+      - Présenté comme ça, Guillaume est intéressé par la techno
+      - Prêt à commander le matos pour qu'on expérimente avec
+      - Rien de défini concernant l'antenne
 - Réunion du <2024-03-13 Wed>
   - Points à aborder
+    - Guillaume
+      - Toujours en arrêt
+      - Mais travaille ponctuellement en visio
+      - Pouvait pas être présent ce coup-ci, mais pas hésiter à l'inclure à présent
+      - Pense pouvoir revenir fin avril
+      - Vais reprendre mes tâches sur la partie fog (~20%)
+    - Repo
+      - Méthodologie de travail ?
+        - Continue de collaborer via MR ?
     - InfluxDB
       - Quel est le rôle de l'instance locale ?
       - Si c'est juste stocker, pourquoi utiliser InfluxDB et pas un outil plus léger ?
@@ -171,18 +251,15 @@
         - Distance par rapport à la Croix Verte ?
         - Norme WiFi ?
       - Savoir si ça vaut le coup de regarder du côté de HaLow
-  - Récapitulatif du débit en données
-    - InfluxDB : ~40Mo/h
-    - Line protocol, fichier txt : 75Mo/h
-      - 1.5Mo/min
-      - 25Ko/s
-    - Line protocol, fichier gzip : 25Mo/h
-      - 0.5Mo/min
-      - ~9Ko/s
-    - MQTT, fichier gzip : 36Mo/h
-      - 0.58Mo/min
-      - 10Ko/s
-- SmartSense: Monotoring du noeud SmartSense
+      - Rien de défini actuellement
+      - Antenne à définir/concevoir nous même
+    - Autonomie
+      - Combien de temps survivait le noeud sur batterie ?
+      - 10h d'après Mickaël
+    - Paradigme
+      - Conçoit-on une application pour environnement contraint de la même manière ?
+        - Mise en veille du système ?
+- SmartSense: Monitoring du noeud SmartSense
   - J'ai lancé tourné de <2024-03-07 Thu> après-midi jusqu'à <2024-03-11 Mon> le noeud SmartSense
   - En stockant les données à l'aide d'un fichier.gz plutôt que dans Influx
   - InfluxDB et mainApp ont tourné correctement tout le week-end
@@ -255,8 +332,39 @@
   - Le reste des normes WiFi risque d'être limitant/pas adapté pour nous
   - A mentionné sinon des alternatives
     - Narrowband IOT
+      - Low Pover WAN radio technology
+      - Cellular Network
+        - A-t-on le droit de déployer notre propre infrastructure ?
+        - J'en doute
+      - Focuses on indoor coverage, low cost, long battery life, high connection density
+      - Parcouru *NB-IoT Network Field Trial: Indoor, Outdoor and Underground Coverage Campaign*
+        - Dispo ici : https://research.edgehill.ac.uk/ws/portalfiles/portal/29075498/Camera_ready_IWCMC_NB_IoTDeployment.pdf
+      - Ont expérimenté le déploiement dans un quartier de Talinn de cette techno
+      - Et monitoré la bonne communication avec des noeuds disseminés en extérieur, en intérieur et en sous-sol
+      - Portée : jusqu'à 700m en extérieur, sweet spot à 400m
+      - Débit :
+        - 16,9kbit/s pour LTE Cat NB1 single-tone
+        - 66kbit/s pour LTE Cat NB1 multi-tone
+        - 159kbit/s pour LTE Cat NB2
+      - Qualité impactée négativement en cas d'activité parallèle
+        - Leur expérience se déroulait en ville
+        - En matinée, observait une baisse de qualité des communications
+        - Baisse provoquée par les interférences du traffic des communications humaines sur le réseau LTE
     - LoRa
     - Pycom
+- Discussion avec Anne-Cécile
+  - On regarde actuellement pour ajouter un moyen de télécommunication au noeud SmartSense
+  - LoRaWan exclut par Guillaume (complexité, débit)
+  - S'orienterait vers du WiFi
+    - Consommation énergétique des normes précédentes ?
+    - A-t-elle joué avec HaLow et a des retours à effectuer ?
+    - M'explique que non
+      - Conseille de faire attention à la distance, notamment en cas de non-LOS
+  - Des conseils sur concevoir des applications edge/fog efficientes ?
+    - SmartSense tourne en continu, endort juste ses process en attendant prochains messages des capteurs
+    - M'explique que dépend de l'OS utilisé
+    - Et que c'est le domaine de compétence de l'équipe Taran
+    - Voir avec eux surtout
 ** Semaine du <2024-03-04 Mon> au <2024-03-07 Thu>
 *** Planned
 **** DONE SmartSense: Corriger le bug de récupération de la valeur `sector` dans une trame MQTT
@@ -409,7 +517,7 @@ CLOSED: [2024-03-07 Thu 16:40]
       - 802.11ac : 8.5Mbps à 3.4Gbps
       - Là aussi, à mettre en lien avec la distance, la largeur de bande, etc.
     - Consommation énergétique
-  - WiFi Halow
+  - WiFi HaLow
     - Norme IEEE 802.11ah
       - Récente : 2017
       - Y a l'air d'y avoir des modules supportant cette norme
