@@ -159,6 +159,58 @@ CLOSED: [2024-03-14 Thu 09:37]
   - Et que j'oublie pas de les faire tourner avant l'intégration
 - Voir comment GitLab gère ça
 *** Done
+- SmartSense: Mettre en place une nouvelle version système du noeud
+  - Re-virtualiser une Raspberry via Qemu me parait un bon début
+    - Tutos utilisés
+      - https://github.com/dhruvvyas90/qemu-rpi-kernel/tree/master/native-emulation
+      - https://blog.agchapman.com/using-qemu-to-emulate-a-raspberry-pi/
+      - https://interrupt.memfault.com/blog/emulating-raspberry-pi-in-qemu
+    - En clair
+      #+BEGIN_PLAIN
+aunpack 2023-12-11-raspios-bookworm-arm64-lite.img.xz
+
+sudo losetup -f --show -P 2023-12-11-raspios-bookworm-arm64-lite.img
+sudo mount /dev/loop0p01 /mnt/image
+cp /mnt/image/bcm2710-rpi-cm3.dtb .
+cp /mnt/image/kernel8.img .
+sudo echo 'pi:$6$rMAjicIMHWanx8Gb$gE0zeXkz1aWQYloCjbHt58Ow35DK45uf10bRG0eum8APKbnnrPYv.eO81d.Abx6zJfVhhkbUwMtFedDglhiM//' | sudo tee /mnt/image/userconf.txt
+sudo touch /mnt/img/ssh
+sudo umount /mnt/image
+sudo losetup -d /dev/loop0
+
+qemu-img convert -f raw -O qcow2 2023-12-11-raspios-bookworm-arm64-lite.img 2023-12-11-raspios-bookworm-arm64-lite.qcow
+qemu-img resize 2023-12-11-raspios-bookworm-arm64-lite.qcow 8G
+
+qemu-system-aarch64 \
+    -M raspi3b \
+    -cpu cortex-a72 \
+    -m 1G -smp 4 \
+    -nographic \
+    -dtb bcm2710-rpi-cm3.dtb \
+    -sd 2023-12-11-raspios-bookworm-arm64-lite.qcow \
+    -kernel kernel8.img \
+    -append "rw earlyprintk loglevel=8 console=ttyAMA0,115200 dwc_otg.lpm_enable=0 root=/dev/mmcblk0p2 rootdelay=1" \
+    -device usb-net,netdev=net0  \
+    -netdev user,id=net0,hostfwd=tcp::2222-:22
+      #+END_PLAIN
+    - A démarré le système et l'a MàJ
+    - Avait en tête que le système était réinitialisé à chaque lancement, mais dans le cas présent non
+    - Installation d'InfluxDB
+      - https://github.com/influxdata/influxdb/releases/tag/v1.8.10
+      - sudo dpkg -i influxdb_1.8.10_arm64.deb
+    - Installation de Inch
+      - https://docs.influxdata.com/influxdb/v1/tools/inch/
+      - Installation au préalable de go
+        - sudo apt install golang
+      - go install github.com/influxdata/inch/cmd/inch@latest
+    - Démarrage d'Influx
+      - sudo service start influxdb
+    - Démarrage d'Inch
+      - ~/go/bin/inch -v -b 10000 -t 2,5000,1 -p 100000 -consistency any
+      - Au bout d'une 20aine de secondes, a déjà généré 7Mo de données
+        - Correspond à 2M de points
+      - ~/go/bin/inch -v -db SensorData -delay 15s -m 20 -t 2,5000,1 -f 4 -consistency any
+        - Parait un débit correspondant plus à ce que l'on obtient sur le noeud SmartSense
 - SmartSense: Rédaction du CR de la réunion du <2024-03-13 Wed>
   - Me rend compte que je n'ai pas rédigé de CR auparavant
   - Pars sur le format des réunions Coast
@@ -365,6 +417,9 @@ CLOSED: [2024-03-14 Thu 09:37]
     - M'explique que dépend de l'OS utilisé
     - Et que c'est le domaine de compétence de l'équipe Taran
     - Voir avec eux surtout
+- Terra Forma: Mission Grenoble
+  - Train aller le <2024-05-28 Tue> : 07h40 Rennes - 13:39 Grenoble
+  - Train retour le <2024-05-30 Thu> : 14h51 Grenoble - 20:30 Rennes
 ** Semaine du <2024-03-04 Mon> au <2024-03-07 Thu>
 *** Planned
 **** DONE SmartSense: Corriger le bug de récupération de la valeur `sector` dans une trame MQTT
@@ -442,7 +497,7 @@ CLOSED: [2024-03-07 Thu 16:40]
       - Application stockée dans /home/root/App
     - grafana v7.0.1
       - Fichier de configuration à /etc/grafana/grafana.ini
-- SmartSense: Reproduire l'environnement sur la VM
+- SmartSense: Reproduire l'environnement sur lla VM
   - Pose la question de si c'est une bonne idée de reproduire à l'identique l'environnement
     - Ensemble des dépendances/applications installées directement sur le système
   - Ou faudrait-il le faire évoluer ?
