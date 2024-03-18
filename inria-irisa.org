@@ -93,6 +93,55 @@
 - Malheureusement, appels erronés puisque manque un paramètre
   - IMO le paramètre `board`
 - Renseigner les valeurs correctes
+** Semaine du <2024-03-18 Mon> au <2024-03-22 Fri>
+*** Planned
+**** IN-PROGRESS SmartSense: Intégrer la branche *refactor/main-app*
+- MàJ par rapport à *refactor/mqtt-interface-remove-inheritance*
+- Faire la MR
+**** IN-PROGRESS SmartSense: Intégrer la branche *refactor/naming-conventions*
+- Préparer la MR, en attendant l'intégration de *refactor/main-app*
+**** IN-PROGRESS SmartSense: Intégrer la branche *refactor/usb-board-manager*
+- Faire la MR
+**** IN-PROGRESS SmartSense: Recréer une image QEMU RPi 64-bits
+- J'ai quelque peu pollué l'image que j'ai créé la semaine dernière pour tester inch et essayer de faire planter la VM
+- C'était avant que je me pose la question de créer des snapshots
+- Refaire l'image au propre
+**** TODO SmartSense: Créer une image QEMU RPi 32-bits
+- Pour comparer le comportement d'InfluxDB sur un système 64-bits à celui sur 32-bits
+- Devrait disposer d'une image similaire
+- Suivre les mêmes étapes
+**** TODO SmartSense: Mesurer les différentes métriques des données produites par le noeud SmartSense
+- Pour le moment, ai utilisé inch pour générer un volume de données similaire
+  - i.e. la taille d'un shard grossièrement
+- Afin de reproduire le plus fidèlement possible notre scénario de crash, serait pertinent de mesurer les différentes caractéristiques du volume de données généré
+  - Et même pour mieux connaître de manière générale le comportement de notre système
+- Métriques à observer
+  - Nombre de measurements
+  - Nombre de series
+  - Nombre de tags
+  - Nombre de valeurs
+  - Débit en écriture
+  - Volume des valeurs
+**** TODO SmartSense: Configurer Inch pour simuler le plus fidèlement le workload du RPi
+- Pour le moment, utilise inch avec la commande suivante
+  - ~/go/bin/inch -v -db SensorData -delay 15s -m 20 -t 2,5000,1 -f 4 -consistency any
+- Comparer ces paramètres avec les métriques observées
+- MàJ la commande pour s'approcher de ces dernières
+  - Si possible
+  - Notamment, comment reproduire les events générés par la caméra et le micro ?
+*** Done
+- SmartSense: Recréer une image QEMU RPi 64-bits
+  - [X] Obtenir l'image système
+  - [X] Ajouter l'utilisateur pi
+  - [X] Activer le SSH
+  - [ ] Convertir l'image OS en image qcow2
+  - [ ] Redimensionner l'image
+  - [ ] Redimensionner la partition
+  - [ ] MàJ l'OS
+  - [ ] Installer golang
+  - [ ] Installer InfluxDB
+  - [ ] Installer inch
+  - [ ] Créer snapshot
 ** Semaine du <2024-03-11 Mon> au <2024-03-15 Fri>
 *** Planned
 **** DONE SmartSense: Rédaction du CR de la réunion du <2024-03-13 Wed>
@@ -159,6 +208,72 @@ CLOSED: [2024-03-14 Thu 09:37]
   - Et que j'oublie pas de les faire tourner avant l'intégration
 - Voir comment GitLab gère ça
 *** Done
+- SmartSense: Réunion
+  - Gestion des CRs
+    - Eu des bons retours sur le CR que j'ai redigé
+    - Peut être plus succint la prochaine fois si nécessaire
+    - Mais pose la question de comment les gérer
+    - Nous sommes mis d'accord sur la création repo au sein de l'organisation SmartSense dédié
+      - Continuer à utiliser Notes pour rédiger le CR lors des réunions, le peaufiner ensuite
+      - Mais ensuite l'exporter et le versionner dans ce repo
+    - Permettra d'avoir une adresse unique et pérenne où retrouver les CRs
+      - On a pas forcément de garanties sur la rétention des données sur Notes
+    - Sur le même sujet, Mickaël a demandé à ce que je mette un miroir de mon journal de bord sur le gitlab SmartSense
+      - Permettra de rassembler au même endroit les différents documents
+  - InfluxDB
+    - A présenté le problème
+    - Explique que je suis en train de virtualiser une RPi avec un OS-64bits
+      - Et de simuler une charge comparable en données à l'aide de l'outil inch
+      - Apprécient l'idée de la virtualisation
+    - Explique que je me rends compte à présent que le mécanisme de compression est le clou dans le cercueil
+    - Mais que la conso en RAM d'InfluxDB augmente au fur et à mesure
+      - Se pose la question de si atteint un plateau au bout d'un moment
+    - Reste à trouver pourquoi
+      - Principales raisons listées sont
+        - L'utilisation de l'index en mémoire
+          - Seulement lorsque configuration de index-version="inmem"
+          - Nous on est utilise les time-series index (index-version="tsi1") depuis le début
+          - Donc pas concernés
+        - Le nombre trop important de séries
+          - Séries : Un ensemble de points partageant les mêmes valeurs de measurement, tags et clés de champs
+          - Comme on travaille sur un unique noeud, on a peu de valeurs distinctes pour un même tag
+          - Sur le petit dataset que j'ai sur le noeud, possède que 64 séries
+          - De plus, de ce que je comprends, ne devrait plus poser de problème depuis le passage au time-series index
+            - https://www.influxdata.com/blog/how-to-overcome-memory-usage-challenges-with-the-time-series-index/
+          - Donc pas concernés
+    - Donc à creuser
+    - On se donne une semaine supplémentaire
+    - Après on verra pour une alternative/un workaround
+    - Voir pour peaufiner la simulation de charge pour approcher la charge réelle
+      - Notamment, les données transmises par la caméra et le micro
+    - Reproduire le process sur une VM 32-bits
+      - Voir si cela a impact sur le résultat
+  - Wi-Fi
+    - LTE-M & NB IoT nécessitent réseau 4G, donc bien en dehors de notre scope
+    - LoRaWAN serait par contre un + dans le projet de leur PoV
+      - Mais expliquais que Guillaume n'était pas fan de la techno
+    - Wi-Fi HaLow est prometteur
+    - Mais la carte shield trouvée n'est pas compatible avec notre CM3
+    - Dongle USB trouvé, mais n'est plus en vente
+    - Faute de mieux, partir sur un dongle Wi-Fi classique
+    - Mickaël a plutôt en tête de partir sur un récepteur puissant
+      - Récepteur avec une sensibilité élevée
+      - Antenne active, qui améliore portée et sensibilité
+      - Omni-directionnel, mais qu'on puisse si besoin cibler la zone d'écoute
+        - Mentionnait la technologie MIMO
+    - Guillermo propose d'aller discuter avec Laurent Morin au sujet des équipements réseau
+      - S'y connaitrait et pourrait nous renseigner/orienter sur le sujet
+  - Énergie
+    - Noeud a une autonomie de 10h
+    - Va encore prendre un coup avec l'ajout du Wi-Fi donc
+    - Mais on ne s'intéresse pas particulièrement pour le moment à cette problématique dans le cadre du projet
+  - Méthodologie
+    - Avec Mickaël, avons rediscuté de comment procéder pour l'intégration de mes changements
+    - Pour les modifications mineurs/simples
+      - Genre refactoring, ajout de tests
+      - Suis autorisé maintenant à merge dans main
+    - Continuer à faire des MRs pour les nouvelles fonctionnalités/changements majeurs
+      - Et pour les modifications où je souhaite un avis supplémentaire
 - SmartSense: Mettre en place une nouvelle version système du noeud
   - Re-virtualiser une Raspberry via Qemu me parait un bon début
     - Tutos utilisés
@@ -178,8 +293,10 @@ sudo touch /mnt/img/ssh
 sudo umount /mnt/image
 sudo losetup -d /dev/loop0
 
-qemu-img convert -f raw -O qcow2 2023-12-11-raspios-bookworm-arm64-lite.img 2023-12-11-raspios-bookworm-arm64-lite.qcow
+qemu-img convert -f raw -O qcow2 2023-12-11-raspios-bookworm-arm64-lite.img 2023-12-11-raspios-bookworm-arm64-lite.qcow2
 qemu-img resize 2023-12-11-raspios-bookworm-arm64-lite.qcow 8G
+
+# Redimension des partitions avec gparted
 
 qemu-system-aarch64 \
     -M raspi3b \
@@ -193,24 +310,50 @@ qemu-system-aarch64 \
     -device usb-net,netdev=net0  \
     -netdev user,id=net0,hostfwd=tcp::2222-:22
       #+END_PLAIN
-    - A démarré le système et l'a MàJ
-    - Avait en tête que le système était réinitialisé à chaque lancement, mais dans le cas présent non
-    - Installation d'InfluxDB
-      - https://github.com/influxdata/influxdb/releases/tag/v1.8.10
-      - sudo dpkg -i influxdb_1.8.10_arm64.deb
-    - Installation de Inch
-      - https://docs.influxdata.com/influxdb/v1/tools/inch/
-      - Installation au préalable de go
-        - sudo apt install golang
-      - go install github.com/influxdata/inch/cmd/inch@latest
-    - Démarrage d'Influx
-      - sudo service start influxdb
-    - Démarrage d'Inch
-      - ~/go/bin/inch -v -b 10000 -t 2,5000,1 -p 100000 -consistency any
-      - Au bout d'une 20aine de secondes, a déjà généré 7Mo de données
-        - Correspond à 2M de points
-      - ~/go/bin/inch -v -db SensorData -delay 15s -m 20 -t 2,5000,1 -f 4 -consistency any
-        - Parait un débit correspondant plus à ce que l'on obtient sur le noeud SmartSense
+  - A démarré le système et l'a MàJ
+  - Avait en tête que le système était réinitialisé à chaque lancement, mais dans le cas présent non
+  - Installation d'InfluxDB
+    - https://github.com/influxdata/influxdb/releases/tag/v1.8.10
+    - sudo dpkg -i influxdb_1.8.10_arm64.deb
+  - Installation de Inch
+    - https://docs.influxdata.com/influxdb/v1/tools/inch/
+    - Installation au préalable de go
+      - sudo apt install golang
+    - go install github.com/influxdata/inch/cmd/inch@latest
+  - Démarrage d'Influx
+    - sudo service start influxdb
+  - Démarrage d'Inch
+    - ~/go/bin/inch -v -b 10000 -t 2,5000,1 -p 100000 -consistency any
+    - Au bout d'une 20aine de secondes, a déjà généré 7Mo de données
+      - Correspond à 2M de points
+    - ~/go/bin/inch -v -db SensorData -delay 15s -m 20 -t 2,5000,1 -f 4 -consistency any
+      - Parait un débit correspondant plus à ce que l'on obtient sur le noeud SmartSense
+- SmartSense: Monitoring d'InfluxDB sur OS 64-bits
+  - Sur la VM de Raspberry CM3
+  - A laissé tourner le système avec InfluxDB et Inch toute la nuit du <2024-03-14 Thu> au <2024-03-15 Fri>
+  - Fonctionne toujours au matin
+    - 18 shards à ce moment
+  - Mais remarque augmentation de la RAM utilisée
+    - Me semble qu'a commencé vers ~200Mo
+    - Actuellement à ~580Mo
+  - Donc oui, on a bien une fuite mémoire
+  - Qui aboutit au OoM lors d'une compression
+  - Solution serait de redémarré périodiquement InfluxDB
+  - Mais repose le problème de la multiplication des shards
+  - Faudrait tester le fait de redémarrer périodiquement InfluxDB tout en gardant la retention policy de base
+  - Mais si non, besoin de multiplier les shards
+  - Et à ce moment là, problème possible au redémarrage
+  - Concernant l'augmentation de la RAM utilisée InfluxDB, mentionne la cardinalité des séries
+    - i.e. le nombre de combinaison uniques de valeurs à partir des measurements et tags
+    - Sur le dataset que j'ai actuellement sur le noeud SmartSense, a 68 séries
+    - Me parait pas si élevé
+  - Mentionne le passage à l'index tsi1 plutôt qu'en mémoire
+    - Ce que l'on a déjà fait
+  - Léo m'a donné la commande pour créer des snapshots à partir d'une image système
+    - qemu-img create -f qcow -F qcow2 -o backing_file=2023-12-11-raspios-bookworm-arm64-lite.qcow test.qcow2
+  - Observe abort du démarrage d'InfluxDB au bout de 25 attempts/~6s
+    - Malheureusement, j'ai pas noté le nombre de shards auquel cela correspond
+    - J'ai réussi à redémarré l'image, a 25 shards à ce stade
 - SmartSense: Rédaction du CR de la réunion du <2024-03-13 Wed>
   - Me rend compte que je n'ai pas rédigé de CR auparavant
   - Pars sur le format des réunions Coast
