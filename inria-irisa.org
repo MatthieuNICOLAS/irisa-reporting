@@ -95,22 +95,23 @@
 - Renseigner les valeurs correctes
 ** Semaine du <2024-03-18 Mon> au <2024-03-22 Fri>
 *** Planned
-**** IN-PROGRESS SmartSense: Intégrer la branche *refactor/main-app*
+**** DONE SmartSense: Intégrer la branche *refactor/main-app*
+CLOSED: [2024-03-18 Mon 14:21]
 - MàJ par rapport à *refactor/mqtt-interface-remove-inheritance*
 - Faire la MR
-**** IN-PROGRESS SmartSense: Intégrer la branche *refactor/naming-conventions*
+**** DONE SmartSense: Intégrer la branche *refactor/naming-conventions*
+CLOSED: [2024-03-18 Mon 14:21]
 - Préparer la MR, en attendant l'intégration de *refactor/main-app*
-**** IN-PROGRESS SmartSense: Intégrer la branche *refactor/usb-board-manager*
+**** DONE SmartSense: Intégrer la branche *refactor/usb-board-manager*
+CLOSED: [2024-03-18 Mon 14:21]
 - Faire la MR
-**** IN-PROGRESS SmartSense: Recréer une image QEMU RPi 64-bits
+**** DONE SmartSense: Recréer une image QEMU RPi 64-bits
+CLOSED: [2024-03-19 Tue 09:26]
 - J'ai quelque peu pollué l'image que j'ai créé la semaine dernière pour tester inch et essayer de faire planter la VM
 - C'était avant que je me pose la question de créer des snapshots
 - Refaire l'image au propre
-**** TODO SmartSense: Créer une image QEMU RPi 32-bits
-- Pour comparer le comportement d'InfluxDB sur un système 64-bits à celui sur 32-bits
-- Devrait disposer d'une image similaire
-- Suivre les mêmes étapes
-**** TODO SmartSense: Mesurer les différentes métriques des données produites par le noeud SmartSense
+**** DONE SmartSense: Mesurer les différentes métriques des données produites par le noeud SmartSense
+CLOSED: [2024-03-19 Tue 16:09]
 - Pour le moment, ai utilisé inch pour générer un volume de données similaire
   - i.e. la taille d'un shard grossièrement
 - Afin de reproduire le plus fidèlement possible notre scénario de crash, serait pertinent de mesurer les différentes caractéristiques du volume de données généré
@@ -122,26 +123,170 @@
   - Nombre de valeurs
   - Débit en écriture
   - Volume des valeurs
-**** TODO SmartSense: Configurer Inch pour simuler le plus fidèlement le workload du RPi
+**** IN-PROGRESS SmartSense: Configurer inch pour simuler le plus fidèlement le workload du RPi
 - Pour le moment, utilise inch avec la commande suivante
   - ~/go/bin/inch -v -db SensorData -delay 15s -m 20 -t 2,5000,1 -f 4 -consistency any
 - Comparer ces paramètres avec les métriques observées
 - MàJ la commande pour s'approcher de ces dernières
   - Si possible
   - Notamment, comment reproduire les events générés par la caméra et le micro ?
+**** IN-PROGRESS SmartSense: Traiter les problèmes relevés lors de l'uniformisation du code
+- J'ai noté plusieurs points problématiques au cours de mon passage sur l'ensemble des modules
+  - Le module *sensor_board* est inutilisé
+    - Code obsolète à supprimer ?
+  - La librairie *telnetlib* est dépréciée
+    - Passer à https://pypi.org/project/telnetlib3/ ?
+  - Une conditionnelle étrange est effectuée dans le module *tlc59108_manager*
+    - https://gitlab.inria.fr/smartsense/3douest/node-app/smartsense-node-app/-/blob/3feb5c56dc5e74dcea9eb2f2ba98bec40029acdf/TLC59108Manager.py#L370
+    - Revient à `if data[0]`
+    - `and` est-il l'opérateur désiré ?
+    - Simplifier/corriger
+  - Les appels à *OpenOCDManager.update()* dans *test_ocd* manquent d'un paramètre
+    - J'ai l'impression que c'est le paramètre *board*
+    - Ajouter les valeurs correctes ?
+  - *USBBoardManager.read_data()* et *parse_to_mqtt()* sont particulièrement sujets aux retours de Pylint
+    - Trop d'instructions
+    - Trop de branchements
+    - Trop de blocs imbriqués
+    - Refactorer pour améliorer la lisibilité du code ?
+    - Voir si on peut aussi factoriser du code à l'aide de fonctions
+  - Corriger ces problèmes
+    - Ou si pas de solution claire et rapide, créer une issue correspondante
+**** IN-PROGRESS SmartSense: Créer une image QEMU RPi 32-bits
+- Pour comparer le comportement d'InfluxDB sur un système 64-bits à celui sur 32-bits
+- Devrait disposer d'une image similaire
+- Suivre les mêmes étapes
 *** Done
 - SmartSense: Recréer une image QEMU RPi 64-bits
   - [X] Obtenir l'image système
   - [X] Ajouter l'utilisateur pi
   - [X] Activer le SSH
+  - [X] Convertir l'image OS en image qcow2
+  - [X] Redimensionner l'image
+  - [X] Redimensionner la partition
+    - sudo modprobe nbd max_part=10
+    - sudo qemu-nbd -c /dev/nbd0 pi-bookworm-64.qcow2
+    - gparted /dev/nbd0
+    - sudo qemu-nbd -d /dev/nbd0
+  - [X] MàJ l'OS
+  - [X] Installer InfluxDB
+    - wget https://dl.influxdata.com/influxdb/releases/influxdb_1.8.10_arm64.deb
+    - sudo apt install ./influxdb_1.8.10_arm64.deb
+  - [X] Installer golang
+    - sudo apt install golang
+  - [X] Installer inch
+    - go install github.com/influxdata/inch/cmd/inch@latest
+  - [X] Mettre en place la config d'InfluxDB
+    - Dans /etc/influxdb/influxdb.conf
+    - index-version = "tsi1"
+    - compact-full-write-cold-duration = "1h"
+    - max-concurrent-compactions = 1
+  - [X] Désactiver le redémarrage automatique d'InfluxDB
+    - Histoire de ne pas polluer les logs avec des redémarrages et plantages en boucle
+    - Dans /etc/systemd/system/influxdb.service.d/override.conf
+      #+BEGIN_PLAIN
+[System]
+Restart=no
+      #+END_PLAIN
+    - Désactiver lancement au démarrage : sudo systemctl disable influxdb
+  - [X] Créer la base de données de test avec la bonne retention policy
+    - CREATE DATABASE SensorData WITH SHARD DURATION 1h NAME short_duration
+  - [X] Créer snapshot
+    - base-image : Image de l'OS MàJ
+    - influxdb-inch : Image avec influxdb et inch d'installés et configurés
+    - Sinon, image de travail actuelle
+- SmartSense: Mesurer les différentes métriques des données produites par le noeud SmartSense
+  - Nombre de measurements : ~20 events, ~20 meta
+  - Nombre de series : 68
+  - Nombre de tags : 1, 2, 1, 2, 1, 1, 1, 1
+  - Nombre de valeurs : 1 à 4 valeurs
+    - Généralement des entiers, floats et strings courtes
+    - Mais des strings longues (~900, ~12k, ~64k characters) pour caméra/micro
+      - ~900 pour rfGiga
+      - ~64k pour stream
+      - ~12k pour thermalImgHd
+      - ~150 pour thermalImgLd
+  - Nombre de points par série : 86 400
+    - Considère un par seconde
+    - Part sur une durée d'un jour
+  - Débit en écriture
+    - ~100 points/5s
+    - ~20 points/s
+    - Notes
+      - 1/s pour thermalImgHd et thermalImgLd
+      - la périodicité de stream a l'air de varier de la seconde à 30aine de secondes
+  - Volume
+    - ~40Mo/h
+    - ~11ko/s
+      - Raccord avec thermalImgHd à chaque seconde
+- SmartSense: Configurer inch pour simuler le plus fidèlement le workload du RPi
+  - inch n'a pas l'air de permettre de configurer les valeurs fournies pour les champs
+  - Peut simplifier le système en prenant que thermalImgHd comme ordre de grandeur
+    - i.e. un measurement qui fournit ~10ko/s de données
+  - A lancé la commande suivante le <2024-03-19 Tue>, 15h27 (heure de la VM)
+    - ~/go/bin/inch -v -db SensorData -delay 1s -m 5 -t 1,2,1,2,1,1,1,1 -f 1000 -p 86400 -b 100 -consistency any
+  - VM freezed le lendemain matin
+  - Avais saturé l'espace disque
+    - 8Go est p-e un peu short
+  - Jusque là, avait créé 6 shards de 600Mo
+  - Et un 7ème shard était en cours de vie
+  - Doit diviser par ~12 la charge de travail si veux m'approcher du volume de données de notre use case
+  - Aurai tout de même un débit en terme de points supérieur à la workload réelle
+  - A lancé la commande suivante le <2024-03-20 Wed>, 08:37 (heure de la VM)
+    - ~/go/bin/inch -v -db SensorData -delay 1s -m 5 -t 1,2,1,2,1,1,1,1 -f 84 -p 86400 -b 100 -consistency any
+  - Observations
+    - 84 points/s
+    - 7k valeurs/s
+    - Cardinalité de séries de 20 (5 * 2 * 2)
+  - En divisant le buffer par 2, i.e. -b 50, divise par 2 le nombre de points/s et de valeurs/s
+  - Modifier le nombre de fields, i.e. -f 168, impacte le nombre de valeurs/s
+  - Modifier le nombre de measurements, i.e. -m 20, n'a pas d'impact sur le débit, uniquement sur le nombre de séries
+  - Est-ce que j'essaie d'approcher le nombre de measurements et de séries ?
+    - Dans ce cas, doit réduire le nombre de fields par points pour maintenir le volume de données
+  - Ou d'approcher le fait qu'on a surtout 4-5 measurements avec un nombre de valeurs conséquent ?
+    - e.g. -m 5 -f 420 -b 10
+    - Maintient le débit d'un point de vue valeurs
+      - ~3k val/s
+    - Mais le débit d'un point de vue points n'arrive à suivre
+      - 7 points/s
+  - A relancé avec les paramètres suivant à 08:56
+    - ~/go/bin/inch -v -db SensorData -delay 1s -m 5 -t 1,2,1,2,1,1,1,1 -f 84 -p 86400 -b 50 -consistency any
+  - Observations
+    - 40 points/s
+    - ~3500 valeurs/s
+    - Cardinalité : 20
+  - À tester
+    - ~/go/bin/inch -v -db SensorData -delay 200ms -m 5 -t 1,2,1,2,1,1,1,1 -f 420 -p 86400 -b 10 -consistency any
+- Réflexions sur l'utilisation d'InfluxDB
+  - Un point intéressant des discussions de la réunion du WP3 TF de <2024-03-19 Tue> fut sur la gestion des données
+  - Un intervenant insistait sur l'utilité de découpler stockage des données et exploitation des données
+  - On a effectivement pas les mêmes problématiques dans les 2 cas
+  - Pour le stockage, on va souhaiter conserver de manière efficace l'intégralité des données de manière pérenne
+  - Pour l'exploitation, on va plutôt s'intéresser qu'à un sous-ensemble des données
+    - D'un point de vue temporel, e.g. ne s'intéresse qu'aux données des 30 derniers jours
+    - D'un point de vue contenu, e.g. ne s'intéresse qu'aux données concernant la qualité de l'air
+    - Et qu'on va potentiellement transformer pour atteindre nos objectifs en terme de coût, e.g. temps de réponse
+  - Et en fonction de l'exploitation, du traitement désiré, on va préférer utiliser des outils différents
+    - Pense pas qu'il y a un intérêt particulier à utiliser InfluxDB si on veut mettre en place un traitement sur les flux vidéo et audio
+  - Me parait intéressant de réfléchir à nos données et leur gestion avec cette nouvelle perspective
+  - Et de se pencher sur les bonnes pratiques/outils appropriés de ce côté là
+    - Se repencher sur le livre de Kleppmann
+- SmartSense: Créer une image QEMU Rpi 32-bits
+  - [X] Obtenir l'image système
+  - [ ] Ajouter l'utilisateur pi
+  - [ ] Activer le SSH
   - [ ] Convertir l'image OS en image qcow2
   - [ ] Redimensionner l'image
   - [ ] Redimensionner la partition
   - [ ] MàJ l'OS
-  - [ ] Installer golang
+  - [ ] Créer snapshot base-image
   - [ ] Installer InfluxDB
+  - [ ] Installer golang
   - [ ] Installer inch
-  - [ ] Créer snapshot
+  - [ ] Mettre en place la config d'InfluxDB
+  - [ ] Désactiver le redémarrage automatique d'InfluxDB
+  - [ ] Créer la base de données de test avec la bonne retention policy
+  - [ ] Créer snapshot influxdb-inch
 ** Semaine du <2024-03-11 Mon> au <2024-03-15 Fri>
 *** Planned
 **** DONE SmartSense: Rédaction du CR de la réunion du <2024-03-13 Wed>
@@ -208,7 +353,7 @@ CLOSED: [2024-03-14 Thu 09:37]
   - Et que j'oublie pas de les faire tourner avant l'intégration
 - Voir comment GitLab gère ça
 *** Done
-- SmartSense: Réunion
+- SmartSense: Réunion technique <2024-03-15 Fri>
   - Gestion des CRs
     - Eu des bons retours sur le CR que j'ai redigé
     - Peut être plus succint la prochaine fois si nécessaire
