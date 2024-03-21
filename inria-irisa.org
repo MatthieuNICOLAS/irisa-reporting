@@ -123,13 +123,19 @@ CLOSED: [2024-03-19 Tue 16:09]
   - Nombre de valeurs
   - Débit en écriture
   - Volume des valeurs
-**** IN-PROGRESS SmartSense: Configurer inch pour simuler le plus fidèlement le workload du RPi
+**** DONE SmartSense: Configurer inch pour simuler le plus fidèlement le workload du RPi
+CLOSED: [2024-03-21 Thu 10:50]
 - Pour le moment, utilise inch avec la commande suivante
   - ~/go/bin/inch -v -db SensorData -delay 15s -m 20 -t 2,5000,1 -f 4 -consistency any
 - Comparer ces paramètres avec les métriques observées
 - MàJ la commande pour s'approcher de ces dernières
   - Si possible
   - Notamment, comment reproduire les events générés par la caméra et le micro ?
+**** DONE SmartSense: Créer une image QEMU RPi 32-bits
+CLOSED: [2024-03-21 Thu 14:30]
+- Pour comparer le comportement d'InfluxDB sur un système 64-bits à celui sur 32-bits
+- Devrait disposer d'une image similaire
+- Suivre les mêmes étapes
 **** IN-PROGRESS SmartSense: Traiter les problèmes relevés lors de l'uniformisation du code
 - J'ai noté plusieurs points problématiques au cours de mon passage sur l'ensemble des modules
   - Le module *sensor_board* est inutilisé
@@ -152,10 +158,14 @@ CLOSED: [2024-03-19 Tue 16:09]
     - Voir si on peut aussi factoriser du code à l'aide de fonctions
   - Corriger ces problèmes
     - Ou si pas de solution claire et rapide, créer une issue correspondante
-**** IN-PROGRESS SmartSense: Créer une image QEMU RPi 32-bits
-- Pour comparer le comportement d'InfluxDB sur un système 64-bits à celui sur 32-bits
-- Devrait disposer d'une image similaire
-- Suivre les mêmes étapes
+**** IN-PROGRESS SmartSense: Monitorer InfluxDB OS 64-bits sous workload par inch
+**** IN-PROGRESS SmartSense: Monitorer InfluxDB OS 32-bits sous workload par inch
+**** TODO SmartSense: Mise en place d'un processus de CI
+- Mettre en place des tests, c'était un bon début
+- Mettre en place un processus de CI, ça serait mieux
+  - Garantirait la reproductibilité de l'environnement de tests
+  - Et que j'oublie pas de les faire tourner avant l'intégration
+- Voir comment GitLab gère ça
 *** Done
 - SmartSense: Recréer une image QEMU RPi 64-bits
   - [X] Obtenir l'image système
@@ -257,7 +267,18 @@ Restart=no
     - Cardinalité : 20
     - Volume : 80Mo/shard
   - À tester
-    - ~/go/bin/inch -v -db SensorData -delay 200ms -m 5 -t 1,2,1,2,1,1,1,1 -f 420 -p 86400 -b 10 -consistency any
+    - ~/go/bin/inch -v -db SensorData -delay 200ms -m 5 -t 1,2,1,2,1,1,1,1 -f 420 -p 86400 -b 10 -consistency any~/go/bin/inch -v -db SensorData -delay 200ms -m 5 -t 1,2,1,2,1,1,1,1 -f 420 -p 86400 -b 10 -consistency any
+  - Observations
+    - 29.7 points/s
+    - ~12500 valeurs/s
+    - Cardinalité : 20
+  - En remontant le delay, i.e. -delay 400ms, permet de concentrer les valeurs sur un nombre réduit de points
+  - Commande
+    - ~/go/bin/inch -v -db SensorData -delay 400ms -m 5 -t 1,2,1,2,1,1,1,1 -f 420 -p 86400 -b 10 -consistency any
+  - Observations
+    - 18.9 points/s
+    - ~ 7800 valeurs/s
+    - Cardinalité : 20
 - Réflexions sur l'utilisation d'InfluxDB
   - Un point intéressant des discussions de la réunion du WP3 TF de <2024-03-19 Tue> fut sur la gestion des données
   - Un intervenant insistait sur l'utilité de découpler stockage des données et exploitation des données
@@ -274,20 +295,21 @@ Restart=no
     - Se repencher sur le livre de Kleppmann
 - SmartSense: Créer une image QEMU RPi 32-bits
   - [X] Obtenir l'image système
-  - [ ] Ajouter l'utilisateur pi
-  - [ ] Activer le SSH
-  - [ ] Convertir l'image OS en image qcow2
-  - [ ] Redimensionner l'image
-  - [ ] Redimensionner la partition
-  - [ ] MàJ l'OS
-  - [ ] Créer snapshot base-image
-  - [ ] Installer InfluxDB
-  - [ ] Installer golang
-  - [ ] Installer inch
-  - [ ] Mettre en place la config d'InfluxDB
-  - [ ] Désactiver le redémarrage automatique d'InfluxDB
-  - [ ] Créer la base de données de test avec la bonne retention policy
-  - [ ] Créer snapshot influxdb-inch
+  - [X] Ajouter l'utilisateur pi
+  - [X] Activer le SSH
+  - [X] Convertir l'image OS en image qcow2
+  - [X] Redimensionner l'image
+  - [X] Redimensionner la partition
+  - [X] MàJ l'OS
+  - [X] Créer base image
+  - [X] Créer snapshot influxdb-inch
+  - [X] Installer InfluxDB
+  - [X] Installer golang
+  - [X] Installer inch
+  - [X] Mettre en place la config d'InfluxDB
+  - [X] Désactiver le redémarrage automatique d'InfluxDB
+  - [X] Créer la base de données de test avec la bonne retention policy
+  - [X] Créer la snapshot de travail
 - Magellan: Présentation de Nix par Volodia
   - Problème de reproductibilité dans la recherche scientifique informatique
     - Docker, ça marche tant que l'image est disponible
@@ -297,7 +319,7 @@ Restart=no
     - Propose un package manager, nixpkgs
     - Construit un OS, nixOS, à partir de là
   - Govind recommande Determinate Systems Nix Installer
-- SmartSense: Monitoring d'InfluxDB OS 64-bits, workload par inch
+- SmartSense: Monitorer InfluxDB OS 64-bits sous workload par inch
   - Commande
     - ~/go/bin/inch -v -db SensorData -delay 1s -m 5 -t 1,2,1,2,1,1,1,1 -f 84 -p 86400 -b 50 -consistency any
   - Initialement, conso mémoire de 80Mo
@@ -308,6 +330,32 @@ Restart=no
   - Redémarrage avec 13 shards a nécessité ~20s et a déclenché 13 warnings
     - Rappel qu'au bout du 25ème warning, influxdb abort son lancement
   - A sauvegardé la snapshot sous le nom pi-bookworm-64bits-84-fields-completed.qcow2
+- SmartSense: Monitorer InfluxDB OS 32-bits sous workload par inch
+  - Rencontre l'erreur suivante au lancement de inch
+    #+BEGIN_PLAIN
+panic: unaligned 64-bit atomic operation
+
+goroutine 9 [running]:
+runtime/internal/atomic.panicUnaligned()
+	/usr/lib/go-1.19/src/runtime/internal/atomic/unaligned.go:8 +0x24
+runtime/internal/atomic.Xchg64(0x194e1fc, 0x0)
+	/usr/lib/go-1.19/src/runtime/internal/atomic/atomic_arm.s:269 +0x14
+github.com/influxdata/inch.(*Simulator).runMonitor(0x194e180, {0x34dc74, 0x19180f0})
+	/home/pi/go/pkg/mod/github.com/influxdata/inch@v0.0.0-20230124130601-4ae8d5121d6e/inch.go:536 +0x1b4
+github.com/influxdata/inch.(*Simulator).Run.func2()
+	/home/pi/go/pkg/mod/github.com/influxdata/inch@v0.0.0-20230124130601-4ae8d5121d6e/inch.go:278 +0x70
+created by github.com/influxdata/inch.(*Simulator).Run
+	/home/pi/go/pkg/mod/github.com/influxdata/inch@v0.0.0-20230124130601-4ae8d5121d6e/inch.go:278 +0x1470
+    #+END_PLAIN
+  - M'en suis sorti en utilisant inch sur ma machine directement
+    - Par défaut, transmet les données à localhost:8086
+    - Ajout de la config correspondante dans QEMU pour permettre le port forwarding
+      - -netdev ...,hostfwd=tcp::8086-:8086
+  - A lancé la commande à 13:40 (heure VM)
+    - ~/go/bin/inch -v -db SensorData -delay 1s -m 5 -t 1,2,1,2,1,1,1,1 -f 84 -p 86400 -b 50 -consistency any
+  - Consommation mémoire : 80Mo au démarrage
+- SmartSense: Mise en place d'un processus de CI
+  - Plusieurs points à éclaircir
 ** Semaine du <2024-03-11 Mon> au <2024-03-15 Fri>
 *** Planned
 **** DONE SmartSense: Rédaction du CR de la réunion du <2024-03-13 Wed>
@@ -455,7 +503,7 @@ sudo mount /dev/loop0p01 /mnt/image
 cp /mnt/image/bcm2710-rpi-cm3.dtb .
 cp /mnt/image/kernel8.img .
 sudo echo 'pi:$6$rMAjicIMHWanx8Gb$gE0zeXkz1aWQYloCjbHt58Ow35DK45uf10bRG0eum8APKbnnrPYv.eO81d.Abx6zJfVhhkbUwMtFedDglhiM//' | sudo tee /mnt/image/userconf.txt
-sudo touch /mnt/img/ssh
+sudo touch /mnt/image/ssh
 sudo umount /mnt/image
 sudo losetup -d /dev/loop0
 
@@ -463,6 +511,10 @@ qemu-img convert -f raw -O qcow2 2023-12-11-raspios-bookworm-arm64-lite.img 2023
 qemu-img resize 2023-12-11-raspios-bookworm-arm64-lite.qcow 8G
 
 # Redimension des partitions avec gparted
+sudo modprobe nbd max_part=10
+sudo qemu-nbd -c /dev/nbd0 pi-bookworm-64.qcow2
+gparted /dev/nbd0
+sudo qemu-nbd -d /dev/nbd0
 
 qemu-system-aarch64 \
     -M raspi3b \
