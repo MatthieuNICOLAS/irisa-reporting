@@ -255,6 +255,7 @@ Restart=no
     - 40 points/s
     - ~3500 valeurs/s
     - Cardinalité : 20
+    - Volume : 80Mo/shard
   - À tester
     - ~/go/bin/inch -v -db SensorData -delay 200ms -m 5 -t 1,2,1,2,1,1,1,1 -f 420 -p 86400 -b 10 -consistency any
 - Réflexions sur l'utilisation d'InfluxDB
@@ -271,7 +272,7 @@ Restart=no
   - Me parait intéressant de réfléchir à nos données et leur gestion avec cette nouvelle perspective
   - Et de se pencher sur les bonnes pratiques/outils appropriés de ce côté là
     - Se repencher sur le livre de Kleppmann
-- SmartSense: Créer une image QEMU Rpi 32-bits
+- SmartSense: Créer une image QEMU RPi 32-bits
   - [X] Obtenir l'image système
   - [ ] Ajouter l'utilisateur pi
   - [ ] Activer le SSH
@@ -287,6 +288,26 @@ Restart=no
   - [ ] Désactiver le redémarrage automatique d'InfluxDB
   - [ ] Créer la base de données de test avec la bonne retention policy
   - [ ] Créer snapshot influxdb-inch
+- Magellan: Présentation de Nix par Volodia
+  - Problème de reproductibilité dans la recherche scientifique informatique
+    - Docker, ça marche tant que l'image est disponible
+    - Mais re-créer l'image s'avère déjà difficile des années après
+  - Nix souhaite adresser ce problème
+    - Propose un langage, NixDSL, pour décrire la construction de paquets
+    - Propose un package manager, nixpkgs
+    - Construit un OS, nixOS, à partir de là
+  - Govind recommande Determinate Systems Nix Installer
+- SmartSense: Monitoring d'InfluxDB OS 64-bits, workload par inch
+  - Commande
+    - ~/go/bin/inch -v -db SensorData -delay 1s -m 5 -t 1,2,1,2,1,1,1,1 -f 84 -p 86400 -b 50 -consistency any
+  - Initialement, conso mémoire de 80Mo
+  - inch a inséré des données durant ~11h
+  - VM a tenu
+  - Conso mémoire atteint 320Mo finalement
+  - Après redémarrage d'InfluxDB, diminue à 165Mo
+  - Redémarrage avec 13 shards a nécessité ~20s et a déclenché 13 warnings
+    - Rappel qu'au bout du 25ème warning, influxdb abort son lancement
+  - A sauvegardé la snapshot sous le nom pi-bookworm-64bits-84-fields-completed.qcow2
 ** Semaine du <2024-03-11 Mon> au <2024-03-15 Fri>
 *** Planned
 **** DONE SmartSense: Rédaction du CR de la réunion du <2024-03-13 Wed>
