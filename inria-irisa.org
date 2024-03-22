@@ -407,6 +407,10 @@ created by github.com/influxdata/inch.(*Simulator).Run
     - Serait intéressant IMO de décomposer notre pipeline en plusieurs étapes
     - Lint > Unit Tests > Integration Tests
     - Besoin dans ce cas de pouvoir distinguer/préciser quels tests sont des unit tests et lesquels sont des integration tests
+  - [ ] Quand déclencher notre pipeline ?
+    - À chaque MR vers main me paraît le minimum
+    - Mais puisqu'on peut aussi push dans main directement, me paraît intéressant/nécessaire de remettre de la CI ici
+      - Moyen d'éviter la redondance ?
 - SmartSense: Analyser résultats des simulations menées sur les VMs pour reproduire le bug d'InfluxDB
   - Dans les 2 cas, n'a pas pu reproduire le bug
   - Ce que l'on observe, c'est une augmentation croissante de la consommation mémoire
@@ -437,8 +441,17 @@ created by github.com/influxdata/inch.(*Simulator).Run
       - Serait intéressant de voir si l'application devient stable si on ignore/retire ces entrées
       - Indiquerait la nécessité de traiter ces données de manière particulière
 - SmartSense: Monitorer noeud SmartSense sans stockage des entrées lourdes
-  - A modifié `DataToLocalInfluxDB` pour filtrer les entrées
+  - A modifié `DataToLocalInfluxDB` pour filtrer les entrées concernées
     - event_thermalImgHd, event_thermalImgLd et event_stream
+  - Au bout de 4h de fonctionnement, observe que la consommation mémoire s'est stabilisé depuis ~2h
+  - Consommation mémoire a démarré à 204Mo
+  - Au cours de la fenêtre 2h-4h, consommation mémoire stagne à 246Mo
+  - Si cela se confirme
+    - Indique que c'est notre utilisation d'InfluxDB le problème
+    - Et qu'il faut envisager une alternative pour stocker les flux de données concernés
+    - Faudrait creuser quel(s) intérêt(s) nous avions à stocker ces blobs dans une time series-oriented database
+  - Consommation mémoire a augmenté jusqu'à 277Mo 2h plus tard
+  - Stagne de nouveau
 ** Semaine du <2024-03-11 Mon> au <2024-03-15 Fri>
 *** Planned
 **** DONE SmartSense: Rédaction du CR de la réunion du <2024-03-13 Wed>
