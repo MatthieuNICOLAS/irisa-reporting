@@ -136,6 +136,14 @@ CLOSED: [2024-03-21 Thu 14:30]
 - Pour comparer le comportement d'InfluxDB sur un système 64-bits à celui sur 32-bits
 - Devrait disposer d'une image similaire
 - Suivre les mêmes étapes
+**** DONE SmartSense: Monitorer InfluxDB OS 64-bits sous workload par inch
+CLOSED: [2024-03-22 Fri 08:58]
+**** DONE SmartSense: Monitorer InfluxDB OS 32-bits sous workload par inch
+CLOSED: [2024-03-22 Fri 08:58]
+**** DONE SmartSense: Analyser résultats des simulations menées sur les VMs pour reproduire le bug d'InfluxDB
+CLOSED: [2024-03-22 Fri 10:26]
+- Maintenant que j'ai pu faire tourner les simulations sur chaque VM
+- Voir ce qu'on peut tirer de ces résultats
 **** IN-PROGRESS SmartSense: Traiter les problèmes relevés lors de l'uniformisation du code
 - J'ai noté plusieurs points problématiques au cours de mon passage sur l'ensemble des modules
   - Le module *sensor_board* est inutilisé
@@ -158,14 +166,25 @@ CLOSED: [2024-03-21 Thu 14:30]
     - Voir si on peut aussi factoriser du code à l'aide de fonctions
   - Corriger ces problèmes
     - Ou si pas de solution claire et rapide, créer une issue correspondante
-**** IN-PROGRESS SmartSense: Monitorer InfluxDB OS 64-bits sous workload par inch
-**** IN-PROGRESS SmartSense: Monitorer InfluxDB OS 32-bits sous workload par inch
-**** TODO SmartSense: Mise en place d'un processus de CI
+**** IN-PROGRESS SmartSense: Mise en place d'un processus de CI
 - Mettre en place des tests, c'était un bon début
 - Mettre en place un processus de CI, ça serait mieux
   - Garantirait la reproductibilité de l'environnement de tests
   - Et que j'oublie pas de les faire tourner avant l'intégration
 - Voir comment GitLab gère ça
+**** IN-PROGRESS SmartSense: Monitorer noeud SmartSense sans stockage des entrées lourdes
+- Plusieurs types d'entrées sont bien plus volumineux que les autres
+  - De plusieurs ordres de grandeur (jusqu'au ko par entrée)
+- Entrées concernées
+  - event_thermalImgHd
+  - event_stream
+- Et dans une moindre mesure
+  - event_thermalImgLd
+  - event_rfGiga
+- Tester si ne pas stocker ces entrées stabilise le système
+**** TODO SmartSense: Monitorer noeud SmartSense sous workload par inch
+- En théorie, devrait se comporter de manière similaire à la VM 32-bits
+- Serait intéressant de le confirmer
 *** Done
 - SmartSense: Recréer une image QEMU RPi 64-bits
   - [X] Obtenir l'image système
@@ -291,6 +310,7 @@ Restart=no
   - Et en fonction de l'exploitation, du traitement désiré, on va préférer utiliser des outils différents
     - Pense pas qu'il y a un intérêt particulier à utiliser InfluxDB si on veut mettre en place un traitement sur les flux vidéo et audio
   - Me parait intéressant de réfléchir à nos données et leur gestion avec cette nouvelle perspective
+    - Notamment du format des données
   - Et de se pencher sur les bonnes pratiques/outils appropriés de ce côté là
     - Se repencher sur le livre de Kleppmann
 - SmartSense: Créer une image QEMU RPi 32-bits
@@ -354,8 +374,71 @@ created by github.com/influxdata/inch.(*Simulator).Run
   - A lancé la commande à 13:40 (heure VM)
     - ~/go/bin/inch -v -db SensorData -delay 1s -m 5 -t 1,2,1,2,1,1,1,1 -f 84 -p 86400 -b 50 -consistency any
   - Consommation mémoire : 80Mo au démarrage
+  - Consommation mémoire : 213Mo au bout d'1h
+  - VM a tenu
+  - Consommation mémoire : 248Mo au final
+  - On retrouve bien 13 shards, ~75Mo chacun
+  - Surprenamment, ici n'a nécessité que 8s pour redémarrer
+    - 5 warnings se sont déclenchés pendant ce temps
+  - Après redémarrage d'InfluxDB, diminue à 91Mo
+  - A sauvegardé la snapshot sous le nom pi-bookworm-32bits-84-fields-completed.qcow2
+  - Remarque
+    - Pas besoin d'installer inch dans nos VMs
+    - Juste d'exposer la base InfluxDB
+    - Simplifira le processus de création des prochaines, si nécessaire
 - SmartSense: Mise en place d'un processus de CI
   - Plusieurs points à éclaircir
+  - [X] Dispose-t-on de runners ?
+    - De ce que je comprends, GitLab fonctionne avec un système de runners qui exécutent les jobs
+    - Est-ce que le GitLab Inria en met à disposition ?
+    - Ou faut-il les déployer soi-même ?
+      - Dans ce cas, quelle machine utiliser ?
+    - Quelques runners sont mis à dispostion
+      - https://gitlab.inria.fr/siteadmin/doc/-/wikis/faq#how-to-use-the-continuous-integration-ci-service
+      - https://ci.inria.fr/doc/page/gitlab/
+    - Vu notre système, les smalls semblent fit nos besoins
+  - [X] Comment déployer des service MQTT et InfluxDB ?
+    - Des tests d'intégration interagissent directement avec le broker MQTT ou la base de données InfluxDB
+    - Comment déployer des conteneurs proposant ces services ?
+    - Existe une option dédiée à préciser dans le fichier de config
+      - https://docs.gitlab.com/16.8/ee/ci/yaml/index.html#services
+    - Dans notre cas, devrait le faire pour les tests d'intégration
+  - [ ] Comment catégoriser nos tests ?
+    - Serait intéressant IMO de décomposer notre pipeline en plusieurs étapes
+    - Lint > Unit Tests > Integration Tests
+    - Besoin dans ce cas de pouvoir distinguer/préciser quels tests sont des unit tests et lesquels sont des integration tests
+- SmartSense: Analyser résultats des simulations menées sur les VMs pour reproduire le bug d'InfluxDB
+  - Dans les 2 cas, n'a pas pu reproduire le bug
+  - Ce que l'on observe, c'est une augmentation croissante de la consommation mémoire
+  - Jusqu'à atteindre un palier, un consommation mémoire de croisière
+    - ~200/300Mo en fonction de la version de l'OS
+  - Observe néanmoins que redémarrer InfluxDB réinitialise l'augmentation de la consommation mémoire
+  - A-t-on juste le même comportement sur le noeud SmartSense ?
+    - Mais que le palier est trop élevé pour notre hardware étant donné notre workload ?
+    - Dans ce cas, indiquerait que la workload simulée est trop faible par rapport à la workload réelle
+  - A-t-on un bug dans notre version actuelle du système qui est corrigée dans la dernière version du système ?
+    - Dans ce cas, indiquerait que rejouer la workload simulée sur le noeud SmartSense provoquerait ou permettrait de s'approcher du point de rupture
+  - Est-ce qu'un redémarrage régulier d'InfluxDB permettrait de réinitialiser la consommation mémoire de l'application ?
+    - Et ainsi éviter d'atteindre la valeur seuil où le mécanisme de compaction achève notre système
+    - Pose par contre le problème de la multiplication des shards qui ralentisse le démarrage d'InfluxDB
+    - Jusqu'au point où on ne puisse plus démarrer le SGDB
+      - ~25 shards de ce que j'ai pu observer, dans le cas du noeud
+  - Pistes
+    - Ré-utiliser inch, mais sur le noeud et non pas une VM
+      - Mon expérience avec la VM 32-bits m'a appris à faire tourner inch pour taper sur une DB distante
+      - Peut réutiliser le même setup expérimental mais avec le noeud SmartSense
+      - Permettrait d'observer si son comportement diffère de la VM 32-bits
+      - Et d'établir si la workload simulée est suffisante pour reproduire le bug
+    - Disable les points problématiques et refaire tourner mainApp
+      - Par points problématiques, désigne les entrées de
+        - event_thermalImgHd et Ld
+        - event_stream
+        - event_rfGiga
+      - Serait intéressant de voir si l'application devient stable si on ignore/retire ces entrées
+      - Indiquerait la nécessité de traiter ces données de manière particulière
+- SmartSense: Monitorer noeud SmartSense sans stockage des entrées lourdes
+  - A modifié `DataToLocalInfluxDB` pour filtrer les entrées
+    - event_thermalImgHd, event_thermalImgLd et event_stream
 ** Semaine du <2024-03-11 Mon> au <2024-03-15 Fri>
 *** Planned
 **** DONE SmartSense: Rédaction du CR de la réunion du <2024-03-13 Wed>
