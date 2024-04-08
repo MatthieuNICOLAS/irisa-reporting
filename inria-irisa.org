@@ -93,6 +93,131 @@
 - Malheureusement, appels erronés puisque manque un paramètre
   - IMO le paramètre `board`
 - Renseigner les valeurs correctes
+** Semaine du <2024-04-08 Mon> au <2024-04-12 Fri>
+*** Planned
+**** IN-PROGRESS SmartSense: Traiter les problèmes relevés lors de l'uniformisation du code
+- J'ai noté plusieurs points problématiques au cours de mon passage sur l'ensemble des modules
+  - Le module *sensor_board* est inutilisé
+    - Code obsolète à supprimer ?
+  - La librairie *telnetlib* est dépréciée
+    - Passer à https://pypi.org/project/telnetlib3/ ?
+  - Une conditionnelle étrange est effectuée dans le module *tlc59108_manager*
+    - https://gitlab.inria.fr/smartsense/3douest/node-app/smartsense-node-app/-/blob/3feb5c56dc5e74dcea9eb2f2ba98bec40029acdf/TLC59108Manager.py#L370
+    - Revient à `if data[0]`
+    - `and` est-il l'opérateur désiré ?
+    - Simplifier/corriger
+  - Les appels à *OpenOCDManager.update()* dans *test_ocd* manquent d'un paramètre
+    - J'ai l'impression que c'est le paramètre *board*
+    - Ajouter les valeurs correctes ?
+  - *USBBoardManager.read_data()* et *parse_to_mqtt()* sont particulièrement sujets aux retours de Pylint
+    - Trop d'instructions
+    - Trop de branchements
+    - Trop de blocs imbriqués
+    - Refactorer pour améliorer la lisibilité du code ?
+    - Voir si on peut aussi factoriser du code à l'aide de fonctions
+  - Corriger ces problèmes
+    - Ou si pas de solution claire et rapide, créer une issue correspondante
+**** IN-PROGRESS SmartSense: Mise en place d'un processus de CI
+- Mettre en place des tests, c'était un bon début
+- Mettre en place un processus de CI, ça serait mieux
+  - Garantirait la reproductibilité de l'environnement de tests
+  - Et que j'oublie pas de les faire tourner avant l'intégration
+- Voir comment GitLab gère ça
+**** IN-PROGRESS SmartSense: Monitorer noeud SmartSense sans stockage des entrées lourdes
+- Plusieurs types d'entrées sont bien plus volumineux que les autres
+  - De plusieurs ordres de grandeur (jusqu'au ko par entrée)
+- Entrées concernées
+  - event_thermalImgHd
+  - event_stream
+- Et dans une moindre mesure
+  - event_thermalImgLd
+  - event_rfGiga
+- Tester si ne pas stocker ces entrées stabilise le système
+**** IN-PROGRESS SmartSense: Identifier un SGBD pertinent pour le noeud
+- Serait intéressant IMO de proposer un autre SGBD qu'InfluxDB pour le noeud SmartSense autonome
+- Dans l'idée, pense à SQLite
+- Mais on a pas vraiment de relations entre nos données
+- Identifier un SGBD pour embedded systems, document-oriented, et disponible sur RPi
+**** TODO SmartSense: Monitorer noeud SmartSense sous workload par inch
+- En théorie, devrait se comporter de manière similaire à la VM 32-bits
+- Serait intéressant de le confirmer
+**** TODO SmartSense: Créer repos pour ADT SmartObs
+- Besoin d'un repo pour conserver les différents CRs de réunions
+- Mickäel suggère aussi de mettre en place un miroir de mon reporting au même endroit
+  - De façon à centraliser ce qui a trait au projet
+- Permettra si besoin de rajouter de nouveaux repos
+*** Done
+- Réunion de suivi du <2024-04-12 Fri>
+  - Préparation
+    - Tentative de reproduction du bug sur Raspberry virtualisée
+      - Plutôt que de travailler directement sur le noeud, a virtualisé des Raspberry avec dernière version de l'OS
+        - En 32bits et 64bits
+      - A utilisé inch, outil de stress proposé par InfluxDB, pour reproduire la workload du noeud
+      - Pas réussi à reproduire le bug dans ces conditions
+      - Différences par rapport aux conditions réelles
+        - Inch ne permet pas de reproduire correctement notre workload
+        - Peut seulement insérer des valeurs numériques randoms, pas des strings par ex
+        - A pu reproduire à peu près le volume et débit en termes de points
+        - Mais sur un bien plus grand nombre de valeurs par points
+      - Observations
+        - Augmentation de la consommation en RAM d'InfluxDB au début de la simulation
+        - Puis atteint un plateau
+          - À ~250Mo pour la version 32bits, ~320Mo pour la version 64bits
+      - Réflexions
+        - P-e la même chose que l'on observe dans notre cas
+        - Mais que le plateau est trop élevé par rapport à notre matériel
+      - Pistes suivies
+        - Faire tourner la simulation de charge sur le noeud SmartSense
+        - Faire tourner le noeud SmartSense en ignorant les entrées particulières
+          - i.e. les images thermiques et le stream audio
+      - Conclusions
+        - InfluxDB me paraît inadapté à notre utilisation actuelle sur le noeud SmartSense
+          - Souhaite stocker des données de façon pérenne
+            - Hors stocker un volume important de données provoque un crash au redémarrage d'InfluxDB
+          - Majorité de nos données sont des blobs (38Mo sur 40Mo)
+            - Utilité d'une timeseries DB pour ce type de données ?
+          - Pas de requêtes sur les données numériques à l'heure actuelle
+        - Trouve pertinent de dissocier stockage des données et exploitation des données
+          - Pas les mêmes contraintes, pas les mêmes outils, pas les mêmes formats
+          - Me parait plus adapté d'utiliser un équivalent Document-oriented de SQLite
+      - Questions
+        - Serais curieux de la configuration InfluxDB pour le serveur
+          - Quelle est la durée de rétention des données ?
+          - Quelle est la conso en RAM ?
+          - Quel est le volume de données stocké ?
+        - Serais curieux d'avoir les caractéristiques techniques du micro
+          - Pourquoi un flux de données si important ?
+          - Possibilité de le diminuer ?
+    - Wi-Fi
+  - Notes
+- SmartSense: Monitorer noeud SmartSense sans stockage des entrées lourdes
+  - J'ai relancé le noeud à mon retour
+  - i.e. <2024-04-08 Mon> à ~09:00
+  - Restait des artefacts de ma session d'avant les congés
+    - 10 shards
+    - De ~2Mo chacun
+    - Mais n'a eu aucun avertissement quant à la vitesse du démarrage
+  - Au bout de ~40min, consommation en RAM de ~250Mo
+  - Au bout de ~1h20, consommation en RAM de ~265Mo
+  - Au bout de ~3h00, consommation en RAM de ~285Mo
+  - Au bout de ~4h30, consommation en RAM de ~285Mo
+  - Au bout de ~5h30, consommation en RAM de ~297Mo
+- SmartSense: Identifier un SGBD pertinent pour le noeud
+  - [X] SQLite
+    - Au cas où, SQLite supporte un type JSON
+      - https://sqlite.org/json1.html
+      - https://sqldocs.org/sqlite/sqlite-json-data/
+    - Et est installable sur RPi
+  - [-] MongoDB +est un bon candidat+ n'est pas un bon candidat
+    - Dispose d'une version pour RPi depuis la RPi 3
+      - https://www.mongodb.com/developer/products/mongodb/mongodb-on-raspberry-pi/
+    - J'ai rien dit
+      - https://www.mongodb.com/docs/manual/administration/production-notes/#std-label-prod-notes-supported-platforms-ARM64
+      - https://www.mongodb.com/docs/manual/release-notes/5.0-compatibility/#removed-raspberry-pi-support
+    - Depuis la version 5 de Mongo (actuellement à la version 7), a drop le support des ARMs antérieurs aux ARMs v8.2
+      - De mémoire, la RPi 3 a des CPUs ARM v7.x
+  - [ ] RethinkDB
+  - [ ] CouchDB
 ** Semaine du <2024-03-18 Mon> au <2024-03-22 Fri>
 *** Planned
 **** DONE SmartSense: Intégrer la branche *refactor/main-app*
@@ -260,7 +385,7 @@ Restart=no
   - Jusque là, avait créé 6 shards de 600Mo
   - Et un 7ème shard était en cours de vie
   - Doit diviser par ~12 la charge de travail si veux m'approcher du volume de données de notre use case
-  - Aurai tout de même un débit en terme de points supérieur à la workload réelle
+  - Aurais tout de même un débit en terme de points supérieur à la workload réelle
   - A lancé la commande suivante le <2024-03-20 Wed>, 08:37 (heure de la VM)
     - ~/go/bin/inch -v -db SensorData -delay 1s -m 5 -t 1,2,1,2,1,1,1,1 -f 84 -p 86400 -b 100 -consistency any
   - Observations
