@@ -98,6 +98,21 @@ CLOSED: [2024-04-10 Wed 15:00]
 - Tester si ne pas stocker ces entrées stabilise le système
 **** DONE SmartSense: Identifier un adapteur Wi-Fi adapté
 CLOSED: [2024-04-10 Wed 15:03]
+**** DONE SmartSense: Créer repos pour ADT SmartObs
+CLOSED: [2024-04-10 Wed 15:10]
+- Besoin d'un repo pour conserver les différents CRs de réunions
+- Mickäel suggère aussi de mettre en place un miroir de mon reporting au même endroit
+  - De façon à centraliser ce qui a trait au projet
+- Permettra si besoin de rajouter de nouveaux repos
+**** DONE SmartSense: Écrire un script permettant de rejouer une trace du noeud SmartSense
+CLOSED: [2024-04-10 Wed 17:45]
+- inch ne permet pas de reproduire correctement la charge générée par le noeud SmartSense sur son instance InfluxDB
+  - Notamment, ne permet pas de reproduire le flux de blob
+- Au cours de mes essais visant à remplacer l'instance InfluxDB par un fichier, j'ai produit
+  - Un fichier txt de 1.7Go de données collectées au format line protocol
+  - Un fichier txt.gz de 2.8Go similaire
+- Pourrait mettre en place un script feedant ces données à une instance InfluxDB
+- Permettrait p-e d'avoir un moyen automatisé de faire planter le noeud et les VMs
 **** IN-PROGRESS SmartSense: Traiter les problèmes relevés lors de l'uniformisation du code
 - J'ai noté plusieurs points problématiques au cours de mon passage sur l'ensemble des modules
   - Le module *sensor_board* est inutilisé
@@ -131,11 +146,6 @@ CLOSED: [2024-04-10 Wed 15:03]
 - Dans l'idée, pense à SQLite
 - Mais on a pas vraiment de relations entre nos données
 - Identifier un SGBD pour embedded systems, document-oriented, et disponible sur RPi
-**** IN-PROGRESS SmartSense: Créer repos pour ADT SmartObs
-- Besoin d'un repo pour conserver les différents CRs de réunions
-- Mickäel suggère aussi de mettre en place un miroir de mon reporting au même endroit
-  - De façon à centraliser ce qui a trait au projet
-- Permettra si besoin de rajouter de nouveaux repos
 **** TODO SmartSense: Monitorer noeud SmartSense sous workload par inch
 - En théorie, devrait se comporter de manière similaire à la VM 32-bits
 - Serait intéressant de le confirmer
@@ -303,6 +313,45 @@ CLOSED: [2024-04-10 Wed 15:03]
     - Format nano:
       - Panda PAU0A AC600: https://www.amazon.com/dp/B07C9TYDR4/?tag=pandaw-20
   - Voir si on a d'autres revendeurs référencés sur lesquels ces modèles seraient dispos
+- SmartSense: Écrire un script permettant de rejouer une trace du noeud SmartSense
+  - Infos supplémentaires
+    - Taille du fichier de traces : 1.7Go
+    - Taille du fichier de traces sans les données du capteur stream : 1.1Go
+    - Taille du fichier de traces dans les données des capteurs stream et thermal : 252Mo
+    - Donc les blobs représentent ~85% des données collectées et stockées
+      - Sans compter qu'on a le format du line protocol
+  - Peut utiliser du portforwarding pour ne pas m'embêter à gérer les différents cas de figures
+    - La commande permet d'interagir depuis ma machine avec l'instance InfluxDB du noeud SmartSense
+      - ssh -L 8086:192.168.1.2:8086 pi@192.168.1.2
+  - Script
+    - [X] Créer un client InfluxDB
+    - [X] Ouvrir le fichier
+    - [X] Pour chaque ligne
+      - [X] Bufferiser la ligne
+      - [X] Si buffer atteint 100 lignes
+        - [X] Envoyer buffer via client
+        - [X] Vider buffer
+        - [X] Attendre 5s
+  - Problème rencontré à cause de "leptonVersion=unknow"
+    - A gunzip le fichier
+      - gunzip -v test-storage.txt.gz
+    - Remplacé les occurrences de l'erreur de formatage
+      - sed -i 's/leptonVersion=unknow/leptonVersion="unknown"/g' test-storage.txt
+    - A gzippé le fichier
+      - gzip test-storage.txt
+  - Problème rencontré à cause de 'leptonVersion="unknown"'
+    - influxdb.exceptions.InfluxDBClientError: 400: {"error":"partial write: field type conflict: input field \"leptonVersion\" on measurement \"meta_thermalImgHd\" is type float, already exists as type string dropped=1"}
+    - A décidé
+  - Problème rencontré à cause d'une erreur de formatage
+    - influxdb.exceptions.InfluxDBClientError: 400: {"error":"partial write: unable to parse 'event_gyroscope,admin=p,mode=production,location=External,sector=1,subsector=1,node=b8:27:eb:8c:67:48,board=sensorBoard,mcu=sensor x=0,y=0,z=0 1684598296169874816event_magnetometer,admin=p,mode=production,location=External,sector=1,subsector=1,node=b8:27:eb:8c:67:48,board=sensorBoard,mcu=sensor x=4,y=53,z=26 1684598296169874816': bad timestamp dropped=0"}
+    - Tous les 10 buffers, de manière régulière
+    - i.e. toutes les 1000 entrées
+    - J'ai dû tout simplement me foirer lors de la création de ce fichier de traces
+    - Doit manquer un \n entre chaque buffer de traces que j'ajoutais au fichier
+    - Ajout d'un try/catch de cette exception
+  - A lancé le script pour feed les données au noeud SmartSense
+  - À voir si cela va provoquer le crash
+    - Consommation initiale en RAM: 286Mo
 ** Semaine du <2024-03-18 Mon> au <2024-03-22 Fri>
 *** Planned
 **** DONE SmartSense: Intégrer la branche *refactor/main-app*
