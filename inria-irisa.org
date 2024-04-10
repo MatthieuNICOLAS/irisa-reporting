@@ -3,11 +3,6 @@
 
 * Journal de bord
 ** Backlog
-*** IN-PROGRESS Automatiser la création d'un cluster de Raspberry virtualisé
-- Plutôt que de travailler avec le cluster physique
-- Serait intéressant d'apprendre à provisionner un cluster virtuel de Raspberry
-- Permettrait de pouvoir créer un environnement pour dev et effectuer des tests
-  - Notamment comment setup k8s ou équivalent sur un tel système
 *** TODO Automatiser le setup de k3s sur un cluster de Raspberry
 - Permettrait de graduate de minikube
   - Et d'apprendre ainsi tout ce qu'il gère pour moi automatiquement
@@ -67,6 +62,11 @@
 *** TODO Lire *OZCAR: The French Network of Critical Zone Observatories*
 - Ammar m'a recommandé cet article pour en apprendre plus sur les observatoires et leurs buts
 - Le consulter
+*** TODO SmartSense: Fix `test_ocd`
+- Dans ce module, appelle plusieurs fois la méthode `open_ocd_manager.update()`
+- Malheureusement, appels erronés puisque manque un paramètre
+  - IMO le paramètre `board`
+- Renseigner les valeurs correctes
 *** TODO SmartSense: Corriger le formatage des entrées pour InfluxDB
 - InfluxDB définit et utilise le line protocol comme format d'entrée pour les données
   - https://docs.influxdata.com/influxdb/v1/write_protocols/line_protocol_reference/
@@ -83,18 +83,21 @@
   - Dans les faits, seule la ligne incriminée avait l'air manquante
 - Identifier où le formatage s'effectue
 - Corriger la gestion des chaînes de caractères
-*** TODO SmartSense: Créer issue au sujet de la dépréciation de telnetlib
-- Librairie dépréciée
-  - c.f. https://peps.python.org/pep-0594/#deprecated-modules
-- Nécessaire de passer à une des librairies suggérées
-- Créer l'issue correspondante
-**** TODO SmartSense: Fix `test_ocd`
-- Dans ce module, appelle plusieurs fois la méthode `open_ocd_manager.update()`
-- Malheureusement, appels erronés puisque manque un paramètre
-  - IMO le paramètre `board`
-- Renseigner les valeurs correctes
 ** Semaine du <2024-04-08 Mon> au <2024-04-12 Fri>
 *** Planned
+**** DONE SmartSense: Monitorer noeud SmartSense sans stockage des entrées lourdes
+CLOSED: [2024-04-10 Wed 15:00]
+- Plusieurs types d'entrées sont bien plus volumineux que les autres
+  - De plusieurs ordres de grandeur (jusqu'au ko par entrée)
+- Entrées concernées
+  - event_thermalImgHd
+  - event_stream
+- Et dans une moindre mesure
+  - event_thermalImgLd
+  - event_rfGiga
+- Tester si ne pas stocker ces entrées stabilise le système
+**** DONE SmartSense: Identifier un adapteur Wi-Fi adapté
+CLOSED: [2024-04-10 Wed 15:03]
 **** IN-PROGRESS SmartSense: Traiter les problèmes relevés lors de l'uniformisation du code
 - J'ai noté plusieurs points problématiques au cours de mon passage sur l'ensemble des modules
   - Le module *sensor_board* est inutilisé
@@ -123,29 +126,29 @@
   - Garantirait la reproductibilité de l'environnement de tests
   - Et que j'oublie pas de les faire tourner avant l'intégration
 - Voir comment GitLab gère ça
-**** IN-PROGRESS SmartSense: Monitorer noeud SmartSense sans stockage des entrées lourdes
-- Plusieurs types d'entrées sont bien plus volumineux que les autres
-  - De plusieurs ordres de grandeur (jusqu'au ko par entrée)
-- Entrées concernées
-  - event_thermalImgHd
-  - event_stream
-- Et dans une moindre mesure
-  - event_thermalImgLd
-  - event_rfGiga
-- Tester si ne pas stocker ces entrées stabilise le système
 **** IN-PROGRESS SmartSense: Identifier un SGBD pertinent pour le noeud
 - Serait intéressant IMO de proposer un autre SGBD qu'InfluxDB pour le noeud SmartSense autonome
 - Dans l'idée, pense à SQLite
 - Mais on a pas vraiment de relations entre nos données
 - Identifier un SGBD pour embedded systems, document-oriented, et disponible sur RPi
-**** TODO SmartSense: Monitorer noeud SmartSense sous workload par inch
-- En théorie, devrait se comporter de manière similaire à la VM 32-bits
-- Serait intéressant de le confirmer
-**** TODO SmartSense: Créer repos pour ADT SmartObs
+**** IN-PROGRESS SmartSense: Créer repos pour ADT SmartObs
 - Besoin d'un repo pour conserver les différents CRs de réunions
 - Mickäel suggère aussi de mettre en place un miroir de mon reporting au même endroit
   - De façon à centraliser ce qui a trait au projet
 - Permettra si besoin de rajouter de nouveaux repos
+**** TODO SmartSense: Monitorer noeud SmartSense sous workload par inch
+- En théorie, devrait se comporter de manière similaire à la VM 32-bits
+- Serait intéressant de le confirmer
+**** TODO LivingFog: Automatiser la création d'un cluster de Raspberry virtualisé
+- Plutôt que de travailler avec le cluster physique
+- Serait intéressant d'apprendre à provisionner un cluster virtuel de Raspberry
+- Permettrait de pouvoir créer un environnement pour dev et effectuer des tests
+  - Notamment comment setup k8s ou équivalent sur un tel système
+**** TODO SmartSense: Créer issue au sujet de la dépréciation de telnetlib
+- Librairie dépréciée
+  - c.f. https://peps.python.org/pep-0594/#deprecated-modules
+- Nécessaire de passer à une des librairies suggérées
+- Créer l'issue correspondante
 *** Done
 - Réunion de suivi du <2024-04-12 Fri>
   - Préparation
@@ -202,6 +205,18 @@
   - Au bout de ~3h00, consommation en RAM de ~285Mo
   - Au bout de ~4h30, consommation en RAM de ~285Mo
   - Au bout de ~5h30, consommation en RAM de ~297Mo
+  - Au bout de ~7h00, consommation en RAM de ~350Mo (27,7%)
+  - Au bout de ~24h00, consommation en RAM de ~388Mo (29,3%)
+  - Au bout de ~29h30, consommation en RAM de ~382Mo (29,0%)
+  - Au bout de ~34h00, consommation en RAM de ~424Mo (32,7%)
+  - Au bout de ~48h00, consommation en RAM de ~441Mo (34,1%)
+  - Au bout de ~51h00, consommation en RAM de ~427Mo (33,4%)
+  - Au bout de ~53h30, consommation en RAM de ~432Mo (34,4%)
+  - A coupé l'expérience au bout de ~53h30
+    - 63 shards, 134Mo de données
+  - A redémarré InfluxDB ensuite, avec succès
+    - Malgré 29 attempts et ~27s de démarrage
+    - Consomme ~457Mo (42,6%)
 - SmartSense: Identifier un SGBD pertinent pour le noeud
   - [X] SQLite
     - Au cas où, SQLite supporte un type JSON
@@ -218,6 +233,76 @@
       - De mémoire, la RPi 3 a des CPUs ARM v7.x
   - [ ] RethinkDB
   - [ ] CouchDB
+  - [X] Matthieu suggère tout simplement des fichiers
+    - Avec du logrotate pour gérer les fichiers et les compresser
+    - À voir si c'est l'outil le plus approprié
+- SmartSense: Créer repos pour ADT SmartObs
+  - Me suis rendu compte que Guillermo avait pris des notes pour un CR de notre réunion technique
+  - Mais il n'avait pas pu suivre toute la réunion, notamment quand on parlait de méthodologie de travail avec Mickaël
+  - Complétion du CR
+  - Création du repo pour CR en local
+  - J'ai par contre pas les droits pour créer le sous-groupe *SmartObs* du groupe *SmartSense*
+  - A demandé à Mickaël de s'en charger
+  - Mickaël s'en est occupé
+- SmartSense: Identifier un adapteur Wi-Fi adapté
+  - Mickaël propose comme antenne : https://www.inmac-wstore.com/tp-link-cpe710-antenne/p7310809.htm
+    - Antenne 5GHz
+  - Références utilisées
+    - https://github.com/morrownr/USB-WiFi/
+    - https://wikidevi.wi-cat.ru/
+  - Pour le moment, regarde sur : https://www.inmac-wstore.com/
+  - [~] TP-Link Archer T2U Nano
+    - Chip: RTL8811AU
+    - https://www.inmac-wstore.com/tp-link-archer-t2u-nano-adaptateur-reseau-usb-2-0/p7211994.htm
+    - Semble non plug-&-play
+    - Mais a l'air d'y avoir des threads sur comment le faire fonctionner
+    - https://forums.raspberrypi.com/viewtopic.php?t=128089
+    - Mais le site avec le driver a l'air down de nos jours
+    - wikidevi pointe vers 2 drivers
+      - Un par Edimax : https://www.edimax.com/edimax/download/download/data/edimax/global/download/product/smb_embedded_wireless_adapter/smb_embedded_wireless_adapter_ac650_ac600/ew-7811uac/
+      - Un communautaire : https://github.com/aircrack-ng/rtl8812au
+    - Ce dernier est fait pour le chip RLT8812AU
+      - Si c'est compatible, alors on peut se pencher sur cet autre driver communautaire : https://github.com/morrownr/8812au-20210820
+  - [X] TP-Link Archer T3U
+    - https://www.inmac-wstore.com/tp-link-archer-t3u-adaptateur-reseau-usb-3-0/p7212232.htm
+    - Semble supporté d'après ces infos avec un driver de la communauté
+      - https://forums.raspberrypi.com/viewtopic.php?t=342665
+    - Chip: RTL8812BU
+      - https://wikidevi.wi-cat.ru/TP-LINK_Archer_T3U
+    - Driver : https://github.com/morrownr/88x2bu-20210702?tab=readme-ov-file
+  - [~] NETGEAR A6100 WiFi USB Mini Adapter
+    - Chip: RTL8811AU
+    - https://www.inmac-wstore.com/netgear-a6100-wifi-usb-mini-adapter-adaptateur-reseau-usb/p2798933.htm
+  - [X] TRENDnet TEW-808UBM
+    - Chip: RTL8812BU
+  - Ce qui ressort de ma lecture de https://github.com/morrownr/USB-WiFi/blob/main/home/USB_WiFi_Adapter_Information_for_Linux.md
+    - 2 sociétés qui font des chips pour clés Wi-Fi
+      - Realtek
+      - Mediatek
+    - Realtek ne suit pas le standard Linux pour les drivers
+      - Drivers ne sont pas intégrés au noyau Linux
+      - Drivers ne sont pas forcément publiés non plus
+      - Va dépendre du bon vouloir des fabriquants
+      - Communauté propose des drivers, mais aux utilisateur-rices de mettre à jour leur système régulièrement
+    - Les drivers de Mediatek eux sont intégrés au kernel
+    - Donc plutôt partir sur un adapteur basé sur une chip Mediatek
+      - Liste des chips Mediatek supportés : https://wireless.wiki.kernel.org/en/users/drivers/mediatek
+    - TP-Link et D-Link ont l'air d'avoir la facheuse tendance de MàJ leurs adapteurs Wi-Fi en gardant la même référence
+      - MàJ pouvant impliquer un changement de chip
+      - Et donc un changement des drivers adaptés
+    - Panda et Alfa eux se démarquent par la qualité de leur matériel et le support natif de Linux
+    - Peut se pencher sur l'utilisation d'un cable d'extension USB pour sortir le dongle du boitier et ainsi ne pas manquer de place
+      - Utiliser un adapteur Wi-Fi avec antenne par exemple
+      - Curieux de si la RPi peut alimenter un adapteur avec antenne par contre
+  - À titre perso, recommanderais
+    - Tirés de : https://github.com/morrownr/USB-WiFi/blob/main/home/The_Short_List.md et https://elinux.org/RPi_USB_Wi-Fi_Adapters
+    - Avec antenne:
+      - ALFA AWUS036ACM : https://www.amazon.com/Network-AWUS036ACM-Long-Range-Wide-Coverage-High-Sensitivity/dp/B08BJS8FXD
+    - Format mini:
+      - Linksys AE6000: https://www.amazon.com/Linksys-AE6000-Dual-Band-Wireless-Adapter/dp/B00BFW8KIG
+    - Format nano:
+      - Panda PAU0A AC600: https://www.amazon.com/dp/B07C9TYDR4/?tag=pandaw-20
+  - Voir si on a d'autres revendeurs référencés sur lesquels ces modèles seraient dispos
 ** Semaine du <2024-03-18 Mon> au <2024-03-22 Fri>
 *** Planned
 **** DONE SmartSense: Intégrer la branche *refactor/main-app*
@@ -1079,7 +1164,7 @@ CLOSED: [2024-03-07 Thu 16:40]
       - Application stockée dans /home/root/App
     - grafana v7.0.1
       - Fichier de configuration à /etc/grafana/grafana.ini
-- SmartSense: Reproduire l'environnement sur lla VM
+- SmartSense: Reproduire l'environnement sur la VM
   - Pose la question de si c'est une bonne idée de reproduire à l'identique l'environnement
     - Ensemble des dépendances/applications installées directement sur le système
   - Ou faudrait-il le faire évoluer ?
