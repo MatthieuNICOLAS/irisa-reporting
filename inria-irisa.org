@@ -113,6 +113,15 @@ CLOSED: [2024-04-10 Wed 17:45]
   - Un fichier txt.gz de 2.8Go similaire
 - Pourrait mettre en place un script feedant ces données à une instance InfluxDB
 - Permettrait p-e d'avoir un moyen automatisé de faire planter le noeud et les VMs
+**** DONE SmartSense: Exécuter le script sur le noeud SmartSense
+CLOSED: [2024-04-11 Thu 10:42]
+- Avant toute chose, il serait bien de valider que le script et la trace obtenu produit le crash sur le noeud
+- Exécuter le script avec le noeud SmartSense comme destinataire pour confirmer cela
+  - ssh -L 8086:192.168.1.2:8086 pi@192.168.1.2
+**** IN-PROGRESS SmartSense: Exécuter le script sur VM 64-bits
+- Maintenant que j'ai observé le script produire le crash sur le noeud SmartSense
+- Peut l'exécuter en utilisant l'instance InfluxDB d'une VM comme destination
+- Permettra ainsi de confirmer que l'on observe le même comportement
 **** IN-PROGRESS SmartSense: Traiter les problèmes relevés lors de l'uniformisation du code
 - J'ai noté plusieurs points problématiques au cours de mon passage sur l'ensemble des modules
   - Le module *sensor_board* est inutilisé
@@ -349,9 +358,172 @@ CLOSED: [2024-04-10 Wed 17:45]
     - J'ai dû tout simplement me foirer lors de la création de ce fichier de traces
     - Doit manquer un \n entre chaque buffer de traces que j'ajoutais au fichier
     - Ajout d'un try/catch de cette exception
+- SmartSense: Exécuter le script sur le noeud SmartSense
   - A lancé le script pour feed les données au noeud SmartSense
+    - Démarré à ~17h30
   - À voir si cela va provoquer le crash
     - Consommation initiale en RAM: 286Mo
+  - Obtenu un crash du script à ~02h43 (~17h20, heure du noeud)
+  - Dernier log produit par le script à ce moment
+    - [[file:logs/2024-04-11-test_saturate_influx.log]]
+  - Puis rencontre une exception non-gérée interrompant le script
+    #+BEGIN_PLAIN
+Traceback (most recent call last):
+  File "/home/mnicolas/.cache/pypoetry/virtualenvs/smartsense-node-app-d-qYo1ZE-py3.12/lib/python3.12/site-packages/urllib3/connectionpool.py", line 790, in urlopen
+    response = self._make_request(
+               ^^^^^^^^^^^^^^^^^^^
+  File "/home/mnicolas/.cache/pypoetry/virtualenvs/smartsense-node-app-d-qYo1ZE-py3.12/lib/python3.12/site-packages/urllib3/connectionpool.py", line 536, in _make_request
+    response = conn.getresponse()
+               ^^^^^^^^^^^^^^^^^^
+  File "/home/mnicolas/.cache/pypoetry/virtualenvs/smartsense-node-app-d-qYo1ZE-py3.12/lib/python3.12/site-packages/urllib3/connection.py", line 461, in getresponse
+    httplib_response = super().getresponse()
+                       ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib64/python3.12/http/client.py", line 1423, in getresponse
+    response.begin()
+  File "/usr/lib64/python3.12/http/client.py", line 331, in begin
+    version, status, reason = self._read_status()
+                              ^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib64/python3.12/http/client.py", line 292, in _read_status
+    line = str(self.fp.readline(_MAXLINE + 1), "iso-8859-1")
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib64/python3.12/socket.py", line 707, in readinto
+    return self._sock.recv_into(b)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+ConnectionResetError: [Errno 104] Connection reset by peer
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/mnicolas/.cache/pypoetry/virtualenvs/smartsense-node-app-d-qYo1ZE-py3.12/lib/python3.12/site-packages/requests/adapters.py", line 486, in send
+    resp = conn.urlopen(
+           ^^^^^^^^^^^^^
+  File "/home/mnicolas/.cache/pypoetry/virtualenvs/smartsense-node-app-d-qYo1ZE-py3.12/lib/python3.12/site-packages/urllib3/connectionpool.py", line 844, in urlopen
+    retries = retries.increment(
+              ^^^^^^^^^^^^^^^^^^
+  File "/home/mnicolas/.cache/pypoetry/virtualenvs/smartsense-node-app-d-qYo1ZE-py3.12/lib/python3.12/site-packages/urllib3/util/retry.py", line 470, in increment
+    raise reraise(type(error), error, _stacktrace)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/mnicolas/.cache/pypoetry/virtualenvs/smartsense-node-app-d-qYo1ZE-py3.12/lib/python3.12/site-packages/urllib3/util/util.py", line 38, in reraise
+    raise value.with_traceback(tb)
+  File "/home/mnicolas/.cache/pypoetry/virtualenvs/smartsense-node-app-d-qYo1ZE-py3.12/lib/python3.12/site-packages/urllib3/connectionpool.py", line 790, in urlopen
+    response = self._make_request(
+               ^^^^^^^^^^^^^^^^^^^
+  File "/home/mnicolas/.cache/pypoetry/virtualenvs/smartsense-node-app-d-qYo1ZE-py3.12/lib/python3.12/site-packages/urllib3/connectionpool.py", line 536, in _make_request
+    response = conn.getresponse()
+               ^^^^^^^^^^^^^^^^^^
+  File "/home/mnicolas/.cache/pypoetry/virtualenvs/smartsense-node-app-d-qYo1ZE-py3.12/lib/python3.12/site-packages/urllib3/connection.py", line 461, in getresponse
+    httplib_response = super().getresponse()
+                       ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib64/python3.12/http/client.py", line 1423, in getresponse
+    response.begin()
+  File "/usr/lib64/python3.12/http/client.py", line 331, in begin
+    version, status, reason = self._read_status()
+                              ^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib64/python3.12/http/client.py", line 292, in _read_status
+    line = str(self.fp.readline(_MAXLINE + 1), "iso-8859-1")
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib64/python3.12/socket.py", line 707, in readinto
+    return self._sock.recv_into(b)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+urllib3.exceptions.ProtocolError: ('Connection aborted.', ConnectionResetError(104, 'Connection reset by peer'))
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/mnicolas/Documents/smartsense-node-app/test_saturate_influxdb.py", line 45, in <module>
+    main()
+  File "/home/mnicolas/Documents/smartsense-node-app/test_saturate_influxdb.py", line 36, in main
+    influxdb_client.write_points(buffer, protocol="line", batch_size=None)
+  File "/home/mnicolas/.cache/pypoetry/virtualenvs/smartsense-node-app-d-qYo1ZE-py3.12/lib/python3.12/site-packages/influxdb/client.py", line 603, in write_points
+    return self._write_points(points=points,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/mnicolas/.cache/pypoetry/virtualenvs/smartsense-node-app-d-qYo1ZE-py3.12/lib/python3.12/site-packages/influxdb/client.py", line 681, in _write_points
+    self.write(
+  File "/home/mnicolas/.cache/pypoetry/virtualenvs/smartsense-node-app-d-qYo1ZE-py3.12/lib/python3.12/site-packages/influxdb/client.py", line 413, in write
+    self.request(
+  File "/home/mnicolas/.cache/pypoetry/virtualenvs/smartsense-node-app-d-qYo1ZE-py3.12/lib/python3.12/site-packages/influxdb/client.py", line 332, in request
+    response = self._session.request(
+               ^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/mnicolas/.cache/pypoetry/virtualenvs/smartsense-node-app-d-qYo1ZE-py3.12/lib/python3.12/site-packages/requests/sessions.py", line 589, in request
+    resp = self.send(prep, **send_kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/mnicolas/.cache/pypoetry/virtualenvs/smartsense-node-app-d-qYo1ZE-py3.12/lib/python3.12/site-packages/requests/sessions.py", line 703, in send
+    r = adapter.send(request, **kwargs)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/mnicolas/.cache/pypoetry/virtualenvs/smartsense-node-app-d-qYo1ZE-py3.12/lib/python3.12/site-packages/requests/adapters.py", line 501, in send
+    raise ConnectionError(err, request=request)
+requests.exceptions.ConnectionError: ('Connection aborted.', ConnectionResetError(104, 'Connection reset by peer'))
+    #+END_PLAIN
+  - Correspond à une perte de connexion avec la BD
+  - Log du noeud
+    - [[file:logs/2024-04-11-test_saturate_influx.log]]
+  - Indique une première erreur de compaction par manque de mémoire ~7min avant le crash
+    #+BEGIN_PLAIN
+juin 06 17:15:14 raspberrypi influxd-systemd-start.sh[2464]: ts=2023-06-06T15:15:14.898289Z lvl=info msg="TSM compaction (start)" log_id=0iFrKq5l000 engine=tsm1 tsm1_strategy=full tsm1_optimize=false trace_id=0iGKGgKW000 op_name=tsm1_compact_group db_shard_id=128 op_event=start
+juin 06 17:15:14 raspberrypi influxd-systemd-start.sh[2464]: ts=2023-06-06T15:15:14.898416Z lvl=info msg="Beginning compaction" log_id=0iFrKq5l000 engine=tsm1 tsm1_strategy=full tsm1_optimize=false trace_id=0iGKGgKW000 op_name=tsm1_compact_group db_shard_id=128 tsm1_files_n=4
+juin 06 17:15:14 raspberrypi influxd-systemd-start.sh[2464]: ts=2023-06-06T15:15:14.898469Z lvl=info msg="Compacting file" log_id=0iFrKq5l000 engine=tsm1 tsm1_strategy=full tsm1_optimize=false trace_id=0iGKGgKW000 op_name=tsm1_compact_group db_shard_id=128 tsm1_index=0 tsm1_file=/data/influxdb/data/SensorData/short_duration/128/000000001-000000001.tsm
+juin 06 17:15:14 raspberrypi influxd-systemd-start.sh[2464]: ts=2023-06-06T15:15:14.898519Z lvl=info msg="Compacting file" log_id=0iFrKq5l000 engine=tsm1 tsm1_strategy=full tsm1_optimize=false trace_id=0iGKGgKW000 op_name=tsm1_compact_group db_shard_id=128 tsm1_index=1 tsm1_file=/data/influxdb/data/SensorData/short_duration/128/000000002-000000001.tsm
+juin 06 17:15:14 raspberrypi influxd-systemd-start.sh[2464]: ts=2023-06-06T15:15:14.898568Z lvl=info msg="Compacting file" log_id=0iFrKq5l000 engine=tsm1 tsm1_strategy=full tsm1_optimize=false trace_id=0iGKGgKW000 op_name=tsm1_compact_group db_shard_id=128 tsm1_index=2 tsm1_file=/data/influxdb/data/SensorData/short_duration/128/000000003-000000001.tsm
+juin 06 17:15:14 raspberrypi influxd-systemd-start.sh[2464]: ts=2023-06-06T15:15:14.898616Z lvl=info msg="Compacting file" log_id=0iFrKq5l000 engine=tsm1 tsm1_strategy=full tsm1_optimize=false trace_id=0iGKGgKW000 op_name=tsm1_compact_group db_shard_id=128 tsm1_index=3 tsm1_file=/data/influxdb/data/SensorData/short_duration/128/000000004-000000001.tsm
+juin 06 17:15:16 raspberrypi influxd-systemd-start.sh[2464]: [httpd] 192.168.1.2 - admin [06/Jun/2023:17:15:16 +0200] "POST /write?db=SensorData HTTP/1.1 " 204 0 "-" "python-requests/2.31.0" f129e0ec-047c-11ee-bad5-b827eb8c6748 258495
+juin 06 17:15:18 raspberrypi influxd-systemd-start.sh[2464]: [httpd] 192.168.1.2 - admin [06/Jun/2023:17:15:18 +0200] "POST /write?db=SensorData HTTP/1.1 " 400 436 "-" "python-requests/2.31.0" f285375a-047c-11ee-bad6-b827eb8c6748 85147
+juin 06 17:15:21 raspberrypi influxd-systemd-start.sh[2464]: [httpd] 192.168.1.2 - admin [06/Jun/2023:17:15:20 +0200] "POST /write?db=SensorData HTTP/1.1 " 204 0 "-" "python-requests/2.31.0" f3c508e9-047c-11ee-bad7-b827eb8c6748 586502
+juin 06 17:15:24 raspberrypi influxd-systemd-start.sh[2464]: [httpd] 192.168.1.2 - admin [06/Jun/2023:17:15:23 +0200] "POST /write?db=SensorData HTTP/1.1 " 204 0 "-" "python-requests/2.31.0" f553d32b-047c-11ee-bad8-b827eb8c6748 908366
+juin 06 17:15:24 raspberrypi influxd-systemd-start.sh[2464]: ts=2023-06-06T15:15:24.250020Z lvl=info msg="Error replacing new TSM files" log_id=0iFrKq5l000 engine=tsm1 tsm1_strategy=full tsm1_optimize=false trace_id=0iGKGgKW000 op_name=tsm1_compact_group db_shard_id=128 error="cannot allocate memory"
+juin 06 17:15:25 raspberrypi influxd-systemd-start.sh[2464]: ts=2023-06-06T15:15:25.269532Z lvl=info msg="TSM compaction (end)" log_id=0iFrKq5l000 engine=tsm1 tsm1_strategy=full tsm1_optimize=false trace_id=0iGKGgKW000 op_name=tsm1_compact_group db_shard_id=128 op_event=end op_elapsed=10371.259ms
+    #+END_PLAIN
+  - Puis un crash en bonne et due forme par manque de mémoire
+  - Chose étonnante, au bout de 3h, InfluxDB a réussi à redémarrer proprement
+    - Assez de RAM disponible ?
+- SmartSense: Exécuter le script sur VM 64-bits
+  - A créé une image dédiée, pi-bookworm-64bits-test-saturate.qcow2
+  - A démarré le script à ~09h27
+  - Consommation initiale en RAM: 93Mo
+  - Au bout de ~1h, consommation en RAM: 288Mo
+  - Le script a crash quelques minutes après
+  - Erreur côté script
+    #+BEGIN_PLAIN
+Traceback (most recent call last):
+  File "/home/mnicolas/Documents/smartsense-node-app/test_saturate_influxdb.py", line 45, in <module>
+    main()
+  File "/home/mnicolas/Documents/smartsense-node-app/test_saturate_influxdb.py", line 36, in main
+    influxdb_client.write_points(buffer, protocol="line", batch_size=None)
+  File "/home/mnicolas/.cache/pypoetry/virtualenvs/smartsense-node-app-d-qYo1ZE-py3.12/lib/python3.12/site-packages/influxdb/client.py", line 603, in write_points
+    return self._write_points(points=points,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/mnicolas/.cache/pypoetry/virtualenvs/smartsense-node-app-d-qYo1ZE-py3.12/lib/python3.12/site-packages/influxdb/client.py", line 681, in _write_points
+    self.write(
+  File "/home/mnicolas/.cache/pypoetry/virtualenvs/smartsense-node-app-d-qYo1ZE-py3.12/lib/python3.12/site-packages/influxdb/client.py", line 413, in write
+    self.request(
+  File "/home/mnicolas/.cache/pypoetry/virtualenvs/smartsense-node-app-d-qYo1ZE-py3.12/lib/python3.12/site-packages/influxdb/client.py", line 373, in request
+    raise InfluxDBServerError(reformat_error(response))
+influxdb.exceptions.InfluxDBServerError: {"error":"timeout"}
+    #+END_PLAIN
+  - Erreur côté InfluxDB
+    #+BEGIN_PLAIN
+Apr 11 09:21:33 raspberrypi influxd-systemd-start.sh[691]: [httpd] 10.0.2.2 - admin [11/Apr/2024:09:21:31 +0100] "POST /write?db=SensorData HTTP/1.1 " 204 0 "-" "python-requests/2.31.0" 80b8eae0-f7dc-11ee-851d-e2c03c540c32 1311065
+Apr 11 09:21:36 raspberrypi influxd-systemd-start.sh[691]: [httpd] 10.0.2.2 - admin [11/Apr/2024:09:21:35 +0100] "POST /write?db=SensorData HTTP/1.1 " 204 0 "-" "python-requests/2.31.0" 82b46d45-f7dc-11ee-851e-e2c03c540c32 918502
+Apr 11 09:21:38 raspberrypi influxd-systemd-start.sh[691]: [httpd] 10.0.2.2 - admin [11/Apr/2024:09:21:38 +0100] "POST /write?db=SensorData HTTP/1.1 " 204 0 "-" "python-requests/2.31.0" 8472f3e3-f7dc-11ee-851f-e2c03c540c32 420254
+Apr 11 09:21:41 raspberrypi influxd-systemd-start.sh[691]: [httpd] 10.0.2.2 - admin [11/Apr/2024:09:21:40 +0100] "POST /write?db=SensorData HTTP/1.1 " 400 438 "-" "python-requests/2.31.0" 85e674e7-f7dc-11ee-8520-e2c03c540c32 676701
+Apr 11 09:21:44 raspberrypi influxd-systemd-start.sh[691]: [httpd] 10.0.2.2 - admin [11/Apr/2024:09:21:43 +0100] "POST /write?db=SensorData HTTP/1.1 " 204 0 "-" "python-requests/2.31.0" 8781a0cc-f7dc-11ee-8521-e2c03c540c32 1005047
+Apr 11 09:22:13 raspberrypi influxd-systemd-start.sh[691]: ts=2024-04-11T08:22:12.426241Z lvl=info msg="failed to store statistics" log_id=0oV0TPbW000 service=monitor error=timeout
+Apr 11 09:22:26 raspberrypi influxd-systemd-start.sh[691]: ts=2024-04-11T08:22:24.738496Z lvl=info msg="failed to store statistics" log_id=0oV0TPbW000 service=monitor error=timeout
+Apr 11 09:22:41 raspberrypi influxd-systemd-start.sh[691]: [httpd] 10.0.2.2 - admin [11/Apr/2024:09:21:46 +0100] "POST /write?db=SensorData HTTP/1.1 " 500 15 "-" "python-requests/2.31.0" 894e9a3a-f7dc-11ee-8522-e2c03c540c32 43834722
+Apr 11 09:22:41 raspberrypi influxd-systemd-start.sh[691]: ts=2024-04-11T08:22:30.191672Z lvl=error msg="[500] - \"timeout\"" log_id=0oV0TPbW000 service=httpd
+Apr 11 09:22:41 raspberrypi influxd-systemd-start.sh[691]: ts=2024-04-11T08:22:37.326121Z lvl=info msg="failed to store statistics" log_id=0oV0TPbW000 service=monitor error=timeout
+Apr 11 09:22:57 raspberrypi influxd-systemd-start.sh[691]: ts=2024-04-11T08:22:56.785783Z lvl=info msg="failed to store statistics" log_id=0oV0TPbW000 service=monitor error=timeout
+Apr 11 09:23:12 raspberrypi influxd-systemd-start.sh[691]: ts=2024-04-11T08:23:12.767803Z lvl=info msg="Retention policy deletion check (start)" log_id=0oV0TPbW000 service=retention trace_id=0oV3uOVl000 op_name=retention_delete_check op_event=start
+Apr 11 09:23:19 raspberrypi influxd-systemd-start.sh[691]: ts=2024-04-11T08:23:13.832220Z lvl=info msg="Retention policy deletion check (end)" log_id=0oV0TPbW000 service=retention trace_id=0oV3uOVl000 op_name=retention_delete_check op_event=end op_elapsed=1064.583ms
+Apr 11 09:23:19 raspberrypi influxd-systemd-start.sh[691]: ts=2024-04-11T08:23:13.832767Z lvl=info msg="failed to store statistics" log_id=0oV0TPbW000 service=monitor error=timeout
+Apr 11 09:23:31 raspberrypi influxd-systemd-start.sh[691]: ts=2024-04-11T08:23:30.903172Z lvl=info msg="failed to store statistics" log_id=0oV0TPbW000 service=monitor error=timeout
+Apr 11 09:23:49 raspberrypi influxd-systemd-start.sh[691]: ts=2024-04-11T08:23:48.991732Z lvl=info msg="failed to store statistics" log_id=0oV0TPbW000 service=monitor error=timeout
+Apr 11 09:24:05 raspberrypi influxd-systemd-start.sh[691]: ts=2024-04-11T08:24:03.392276Z lvl=info msg="failed to store statistics" log_id=0oV0TPbW000 service=monitor error=timeout
+Apr 11 09:24:19 raspberrypi influxd-systemd-start.sh[691]: ts=2024-04-11T08:24:18.952007Z lvl=info msg="failed to store statistics" log_id=0oV0TPbW000 service=monitor error=timeout
+    #+END_PLAIN
+  - Semble avoir surchargé la VM d'un point de vue calculs avant de l'avoir surchargé en RAM
+  - Ralentir la vitesse à laquelle le script envoie les données à l'instance InfluxDB permettra p-e d'éviter ce problème
+  - Modification du script pour écrire toutes les 4s au lieu de 2s
+  - Relance le script à ~10h30
 ** Semaine du <2024-03-18 Mon> au <2024-03-22 Fri>
 *** Planned
 **** DONE SmartSense: Intégrer la branche *refactor/main-app*
