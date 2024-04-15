@@ -118,6 +118,16 @@ CLOSED: [2024-04-11 Thu 10:42]
 - Avant toute chose, il serait bien de valider que le script et la trace obtenu produit le crash sur le noeud
 - Exécuter le script avec le noeud SmartSense comme destinataire pour confirmer cela
   - ssh -L 8086:192.168.1.2:8086 pi@192.168.1.2
+**** DONE SmartSense: Créer issue au sujet de la dépréciation de telnetlib
+CLOSED: [2024-04-11 Thu 14:35]
+- Librairie dépréciée
+  - c.f. https://peps.python.org/pep-0594/#deprecated-modules
+- Nécessaire de passer à une des librairies suggérées
+- Créer l'issue correspondante
+**** DONE SmartSense: Monitorer noeud SmartSense sous workload par inch
+CLOSED: [2024-04-12 Fri 09:02]
+- En théorie, devrait se comporter de manière similaire à la VM 32-bits
+- Serait intéressant de le confirmer
 **** IN-PROGRESS SmartSense: Exécuter le script sur VM 64-bits
 - Maintenant que j'ai observé le script produire le crash sur le noeud SmartSense
 - Peut l'exécuter en utilisant l'instance InfluxDB d'une VM comme destination
@@ -155,19 +165,11 @@ CLOSED: [2024-04-11 Thu 10:42]
 - Dans l'idée, pense à SQLite
 - Mais on a pas vraiment de relations entre nos données
 - Identifier un SGBD pour embedded systems, document-oriented, et disponible sur RPi
-**** TODO SmartSense: Monitorer noeud SmartSense sous workload par inch
-- En théorie, devrait se comporter de manière similaire à la VM 32-bits
-- Serait intéressant de le confirmer
-**** TODO LivingFog: Automatiser la création d'un cluster de Raspberry virtualisé
+**** IN-PROGRESS LivingFog: Automatiser la création d'un cluster de Raspberry virtualisé
 - Plutôt que de travailler avec le cluster physique
 - Serait intéressant d'apprendre à provisionner un cluster virtuel de Raspberry
 - Permettrait de pouvoir créer un environnement pour dev et effectuer des tests
   - Notamment comment setup k8s ou équivalent sur un tel système
-**** TODO SmartSense: Créer issue au sujet de la dépréciation de telnetlib
-- Librairie dépréciée
-  - c.f. https://peps.python.org/pep-0594/#deprecated-modules
-- Nécessaire de passer à une des librairies suggérées
-- Créer l'issue correspondante
 *** Done
 - Réunion de suivi du <2024-04-12 Fri>
   - Préparation
@@ -175,12 +177,17 @@ CLOSED: [2024-04-11 Thu 10:42]
       - Plutôt que de travailler directement sur le noeud, a virtualisé des Raspberry avec dernière version de l'OS
         - En 32bits et 64bits
       - A utilisé inch, outil de stress proposé par InfluxDB, pour reproduire la workload du noeud
-      - Pas réussi à reproduire le bug dans ces conditions
       - Différences par rapport aux conditions réelles
         - Inch ne permet pas de reproduire correctement notre workload
         - Peut seulement insérer des valeurs numériques randoms, pas des strings par ex
         - A pu reproduire à peu près le volume et débit en termes de points
+          - Nombre de measurements (i.e. tables)
+          - Nombre de séries (i.e. ensemble de timestamp pour un measurement, des tags donnés)
         - Mais sur un bien plus grand nombre de valeurs par points
+      - Pas réussi à reproduire le bug dans ces conditions sur VMs
+      - Par contre, reproduit le bug sur noeud SmartSense
+        - Pas un crash complet
+        - Mais une impossibilité de compacter par manque de RAM
       - Observations
         - Augmentation de la consommation en RAM d'InfluxDB au début de la simulation
         - Puis atteint un plateau
@@ -189,10 +196,18 @@ CLOSED: [2024-04-11 Thu 10:42]
         - P-e la même chose que l'on observe dans notre cas
         - Mais que le plateau est trop élevé par rapport à notre matériel
       - Pistes suivies
-        - Faire tourner la simulation de charge sur le noeud SmartSense
-        - Faire tourner le noeud SmartSense en ignorant les entrées particulières
-          - i.e. les images thermiques et le stream audio
+        - Faire tourner une trace réelle sur VMs
+      - A fait tourner la trace réelle sur VM 64bits
+        - Sur ~24h
+        - 1Go de données
+        - 1 800 000 de points
+        - Atteint 500Mo de RAM sans rencontrer de problème
+      - Warning
+        - Lors du redémarrage d'InfluxDB, a des messages d'avertissement sur sa durée de rédémarrage
+        - Retrouve plus ma note à ce sujet, mais persuadé d'avoir eu un crash car démarrage trop long
+        - Si durée dépend du nombre de shards, pourrait rencontrer ce problème
       - Conclusions
+        - Upgrade le système
         - InfluxDB me paraît inadapté à notre utilisation actuelle sur le noeud SmartSense
           - Souhaite stocker des données de façon pérenne
             - Hors stocker un volume important de données provoque un crash au redémarrage d'InfluxDB
@@ -202,6 +217,8 @@ CLOSED: [2024-04-11 Thu 10:42]
         - Trouve pertinent de dissocier stockage des données et exploitation des données
           - Pas les mêmes contraintes, pas les mêmes outils, pas les mêmes formats
           - Me parait plus adapté d'utiliser un équivalent Document-oriented de SQLite
+            - SQLite permet de stocker du JSON
+            - Ou sinon peut stocker les trames MQTT ou les entrées au format line protocol (InfluxDB) dans un/des fichiers txt
       - Questions
         - Serais curieux de la configuration InfluxDB pour le serveur
           - Quelle est la durée de rétention des données ?
@@ -211,7 +228,17 @@ CLOSED: [2024-04-11 Thu 10:42]
           - Pourquoi un flux de données si important ?
           - Possibilité de le diminuer ?
     - Wi-Fi
+      - HaLow (SubGHz) me parait la techno la plus adaptée à notre cas d'usage
+        - Consommation d'énergie, débit (ko/s à Mo/s), range (500m-1.5km)
+      - Mais difficile de trouver du matériel
+        - Les posts que je vois sont de début d'année
+      - Mickaël propose de partir sur une antenne 5GHz AC
+      - A regardé pour un dongle Wi-Fi adapté
+        - 2 problèmes
+        - Disponibilité de l'équipement
+        - Existence des drivers
   - Notes
+    - Voir CR : https://gitlab.inria.fr/smartsense/smartobs/crs-reunions/-/blob/main/2024-04-12-reunion-suivi.md
 - SmartSense: Monitorer noeud SmartSense sans stockage des entrées lourdes
   - J'ai relancé le noeud à mon retour
   - i.e. <2024-04-08 Mon> à ~09:00
@@ -524,6 +551,49 @@ Apr 11 09:24:19 raspberrypi influxd-systemd-start.sh[691]: ts=2024-04-11T08:24:1
   - Ralentir la vitesse à laquelle le script envoie les données à l'instance InfluxDB permettra p-e d'éviter ce problème
   - Modification du script pour écrire toutes les 4s au lieu de 2s
   - Relance le script à ~10h30
+  - Au bout de ~4h, consommation en RAM: 431Mo
+  - Étonnament, au bout de ~6h, consommation en RAM: 353Mo
+  - Au bout de ~22h00, consommation en RAM: 540Mo
+  - Mais fin manuellement à l'expérience au bout de ~24h
+    - Consommation en RAM: ~500Mo
+    - 1Go de données stockées
+    - A réussi à redémarrer ~8s
+      - 6 warnings/attempts
+- SmartSense: Créer issue au sujet de la dépréciation de telnetlib
+  - Création de l'issue correspondante : https://gitlab.inria.fr/smartsense/3douest/node-app/smartsense-node-app/-/issues/3
+- SmartSense: Monitorer noeud SmartSense sous workload par inch
+  - Commande executée
+    - Après avoir mis en place le port forwarding : ssh -L 8087:192.168.1.2:8086 pi@192.168.1.2
+    - ~/go/bin/inch -v -host localhost:8087 -db SensorData -delay 1s -m 5 -t 1,2,1,2,1,1,1,1 -f 84 -p 86400 -b 50 -consistency any
+  - Expérience démarrée à ~16h55 (~07h34, heure du noeud)
+  - Consommation mémoire initiale: ~200Mo (17,5%)
+  - A tenu l'expérience
+  - Consommation mémoire finale: ~230Mo (20%)
+  - Mais, rencontre au bout de ~08h d'expérience (15h48, heure du noeud) un premier problème de compaction
+    - juin 07 15:48:40 raspberrypi influxd-systemd-start.sh[16898]: ts=2023-06-07T13:48:39.930693Z lvl=info msg="Error replacing new TSM files" log_id=0iH54c9G000 engine=tsm1 tsm1_strategy=full tsm1_optimize=false trace_id=0iHXhMvW000 op_name=tsm1_compact_group db_shard_id=149 error="cannot allocate memory"
+  - Alors que la consommation de RAM approchait les ~400Mo à ce moment
+    - cf. [[file:img/2024-04-12-grafana-hardware-monitoring.png]]
+    - Quoique, on avait 320Mo de RAM cached à ce moment aussi
+    - Globalement Grafana indique qu'on avait que 100Mo de dispo
+    - Le cache n'est pas automatiquement récupéré si nécessaire ?
+  - Reproductible ?
+  - Est-ce que ça confirme que InfluxDB tourne mieux sur version récente ?
+- LivingFog: Automatiser la création d'un cluster de Raspberry virtualisé
+  - Serait bien de prendre en main virt-manager à cette occasion
+    - Pour le moment, je créé mes images et VMs à la main
+    - Est-ce que virt-manager me permettrait de gérer cela plus simplement ?
+  - Tentative de créer une RPi3b virtuelle avec virt-manager
+    - À la création de la VM, obtient l'erreur suivante
+      - Unable to complete install: 'unsupported configuration: machine type 'raspi3b' does not support ACPI'
+    - Semble être lié à une erreur documentée de libvirt
+      - https://gitlab.com/libvirt/libvirt/-/issues/297
+    - Je retrouve justement l'erreur à l'origine de cette issue si je retire la feature ACPI de l'XML
+      - Unable to complete install: 'internal error: process exited while connecting to monitor: 2024-04-11T13:23:29.859513Z qemu-system-aarch64: Property 'raspi3b-machine.pflash0' not found'
+      - https://stackoverflow.com/questions/64698385/libvirt-qemu-system-aarch64-property-pflash0-not-found
+    - Mais de ce que je comprends, le problème est fixed
+    - Quel est donc ce problème que je rencontre ?
+    - À identifier et creuser
+  - Peut en parallèle réfléchir en matière de scripts
 ** Semaine du <2024-03-18 Mon> au <2024-03-22 Fri>
 *** Planned
 **** DONE SmartSense: Intégrer la branche *refactor/main-app*
