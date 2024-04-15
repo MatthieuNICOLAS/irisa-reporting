@@ -83,6 +83,185 @@
   - Dans les faits, seule la ligne incriminée avait l'air manquante
 - Identifier où le formatage s'effectue
 - Corriger la gestion des chaînes de caractères
+** Semaine du <2024-04-15 Mon> au <2024-04-19 Fri>
+*** Planned
+**** IN-PROGRESS SmartSense: Créer image système pour le noeud
+- Besoin de créer une nouvelle image pour
+  - Passer à un OS 64-bits et ainsi avoir un OS supporté par InfluxDB
+  - Obtenir les dernières MàJ et les derniers drivers pour dongle Wi-Fi
+- A appris qu'on peut travailler à même le noeud
+  - Suffit de démonter la vitre et de sortir du boitier le noeud
+  - A alors accès à la connectique pour brancher écran/clavier/souris
+- Peut donc travailler de manière très itérative
+  - Créer une image de base
+  - Installer InfluxDB
+  - Setup l'application
+  - Démarrer avec cette configuration et voir erreur(s) rencontrée(s)
+**** IN-PROGRESS SmartSense: Traiter les problèmes relevés lors de l'uniformisation du code
+- J'ai noté plusieurs points problématiques au cours de mon passage sur l'ensemble des modules
+  - Le module *sensor_board* est inutilisé
+    - Code obsolète à supprimer ?
+  - La librairie *telnetlib* est dépréciée
+    - Passer à https://pypi.org/project/telnetlib3/ ?
+  - Une conditionnelle étrange est effectuée dans le module *tlc59108_manager*
+    - https://gitlab.inria.fr/smartsense/3douest/node-app/smartsense-node-app/-/blob/3feb5c56dc5e74dcea9eb2f2ba98bec40029acdf/TLC59108Manager.py#L370
+    - Revient à `if data[0]`
+    - `and` est-il l'opérateur désiré ?
+    - Simplifier/corriger
+  - Les appels à *OpenOCDManager.update()* dans *test_ocd* manquent d'un paramètre
+    - J'ai l'impression que c'est le paramètre *board*
+    - Ajouter les valeurs correctes ?
+  - *USBBoardManager.read_data()* et *parse_to_mqtt()* sont particulièrement sujets aux retours de Pylint
+    - Trop d'instructions
+    - Trop de branchements
+    - Trop de blocs imbriqués
+    - Refactorer pour améliorer la lisibilité du code ?
+    - Voir si on peut aussi factoriser du code à l'aide de fonctions
+  - Corriger ces problèmes
+    - Ou si pas de solution claire et rapide, créer une issue correspondante
+**** IN-PROGRESS SmartSense: Mise en place d'un processus de CI
+- Mettre en place des tests, c'était un bon début
+- Mettre en place un processus de CI, ça serait mieux
+  - Garantirait la reproductibilité de l'environnement de tests
+  - Et que j'oublie pas de les faire tourner avant l'intégration
+- Voir comment GitLab gère ça
+**** IN-PROGRESS LivingFog: Automatiser la création d'un cluster de Raspberry virtualisé
+- Plutôt que de travailler avec le cluster physique
+- Serait intéressant d'apprendre à provisionner un cluster virtuel de Raspberry
+- Permettrait de pouvoir créer un environnement pour dev et effectuer des tests
+  - Notamment comment setup k8s ou équivalent sur un tel système
+*** Done
+- SmartSense: Créer image système pour le noeud
+  - Installation manuelle
+    - A installé la dernière version de Raspberry OS
+      - Basée sur Debian 12
+      - https://downloads.raspberrypi.com/raspios_lite_arm64/images/raspios_lite_arm64-2024-03-15/2024-03-15-raspios-bookworm-arm64-lite.img.xz
+    - A MàJ le système
+      - sudo apt update
+      - sudo apt upgrade -y
+    - Installation des dépendances
+      - sudo apt -y install git python3-dev pipx
+    - Configuration de pipx et installation outils Python
+      - pipx ensurepath
+      - source ~/.bashrc
+      - pipx install poetry
+      - pipx install poethepoet
+    - A installé InfluxDB
+      - wget https://dl.influxdata.com/influxdb/releases/influxdb_1.8.10_arm64.deb
+      - sudo apt install ./influxdb_1.8.10_arm64.deb
+    - A modifié la config InfluxDB
+      - Dans /etc/influxdb/influxdb.conf
+      - index-version = "tsi1"
+      - max-concurrent-compactions = 1
+    - A DL l'application
+      - git clone https://gitlab.inria.fr/smartsense/3douest/node-app/smartsense-node-app.git
+    - A installé les dépendances de l'application
+      - poetry install --no-root
+  - Rencontre une erreur à ce stade
+    - Liée au fait que la RPi est à Python 3.11
+    - Alors que mon PC est à Python 3.12
+    - Et que donc la config du pyproject.toml que j'ai fait utilise cette version
+    - Erreur
+      #+BEGIN_PLAIN
+$ poetry install
+The currently activated Python version 3.11.2 is not supported by the project (^3.12).
+Trying to find and use a compatible version.
+
+Poetry was unable to find a compatible version. If you have one, you can explicitly use it via the "env use" command.
+      #+END_PLAIN
+  - Peut downgrade la version de python indiquée comme supportée par l'application dans le pyproject.toml
+  - Mais reporte le problème
+    #+BEGIN_PLAIN
+$ poetry install
+Installing dependencies from lock file
+
+Package operations: 21 installs, 0 updates, 0 removals
+
+  - Installing spidev (3.6): Failed
+
+  ChefBuildError
+
+  Backend subprocess exited when trying to invoke build_wheel
+
+  /tmp/tmpfud7f8a0/.venv/lib/python3.11/site-packages/setuptools/dist.py:476: SetuptoolsDeprecationWarning: Invalid dash-separated options
+  !!
+
+          ********************************************************************************
+          Usage of dash-separated 'description-file' will not be supported in future
+          versions. Please use the underscore name 'description_file' instead.
+
+          By 2024-Sep-26, you need to update your project and remove deprecated calls
+          or your builds will no longer be supported.
+
+          See https://setuptools.pypa.io/en/latest/userguide/declarative_config.html for details.
+          ********************************************************************************
+
+  !!
+    opt = self.warn_dash_deprecation(opt, section)
+  running bdist_wheel
+  running build
+  running build_ext
+  building 'spidev' extension
+  creating build
+  creating build/temp.linux-x86_64-cpython-311
+  x86_64-linux-gnu-gcc -Wsign-compare -DNDEBUG -g -fwrapv -O2 -Wall -g -fstack-protector-strong -Wformat -Werror=format-security -g -fwrapv -O2 -fPIC -I/tmp/tmpfud7f8a0/.venv/include -I/usr/include/python3.11 -c spidev_module.c -o build/temp.linux-x86_64-cpython-311/spidev_module.o
+  spidev_module.c:28:10: fatal error: Python.h: No such file or directory
+     28 | #include <Python.h>
+        |          ^~~~~~~~~~
+  compilation terminated.
+  error: command '/usr/bin/x86_64-linux-gnu-gcc' failed with exit code 1
+
+
+  at ~/.local/pipx/venvs/poetry/lib/python3.11/site-packages/poetry/installation/chef.py:164 in _prepare
+      160│
+      161│                 error = ChefBuildError("\n\n".join(message_parts))
+      162│
+      163│             if error is not None:
+    → 164│                 raise error from None
+      165│
+      166│             return path
+      167│
+      168│     def _prepare_sdist(self, archive: Path, destination: Path | None = None) -> Path:
+
+Note: This error originates from the build backend, and is likely not a problem with poetry but with spidev (3.6) not supporting PEP 517 builds. You can verify this by running 'pip wheel --no-cache-dir --use-pep517 "spidev (==3.6)"'.
+    #+END_PLAIN
+  - Arrive à reproduire le problème avec docker, en se basant sur python:3.11
+  - Et ne le rencontre pas en me basant sur python:3.12
+  - Semblerait que lié à l'absence d'headers
+    - cf. https://stackoverflow.com/questions/21530577/fatal-error-python-h-no-such-file-or-directory
+  - Problème résolu en installant le paquet debian python3-dev
+    - Ajout de la commande au process décrit ci-dessus
+  - Nouvelle erreur au lancement
+    - Commande : poetry run python3 main_app.py
+    - Stacktrace
+      #+BEGIN_PLAIN
+Traceback (most recent call last):
+  File "/home/app/smartsense-node-app/main_app.py", line 612, in <module>
+    main()
+  File "/home/app/smartsense-node-app/main_app.py", line 538, in main
+    Utils.kick_watchdog()
+  File "/home/app/smartsense-node-app/utils.py", line 20, in kick_watchdog
+    wdt = open("/dev/watchdog")
+          ^^^^^^^^^^^^^^^^^^^^^
+PermissionError: [Errno 13] Permission denied: '/dev/watchdog'
+      #+END_PLAIN
+    - Pas déconnant comme erreur
+  - Le problème étant que je rencontre ensuite un problème de virtualenv si j'exécute la même commande en sudo
+    - Poetry/PoeThePoet ont été installé uniquement pour l'utilisateur courant (mnicolas)
+      - Accessibles dans /home/mnicolas/.local/bin/
+    - À l'exécution de la commande en tant que root, ne trouve pas Poetry, ni l'environnement virtuel associé au projet
+  - Ré-installe les dépendances mais en tant que root ce coup-ci
+    - sudo su
+    - pipx ensurepath
+    - exit
+    - sudo su
+    - pipx install poetry
+    - pipx install poethepoet
+    - poetry install --no-root
+  - Démarre désormais, mais plante car n'accède pas au fichier
+  - Comportement étrange, le noeud redémarre quelques secondes après
+    - Pourquoi ?
+    - N'a pas l'air d'être lié au timeout de wait_provisioning()
 ** Semaine du <2024-04-08 Mon> au <2024-04-12 Fri>
 *** Planned
 **** DONE SmartSense: Monitorer noeud SmartSense sans stockage des entrées lourdes
@@ -128,10 +307,17 @@ CLOSED: [2024-04-11 Thu 14:35]
 CLOSED: [2024-04-12 Fri 09:02]
 - En théorie, devrait se comporter de manière similaire à la VM 32-bits
 - Serait intéressant de le confirmer
-**** IN-PROGRESS SmartSense: Exécuter le script sur VM 64-bits
+**** DONE SmartSense: Exécuter le script sur VM 64-bits
+CLOSED: [2024-04-15 Mon 08:43]
 - Maintenant que j'ai observé le script produire le crash sur le noeud SmartSense
 - Peut l'exécuter en utilisant l'instance InfluxDB d'une VM comme destination
 - Permettra ainsi de confirmer que l'on observe le même comportement
+**** DONE SmartSense: Identifier un SGBD pertinent pour le noeud
+CLOSED: [2024-04-15 Mon 08:44]
+- Serait intéressant IMO de proposer un autre SGBD qu'InfluxDB pour le noeud SmartSense autonome
+- Dans l'idée, pense à SQLite
+- Mais on a pas vraiment de relations entre nos données
+- Identifier un SGBD pour embedded systems, document-oriented, et disponible sur RPi
 **** IN-PROGRESS SmartSense: Traiter les problèmes relevés lors de l'uniformisation du code
 - J'ai noté plusieurs points problématiques au cours de mon passage sur l'ensemble des modules
   - Le module *sensor_board* est inutilisé
@@ -160,11 +346,6 @@ CLOSED: [2024-04-12 Fri 09:02]
   - Garantirait la reproductibilité de l'environnement de tests
   - Et que j'oublie pas de les faire tourner avant l'intégration
 - Voir comment GitLab gère ça
-**** IN-PROGRESS SmartSense: Identifier un SGBD pertinent pour le noeud
-- Serait intéressant IMO de proposer un autre SGBD qu'InfluxDB pour le noeud SmartSense autonome
-- Dans l'idée, pense à SQLite
-- Mais on a pas vraiment de relations entre nos données
-- Identifier un SGBD pour embedded systems, document-oriented, et disponible sur RPi
 **** IN-PROGRESS LivingFog: Automatiser la création d'un cluster de Raspberry virtualisé
 - Plutôt que de travailler avec le cluster physique
 - Serait intéressant d'apprendre à provisionner un cluster virtuel de Raspberry
