@@ -262,6 +262,67 @@ PermissionError: [Errno 13] Permission denied: '/dev/watchdog'
   - Comportement étrange, le noeud redémarre quelques secondes après
     - Pourquoi ?
     - N'a pas l'air d'être lié au timeout de wait_provisioning()
+  - Test avec un fichier placeholder
+    - Progresse jusqu'à l'erreur suivante
+    - Erreur au niveau du bus I2C
+    - Mais toujours le même problème de crash/reboot de la RPi quelques secondes après l'interruption du programme Python
+- SmartSense: Réunion démo
+  - Préparation
+    - As-tu déjà présenté le noeud dans ce cadre d'event ?
+    - Y a-t-il un scénario établi ?
+    - Motivations derrière SmartSense autonome ?
+      - Orientation initiale Smart Building
+      - But est de pouvoir viser de nouvelles problématiques
+    - Pourquoi équiper un noeud de tous ces capteurs ?
+      - Scientifiques utilisent capteurs très précis (très cher)
+      - Là tente d'amener un paradigme low-cost, mais tout de même essayer des données collectées
+      - Plus simple de déployer board avec multitude
+    - Qu'est-ce qu'on veut montrer/sur quoi insister ?
+  - Réunion
+    - Dans le cadre d'un café-bazar
+    - Scénario
+      - Faire tourner le noeud SmartSense
+      - Montrer la collecte de données sur Grafana
+    - Expliquer qu'en cours de dev, notamment sur stockage de données en local
+    - Déploiement proche sur le campus de Beaulieu
+      - Tester le logiciel
+      - Tester le hardware
+      - Valider les résultats
+    - Discuter avec elles et eux pour voir si ça peut les intéresser
+      - Collecter cartes de visites
+      - Pourra les recontacter lorsque ça sera prêt
+    - 10 noeuds autonomes fabriqués
+      - 1 ici, 1 à Lannion, le reste chez 3DOuest
+    - Combien ça coûte ?
+      - Sur mesure
+      - 50k conception + fabrication des 10 premiers
+      - Estime à 3k le noeud autonome
+        - 2k la partie autonome (batterie, boitier, carte capteurs externe)
+        - 1k pour carte SmartSense + carte capteurs
+    - Microphone
+      - Trop coûteux d'enregistrer le flux brut
+      - Traitements à base d'enveloppe sonore
+        - Récupère uniquement les basses fréquences actuellement
+        - Des travaux en cours pour obtenir une enveloppe conservant les hautes fréquences
+      - But serait d'identifier l'origine du bruit
+      - 4 micro positionnés de manière à pouvoir faire de la spatialisation sonore
+    - Présence d'un télémètre optique
+      - Détecte et indique la distance avec des obstacles, jusqu'à 4m, précision au cm
+    - Connexion avec le noeud fog
+      - Serveur de calculs plus puissant
+      - Récupère et aggrège les données des différents capteurs
+      - Peut effectuer des traitements avant de lui-même remonter les données/stocker les données
+      - Questions de la localisation des calculs
+        - Sur le noeud SmartSense, le noeud fog et le cloud/chez soi
+    - Autonomie
+      - Actuellement une autonomie d'une dizaines d'heures
+        - Consomme ~10 Watt/h
+      - Perspective
+        - Ajout d'une batterie externe
+        - Ajout d'un panneau solaire
+    - Public pas forcément d'informaticiens
+      - Adapter le discours en conséquence
+      - i.e. éviter les termes un peu trop spécialisés tels que fog computing
 ** Semaine du <2024-04-08 Mon> au <2024-04-12 Fri>
 *** Planned
 **** DONE SmartSense: Monitorer noeud SmartSense sans stockage des entrées lourdes
