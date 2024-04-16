@@ -157,6 +157,24 @@
       - git clone https://gitlab.inria.fr/smartsense/3douest/node-app/smartsense-node-app.git
     - A installé les dépendances de l'application
       - poetry install --no-root
+  - En a profité pour créer la configuration adéquate pour se co à Eduroam lorsqu'utilise la RPi 3
+    - nmtui a permis de créer le gros de la config
+      - Profile name: Config Wifi
+      - Device: wlan0
+      - SSID: eduroam
+      - Mode: client
+      - Security: WPA & WPA2 Enterprise
+      - Authentication: PEAP
+      - Anonymous identity: anonymous@inria.fr
+      - Domain: inria.fr
+      - CA cert: file:///home/mnicolas/Chain-TCS-4-OV.pem
+      - CA cert password: <vide>
+      - PEAP version: Automatic
+      - Inner authentication: MSCHAPv2
+      - Username: mnicolas
+      - Password: <password>
+      - Reste vide
+    - nmcli con up "Config Wifi"
   - Rencontre une erreur à ce stade
     - Liée au fait que la RPi est à Python 3.11
     - Alors que mon PC est à Python 3.12
@@ -266,6 +284,22 @@ PermissionError: [Errno 13] Permission denied: '/dev/watchdog'
     - Progresse jusqu'à l'erreur suivante
     - Erreur au niveau du bus I2C
     - Mais toujours le même problème de crash/reboot de la RPi quelques secondes après l'interruption du programme Python
+  - A activé le port I2C
+    - En interactif
+      - sudo raspi-config
+    - En commande
+      - sudo raspi-config nonint do_i2c 0
+  - Active bien le port
+    - ls /dev/i2*
+      - /dev/i2c-1 /dev/i2c-2
+    - lsmod | grep i2c
+      - i2c_dev      16384  0
+      - i2c_bcm2835  16384  0
+  - Mais rencontre toujours la même erreur
+  - La page de la librairie INA indique une cause possible de l'erreur
+    - Paramètre `busnum` manquant dans le constructeur de l'objet INA
+    - Ajout du paramètre `busnum=1` dans le constructeur de l'objet INA, dans ina219_manager.py
+    - Fix le problème
 - SmartSense: Réunion démo
   - Préparation
     - As-tu déjà présenté le noeud dans ce cadre d'event ?
