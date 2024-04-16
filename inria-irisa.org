@@ -300,6 +300,53 @@ PermissionError: [Errno 13] Permission denied: '/dev/watchdog'
     - Paramètre `busnum` manquant dans le constructeur de l'objet INA
     - Ajout du paramètre `busnum=1` dans le constructeur de l'objet INA, dans ina219_manager.py
     - Fix le problème
+  - Rencontre désormais une erreur avec collectd
+    - Installation de collectd
+      - sudo apt install collectd
+    - La config par défaut est quasi identique à celle du noeud SmartSense
+    - Seule la configuration du plugin network a été modifié
+    - Pour le moment, la laisse par défaut
+  - Continue de planter
+  - Me suis penché un peu plus en détails sur les logs
+    - Par défaut, n'utilise pas syslog
+    - Mais systemd-journald
+      - Qui a l'air d'être l'outil utilisé désormais
+    - Peut facilement lire les derniers logs graĉe à la commande suivante
+      - journalctl -e
+    - Mais les logs de l'application brillent par leur absence
+      - Retrouve des logs d'InfluxDB
+        - Requêtes exécutées à la main
+        - Message périodique "failed to store statistics"
+      - Retrouve un log fait à la main
+        - A exécuté un script custom important le module syslog et l'utilisant pour log un message
+      - Mais pas de log habituel
+    - Alex me fait remarquer que les logs de journald sont des binaires
+      - Est-ce que ça implique des traitements interrompus/de la corruption de logs lors de crash ?
+  - A fait tourner quelques tests sur la machine
+    - Tests concernés
+      - test_data_to_local_influxdb_parse_mqtt
+      - test_data_to_local_influxdb_send_points
+      - test_main_app_handle_provisioning_msg
+    - Fonctionnent correctement
+    - Font bien apparaître dans le journal des logs issus de l'application
+      - Envoi des points à InfluxDB
+      - Provisioning de MainApp
+    - A déclenché de manière surprenante des traitements
+      - Découvertes de périphériques USB
+    - Logs de mtp-probe indiquent que les périphériques sur le bus, device 7 à 12, ne sont pas des MTP devices
+      - Qu'est-ce que cela indique ?
+      - Semble correspondre au Media Transfer Protocol, i.e. le protocol permettant d'échanger des fichiers entre un ordi et un device indépendant connecté en USB, genre Android
+  - Trouvé la cause du redémarrage intempestif du noeud
+    - S'agit du watchdog
+    - Consiste en un système similaire à un heartbeat
+    - Tant qu'on le kick régulièrement, ne fait rien
+    - Mais si n'est plus kick, reboot la machine
+    - Pourquoi je n'ai pas rencontré ce phénomène sur l'ancienne version du noeud ?
+      - Problème de droit ?
+    - A commenté les lignes relatifs à son fonctionnement
+      - Ajouter une option de configurer pour le rendre optionnel ?
+  - Peut désormais lancer l'application, l'interrompre lors d'une erreur et consulter ses logs
+    - Retrouve bien désormais les logs de l'application dans le journal
 - SmartSense: Réunion démo
   - Préparation
     - As-tu déjà présenté le noeud dans ce cadre d'event ?
