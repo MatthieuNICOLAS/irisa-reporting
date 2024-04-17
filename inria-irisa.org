@@ -85,7 +85,8 @@
 - Corriger la gestion des chaînes de caractères
 ** Semaine du <2024-04-15 Mon> au <2024-04-19 Fri>
 *** Planned
-**** IN-PROGRESS SmartSense: Créer image système pour le noeud
+**** DONE SmartSense: Créer image système pour le noeud
+CLOSED: [2024-04-17 Wed 17:09]
 - Besoin de créer une nouvelle image pour
   - Passer à un OS 64-bits et ainsi avoir un OS supporté par InfluxDB
   - Obtenir les dernières MàJ et les derniers drivers pour dongle Wi-Fi
@@ -382,6 +383,90 @@ PermissionError: [Errno 13] Permission denied: '/dev/watchdog'
     - Mais elle a une méthode `is_alive()`
       - https://docs.python.org/3/library/threading.html#threading.Thread.is_alive
     - Correction de l'appel
+      - ina219_manager, ligne 90, était le seul endroit où on y faisait référence
+  - Erreur rencontrée lors de l'exécution de `usb_board_manager.read_data()`
+    - Logs et stacktrace
+      #+BEGIN_PLAIN
+[USBBoardManager] exit process with exception : dictionary keys changed during iteration
+[USBBoardManager] Traceback (most recent call last):
+  File "/home/mnicolas/smartsense-node-app/usb_board_manager.py", line 352, in read_data
+    self.__produce_msgs()
+  File "/home/mnicolas/smartsense-node-app/usb_board_manager.py", line 312, in __produce_msgs
+    for ser, serial_device in self.serial_devices.items():
+RuntimeError: dictionary keys changed during iteration
+      #+END_PLAIN
+    - Me souviens avoir modifié cette boucle en passant lorsque je renommais tous les modules/toutes les propriétés pour être en accord avec les conventions python
+    - Possible que je me sois emmêlé les pinceaux à cette occasion
+    - Effectivement, avant le code correspondait à : https://gitlab.inria.fr/smartsense/3douest/node-app/smartsense-node-app/-/blob/546da1e5e3000c3d05850789ac9c1a4222750287/USBBoardManager.py#L288-337
+    - On a bien une modification du dictionnaire au cours de son parcours
+      - De ce que je comprends, initialement, on ne connait pas le nom des différents MCUs
+      - Les premiers échanges entre l'app et les MCUs servent alors à les identifier
+      - Dans `parse_and_update_unknown_mcu()`, récupère le nom d'un MCU dans sa réponse et met à jour le dictionnaire des serial_devices en conséquence
+        - https://gitlab.inria.fr/smartsense/3douest/node-app/smartsense-node-app/-/blob/main/usb_board_manager.py?ref_type=heads#L440-441
+      - D'où l'erreur déclenchée
+    - A recréé l'erreur sur un plus petit exemple
+      #+BEGIN_PLAIN
+toto = {"a": 1, "b": 2}
+for key, _ in toto.items():
+    if key == "a":
+        toto["c"] = toto.pop(key)
+      #+END_PLAIN
+    - Mais rencontre aussi l'erreur indiquée sur un exemple similaire à l'ancienne version du code
+      #+BEGIN_PLAIN
+toto = {"a": 1, "b": 2}
+for key in toto:
+    if key == "a":
+        toto["c"] = toto.pop(key)
+print(toto)
+      #+END_PLAIN
+    - Plusieurs options
+      - Créer une copie du dictionnaire
+        - foo = dict(self.serial_devices)
+      - Extraire les items du dictionnaire
+        - items = [*self.serial_devices.items()]
+      - Modifier le programme pour dissocier le parcours du dictionnaire et le rename de ses entrées
+        - P-e garder ça pour une 2nde passe
+  - Erreur rencontrée lors de l'exécution de `usb_board_manager.__enable_mcu()`
+    - Logs et stacktrace
+      #+BEGIN_PLAIN
+[USBBoardManager] __enableMCU : 'ascii' code can't decode byte 0xed in position 50: ordinal not in range(128)
+[USBBoardManager] Traceback (most recent call last):
+  File "/home/mnicolas/smartsense-node-app/usb_board_manager.py", line 160, in __enable_mcu
+    buffer_str = buffer.decode("ascii")
+
+UnicodeDecodeError: 'ascii' code can't decode byte 0xed in position 50: ordinal not in range(128)
+      #+END_PLAIN
+  - Erreur rencontrée lors de l'exécution de `main_app.send_alive_message()`
+    - Logs et stacktrace
+      #+BEGIN_PLAIN
+Traceback (most recent call last):
+  File "/home/mnicolas/smartsense-node-app/main_app.py", line 612 in <module>
+    main()
+  File "/home/mnicolas/smartsense-node-app/main_app.py", line 570, in main
+    my_app.send_alive_message()
+  File "/home/mnicolas/smartsense-node-app/main_app.py", line 479, in send_alive_message
+    self.mqtt_client_publisher_queue_in.put([topic, payload])
+
+AttributeError: 'NoneType' object has no attribute "put"
+      #+END_PLAIN
+    - Comme on est en mode autonome, je n'instancie pas de queue pour MQTT
+    - Mais j'ai pas désactivé les appels à différentes méthodes l'utilisant
+      - `send_alive_message()`
+      - `send_ip_adress()`
+    - Et les timers associés
+      - alive_timer
+      - ip_timer
+  - Plus de bug d'indiqué, mais aucune donnée n'apparait dans Influx
+    - Juste oublié l'instruction pour démarrer le process gérant `InfluxDBInterface`
+    - Ajout du snippet correspondant dans `main_app`
+  - Fonctionne !
+  - A pu consulter les premières entrées dans la base de données
+  - A noté par contre la présence de timeout lors de l'envoi des données de l'application à la BD
+    - J'ai ressenti aussi des lenteurs au niveau du fonctionnement du système depuis sa création
+    - Problème de carte SD ?
+    - A passé la taille du buffer avant écriture à 5k points pour ne pas trop tirer sur la SD
+  - A lancé le programme <2024-04-17 Wed> ~17h00
+    - Consommation initiale en RAM : ~300Mo (12,9%)
 - SmartSense: Réunion démo
   - Préparation
     - As-tu déjà présenté le noeud dans ce cadre d'event ?
