@@ -347,6 +347,41 @@ PermissionError: [Errno 13] Permission denied: '/dev/watchdog'
       - Ajouter une option de configurer pour le rendre optionnel ?
   - Peut désormais lancer l'application, l'interrompre lors d'une erreur et consulter ses logs
     - Retrouve bien désormais les logs de l'application dans le journal
+  - Erreur rencontrée lors de l'exécution de `mainApp.reset_sensor_board()`
+    - Logs et stacktrace
+      #+BEGIN_PLAIN
+[FirmwareUpdateManager] resetSensorBoard failed
+[FirmwareUpdateManager] exception : 'int' object has no attribute 'name'
+[FirmwareUpdateManager] Traceback (most recent call last):
+  File "/home/mnicolas/smartsense-node-app/firmware_update_manager.py", line 77, in reset_sensor_board
+    ftdi_jtag_manager.open_and_configure_ftdi_jtag(1)
+  File "/home/mnicolas/smartsense-node-app/ftdijtag_manager.py", line 89, in open_and_config_re_ftdi_jtag
+    self.ftdi_jtag.set_bitmode(0xFF, 0x00)
+  File "/root/.cache/pypoetry/virtualenvs/smartsense-node-app-8çLRNG6r-py3.11/lib/python3.11/site-packages/pyftdi/ftdi.py", line 1237, in set_bitmode
+    self.log.debug('bitmode: %s', mode.name)
+
+  AttributeError: 'int' object has no attribute 'name'
+      #+END_PLAIN
+    - Provient d'une modification dans la librairie pyftdi
+      - https://github.com/eblot/pyftdi/commit/5d4be11ed8c22a5c0474ef797d08978a869ae86b
+    - La fonction `set_bitmode` utilise désormais un enum
+      - Valeurs utilisées correspondent à BitMode.RESET et BitMode.BITBANG
+        - https://github.com/eblot/pyftdi/blob/master/pyftdi/ftdi.py#L133-L134
+    - En remplaçant les entiers utilisés par l'enum, corrige l'erreur
+  - Erreur rencontrée lors de l'exécution de `ina219_manager.read_all()`
+    - Logs et stacktrace
+      #+BEGIN_PLAIN
+[INA219Manager] exit process with exception : 'Timer' object has no attribute 'isAlive'
+[INA219Manager] Traceback (most recent call last):
+  File "/home/mnicolas/smartsense-node-app/ina219_manager.py", line 91, in read_all
+    if not t.isAlive():
+
+  AttributeError: 'Timer' object has no attribute 'isAlive'
+      #+END_PLAIN
+    - Effectivement, la classe Timer, classe fille de Thread, n'a pas de propriété `isAlive`
+    - Mais elle a une méthode `is_alive()`
+      - https://docs.python.org/3/library/threading.html#threading.Thread.is_alive
+    - Correction de l'appel
 - SmartSense: Réunion démo
   - Préparation
     - As-tu déjà présenté le noeud dans ce cadre d'event ?
