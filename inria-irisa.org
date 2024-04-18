@@ -108,22 +108,26 @@ CLOSED: [2024-04-17 Wed 17:09]
   - Démarrer avec cette configuration et voir erreur(s) rencontrée(s)
 **** IN-PROGRESS SmartSense: Incorporer les correctifs de l'application au repo
 - Lors du déploiement de la dernière version de l'application, a rencontré plusieurs problèmes
-  - Modification de l'appel au constructeur INA
+  - Modification de l'appel au constructeur INA dans ina219_manager
     - Utilise désormais le `busnum=1`
-  - Modification de l'API de pyftdi
+  - Modification de l'API de pyftdi dans ftdijtag_manager
     - Utilise désormais des valeurs issues de l'enum BitMode comme second paramètre pour `set_bitmode`
-  - Modification de l'API de Thread
+  - Modification de l'API de Thread dans ina219_manager
     - Utilise désormais la méthode `is_alive()`
   - Modification de la méthode `__produce_msgs()` de usb_board_manager
     - Itère désormais sur une liste temporaire des items du dict des serial_devices plutôt que sur le dict directement
-  - Modification du constructeur de main_app
+  - Modification du constructeur de MainApp dans le fichier éponyme
     - Désactive les timers et appels à `kick_watchdog()`, `send_alive_message()` et `send_ip_address()` en cas de non-déploiement d'un broker MQTT
-  - Modification de `main()` de main_app
+  - Modification de `main()` dans main_app
     - Ajout d'un appel à `start_process()` pour démarrer notre instance de `InfluxDBInterface`
   - Modification de pyproject.toml
     - Changer la version de Python supportée à la "^3.11"
       - Version par défaut de la version courante de Raspberry OS
     - Déclarer une tâche pour exécuter l'application
+**** TODO SmartSense: Rendre optionnel le mécanisme du workaround pour les crashs d'InfluxDB
+- Pour faciliter les tests/comparaisons entre le comportement du noeud avec ou sans ce workaround
+- Et pour unifier le software des noeuds centralisés et autonomes
+- Ça serait plus simple de mettre en place un flag permettant d'activer/désactiver le workaround
 **** IN-PROGRESS SmartSense: Traiter les problèmes relevés lors de l'uniformisation du code
 - J'ai noté plusieurs points problématiques au cours de mon passage sur l'ensemble des modules
   - Le module *sensor_board* est inutilisé
@@ -303,7 +307,7 @@ PermissionError: [Errno 13] Permission denied: '/dev/watchdog'
     - pipx install poetry
     - pipx install poethepoet
     - poetry install --no-root
-  - Démarre désormais, mais plante car n'accède pas au fichier
+  - Démarre désormais, mais plante car n'accède pas au fichier de config
   - Comportement étrange, le noeud redémarre quelques secondes après
     - Pourquoi ?
     - N'a pas l'air d'être lié au timeout de wait_provisioning()
@@ -562,6 +566,34 @@ AttributeError: 'NoneType' object has no attribute "put"
       - Adapter le discours en conséquence
       - i.e. éviter les termes un peu trop spécialisés tels que fog computing
 - SmartSense: Incorporer les correctifs de l'application au repo
+  - [X] Modification de l'appel au constructeur INA dans ina219_manager
+    - Me rend compte en relisant la doc que la valeur pour le paramètre `busnum` n'est pas forcément 1
+      #+BEGIN_PLAIN
+*I2C Bus number*
+
+In most cases this will be determined automatically, however if this fails you will see the exception:
+`Could not determine default I2C bus for platform`
+
+In this case just set the bus number in the INA219 constructor, for example:
+`ina = INA219(SHUNT_OHMS, busnum=1)`
+
+This is known to be required with Raspberry Pi 4 and the ‘Bullseye’ (October 2021) Raspberry Pi OS.
+      #+END_PLAIN
+    - Possède 2 bus dans notre cas, les bus 1 et 2
+    - Les deux possèdent des devices connectés
+      - Listes obtenus avec la commande i2cdetect -y <busnum>
+      - Bus 1 : Devices sur les adresses (ports?) 40, 41, 44, 45, 46, 48 et 4b
+      - Bus 2 : Devices sur les adresses 37, 3a, 50, 51, 52, 53, 54, 55, 56, 57
+    - Comment déterminer quel bus utiliser ?
+    - Les adresses auxquelles on s'adresse dans le cadre de ina219_manager correspondent à celles des devices sur le bus 1
+      - https://gitlab.inria.fr/smartsense/3douest/node-app/smartsense-node-app/-/blob/main/ina219_manager.py?ref_type=heads#L24-30
+    - Faudra que je fasse vérifier cette modif tout de même
+  - [X] Modification de l'API pyftdi dans ftdijtag_manager
+  - [X] Modification de l'API de Thread dans ina219_manager
+  - [ ] Modification de la méthode `__produce_msgs()` de usb_board_manager
+  - [ ] Modification du constructeur de MainApp dans le fichier éponyme
+  - [ ] Modification de `main()` dans main_app
+  - [ ] Modification de pyproject.toml
 ** Semaine du <2024-04-08 Mon> au <2024-04-12 Fri>
 *** Planned
 **** DONE SmartSense: Monitorer noeud SmartSense sans stockage des entrées lourdes
