@@ -83,6 +83,14 @@
   - Dans les faits, seule la ligne incriminée avait l'air manquante
 - Identifier où le formatage s'effectue
 - Corriger la gestion des chaînes de caractères
+*** TODO SmartSense: Déterminer si possible de diminuer le niveau de privilège requis par l'application
+- Pour lancer l'application, j'ai dû passer en root
+- Entre autres, nécessaire pour
+  - Interagir avec le watchdog
+  - Démarrer le service collectd
+  - Appeler les méthodes de ftdijtag_manager
+- Me paraît une mauvaise idée de ne pas gérer les droits plus finement
+- Déterminer si on peut configurer le système pour permettre l'exécution de l'application en tant qu'utilisateur standard
 ** Semaine du <2024-04-15 Mon> au <2024-04-19 Fri>
 *** Planned
 **** DONE SmartSense: Créer image système pour le noeud
@@ -98,6 +106,24 @@ CLOSED: [2024-04-17 Wed 17:09]
   - Installer InfluxDB
   - Setup l'application
   - Démarrer avec cette configuration et voir erreur(s) rencontrée(s)
+**** IN-PROGRESS SmartSense: Incorporer les correctifs de l'application au repo
+- Lors du déploiement de la dernière version de l'application, a rencontré plusieurs problèmes
+  - Modification de l'appel au constructeur INA
+    - Utilise désormais le `busnum=1`
+  - Modification de l'API de pyftdi
+    - Utilise désormais des valeurs issues de l'enum BitMode comme second paramètre pour `set_bitmode`
+  - Modification de l'API de Thread
+    - Utilise désormais la méthode `is_alive()`
+  - Modification de la méthode `__produce_msgs()` de usb_board_manager
+    - Itère désormais sur une liste temporaire des items du dict des serial_devices plutôt que sur le dict directement
+  - Modification du constructeur de main_app
+    - Désactive les timers et appels à `kick_watchdog()`, `send_alive_message()` et `send_ip_address()` en cas de non-déploiement d'un broker MQTT
+  - Modification de `main()` de main_app
+    - Ajout d'un appel à `start_process()` pour démarrer notre instance de `InfluxDBInterface`
+  - Modification de pyproject.toml
+    - Changer la version de Python supportée à la "^3.11"
+      - Version par défaut de la version courante de Raspberry OS
+    - Déclarer une tâche pour exécuter l'application
 **** IN-PROGRESS SmartSense: Traiter les problèmes relevés lors de l'uniformisation du code
 - J'ai noté plusieurs points problématiques au cours de mon passage sur l'ensemble des modules
   - Le module *sensor_board* est inutilisé
@@ -298,6 +324,7 @@ PermissionError: [Errno 13] Permission denied: '/dev/watchdog'
       - i2c_bcm2835  16384  0
   - Mais rencontre toujours la même erreur
   - La page de la librairie INA indique une cause possible de l'erreur
+    - https://pypi.org/project/pi-ina219/
     - Paramètre `busnum` manquant dans le constructeur de l'objet INA
     - Ajout du paramètre `busnum=1` dans le constructeur de l'objet INA, dans ina219_manager.py
     - Fix le problème
@@ -467,6 +494,16 @@ AttributeError: 'NoneType' object has no attribute "put"
     - A passé la taille du buffer avant écriture à 5k points pour ne pas trop tirer sur la SD
   - A lancé le programme <2024-04-17 Wed> ~17h00
     - Consommation initiale en RAM : ~300Mo (12,9%)
+  - Le <2024-04-18 Thu> à 8h48
+    - Application tourne toujours
+    - Consommation en RAM : ~447Mo (36,6%)
+    - Utilisation du swap : 97,3Mo
+    - Quelques timeouts cependant
+      - [DataToLocalInfluxDB - storageController] : data not saved, timeout ! {"error":"timeout"}
+    - Rejoint un log distinct, émis périodiquement par influxdb
+      - influxd-systemd-start.sh: ts=<timestamp> lvl=info msg="failed to store statistics" log_id=<id> service=monitor error=timeout
+  - Il s'agissait par contre d'une version de l'application vidant/exportant régulièrement la base de données
+  - Devrait tester une version alternative n'utilisant qu'une BD unique
 - SmartSense: Réunion démo
   - Préparation
     - As-tu déjà présenté le noeud dans ce cadre d'event ?
@@ -524,6 +561,7 @@ AttributeError: 'NoneType' object has no attribute "put"
     - Public pas forcément d'informaticiens
       - Adapter le discours en conséquence
       - i.e. éviter les termes un peu trop spécialisés tels que fog computing
+- SmartSense: Incorporer les correctifs de l'application au repo
 ** Semaine du <2024-04-08 Mon> au <2024-04-12 Fri>
 *** Planned
 **** DONE SmartSense: Monitorer noeud SmartSense sans stockage des entrées lourdes
