@@ -67,22 +67,6 @@
 - Malheureusement, appels erronés puisque manque un paramètre
   - IMO le paramètre `board`
 - Renseigner les valeurs correctes
-*** TODO SmartSense: Corriger le formatage des entrées pour InfluxDB
-- InfluxDB définit et utilise le line protocol comme format d'entrée pour les données
-  - https://docs.influxdata.com/influxdb/v1/write_protocols/line_protocol_reference/
-- Le noeud formate donc les données récupérées de la sorte
-- En expérimentant avec le stockage des données sous forme de fichier, me suis rendu compte qu'on gérait incorrectement les chaînes de caractères
-  - Pas de ""
-  - cf. [[file:files/influxdb-example-import.txt]]
-- Dans la majorité des cas, InfluxDB accepte tout de même les données
-- MAIS rencontré une erreur bloquante dans le cas de la valeur `unknow` pour le champ `leptonVersion`
-  - [[file:files/influxdb-example-import.txt]]:69
-- Lors de l'import de cette ligne, InfluxDB rencontrait une erreur
-  - L'entrée était perdue
-  - Et la commande d'import indiquait que l'ensemble des entrées n'avaient pas pu être insérées
-  - Dans les faits, seule la ligne incriminée avait l'air manquante
-- Identifier où le formatage s'effectue
-- Corriger la gestion des chaînes de caractères
 *** TODO SmartSense: Déterminer si possible de diminuer le niveau de privilège requis par l'application
 - Pour lancer l'application, j'ai dû passer en root
 - Entre autres, nécessaire pour
@@ -106,7 +90,8 @@ CLOSED: [2024-04-17 Wed 17:09]
   - Installer InfluxDB
   - Setup l'application
   - Démarrer avec cette configuration et voir erreur(s) rencontrée(s)
-**** IN-PROGRESS SmartSense: Incorporer les correctifs de l'application au repo
+**** DONE SmartSense: Incorporer les correctifs de l'application au repo
+CLOSED: [2024-04-18 Thu 14:10]
 - Lors du déploiement de la dernière version de l'application, a rencontré plusieurs problèmes
   - Modification de l'appel au constructeur INA dans ina219_manager
     - Utilise désormais le `busnum=1`
@@ -124,10 +109,32 @@ CLOSED: [2024-04-17 Wed 17:09]
     - Changer la version de Python supportée à la "^3.11"
       - Version par défaut de la version courante de Raspberry OS
     - Déclarer une tâche pour exécuter l'application
-**** TODO SmartSense: Rendre optionnel le mécanisme du workaround pour les crashs d'InfluxDB
+**** DONE SmartSense: Identifier l'origine du log "failed to store statistics"
+CLOSED: [2024-04-18 Thu 15:31]
+- De manière périodique, toutes les ~40s, le noeud log ce message
+  - influxd-systemd-start.sh: ts=<timestamp> lvl=info msg="failed to store statistics" log_id=<id> service=monitor error=timeou
+- Identifier son origine et résoudre le problème
+**** IN-PROGRESS SmartSense: Monitorer fonctionnement de l'application sans workaround sur nouveau OS
+**** IN-PROGRESS SmartSense: Rendre optionnel le mécanisme du workaround pour les crashs d'InfluxDB
 - Pour faciliter les tests/comparaisons entre le comportement du noeud avec ou sans ce workaround
 - Et pour unifier le software des noeuds centralisés et autonomes
 - Ça serait plus simple de mettre en place un flag permettant d'activer/désactiver le workaround
+**** TODO SmartSense: Corriger le formatage des entrées pour InfluxDB
+- InfluxDB définit et utilise le line protocol comme format d'entrée pour les données
+  - https://docs.influxdata.com/influxdb/v1/write_protocols/line_protocol_reference/
+- Le noeud formate donc les données récupérées de la sorte
+- En expérimentant avec le stockage des données sous forme de fichier, me suis rendu compte qu'on gérait incorrectement les chaînes de caractères
+  - Pas de ""
+  - cf. [[file:files/influxdb-example-import.txt]]
+- Dans la majorité des cas, InfluxDB accepte tout de même les données
+- MAIS rencontré une erreur bloquante dans le cas de la valeur `unknow` pour le champ `leptonVersion`
+  - [[file:files/influxdb-example-import.txt]]:69
+- Lors de l'import de cette ligne, InfluxDB rencontrait une erreur
+  - L'entrée était perdue
+  - Et la commande d'import indiquait que l'ensemble des entrées n'avaient pas pu être insérées
+  - Dans les faits, seule la ligne incriminée avait l'air manquante
+- Identifier où le formatage s'effectue
+- Corriger la gestion des chaînes de caractère
 **** IN-PROGRESS SmartSense: Traiter les problèmes relevés lors de l'uniformisation du code
 - J'ai noté plusieurs points problématiques au cours de mon passage sur l'ensemble des modules
   - Le module *sensor_board* est inutilisé
@@ -590,10 +597,50 @@ This is known to be required with Raspberry Pi 4 and the ‘Bullseye’ (October
     - Faudra que je fasse vérifier cette modif tout de même
   - [X] Modification de l'API pyftdi dans ftdijtag_manager
   - [X] Modification de l'API de Thread dans ina219_manager
-  - [ ] Modification de la méthode `__produce_msgs()` de usb_board_manager
-  - [ ] Modification du constructeur de MainApp dans le fichier éponyme
-  - [ ] Modification de `main()` dans main_app
-  - [ ] Modification de pyproject.toml
+  - [X] Modification de la méthode `__produce_msgs()` de usb_board_manager
+  - [X] Modification du constructeur de MainApp dans le fichier éponyme
+  - [X] Modification de `main()` dans main_app
+  - [X] Modification de pyproject.toml
+- SmartSense: Identifier l'origine du log "failed to store statistics"
+  - Issue à ce sujet
+    - https://github.com/influxdata/influxdb/issues/8036
+  - Utilisateur-rices indiquent que le problème survient de manière inopinée chez eux
+  - Et disparaît après un redémarrage
+    - Après plusieurs redémarrage, pas de changements de mon côté
+  - Mention d'un fix ayant été intégré dans 1.7.6
+  - Sauf que j'ai installé la version 1.8.10 là
+  - Commentaire ayant reçu plusieurs validations conseille de modifier la configuration par défaut d'InfluxDB
+    - [data]
+      - wal-fsync-delay = "10s"
+    - [coordinator]
+      - write-timeout = "30s"
+  - Effectivement, ne constate plus le problème après modifications et redémarrage
+- SmartSense: Rendre optionnel le mécanisme du workaround pour les crashs d'InfluxDB
+  - Pars sur l'ajout d'un paramètre booléen `is_periodic_export_enabled` au constructeur `DataToLocalInfluxDB`
+  - À partir de cette nouvelle propriété, détermine si exécute les méthodes
+    - __export_db()
+    - __drop_db()
+    - __create_db()
+  - Warning
+    - Doit exécuter au moins à l'initialisation la méthode `__create_db()`
+    - Pour créer la database SensorData, si elle n'existe pas déjà
+    - Et configurer le client InfluxDB pour écrire dans cette base
+  - Fonctionne
+  - Me pose maintenant la question de s'il faudrait remanier le fichier config.ini
+  - On pourrait mettre en place une catégorie [InfluxDB] avec les différentes valeurs à renseigner
+    - i.e. influxDB_embedded, username, password et  periodic_export
+  - On pourrait faire la même pour [MQTT] en vrai
+  - Mérite sa tâche dédiée
+  - Par contre, à quoi sert `backup_index` ?
+- SmartSense: Monitorer fonctionnement de l'application sans workaround sur nouveau OS
+  - Démarré le <2024-04-18 Thu> à ~15h46 (<2024-04-17 Wed> 23h56, heure du noeud)
+  - Consommation en RAM initiale : ~215Mo
+  - À ~16h43, consommation en RAM : ~396Mo (23,0%)
+  - À ~17h53, consommation en RAM : ~430Mo (27,5%)
+  - Le <2024-04-19 Fri> à ~08h55
+    - Application toujours fonctionnelle
+    - Consommation en RAM : ~412Mo (24,6%)
+  - Vois néanmoins passer dans les logs des timeouts de temps en temps
 ** Semaine du <2024-04-08 Mon> au <2024-04-12 Fri>
 *** Planned
 **** DONE SmartSense: Monitorer noeud SmartSense sans stockage des entrées lourdes
