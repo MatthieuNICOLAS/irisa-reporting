@@ -114,7 +114,8 @@ CLOSED: [2024-04-18 Thu 15:31]
 - De manière périodique, toutes les ~40s, le noeud log ce message
   - influxd-systemd-start.sh: ts=<timestamp> lvl=info msg="failed to store statistics" log_id=<id> service=monitor error=timeou
 - Identifier son origine et résoudre le problème
-**** IN-PROGRESS SmartSense: Monitorer fonctionnement de l'application sans workaround sur nouveau OS
+**** DONE SmartSense: Monitorer fonctionnement de l'application sans workaround sur nouveau OS
+CLOSED: [2024-04-19 Fri 09:02]
 **** IN-PROGRESS SmartSense: Rendre optionnel le mécanisme du workaround pour les crashs d'InfluxDB
 - Pour faciliter les tests/comparaisons entre le comportement du noeud avec ou sans ce workaround
 - Et pour unifier le software des noeuds centralisés et autonomes
@@ -168,6 +169,12 @@ CLOSED: [2024-04-18 Thu 15:31]
 - Serait intéressant d'apprendre à provisionner un cluster virtuel de Raspberry
 - Permettrait de pouvoir créer un environnement pour dev et effectuer des tests
   - Notamment comment setup k8s ou équivalent sur un tel système
+**** TODO SmartSense: Suggestions
+- Mécanisme d'export de la BD
+  - Remplacer `backup_index` par l'identifiant du noeud
+- Supprimer le code relatif à hwclock
+  - Notre noeud SmartSense ne dispose pas d'une horloge BIOS
+  - Ce code semble donc sans effet et s'avère déroutant
 *** Done
 - SmartSense: Créer image système pour le noeud
   - Installation manuelle
@@ -632,6 +639,11 @@ This is known to be required with Raspberry Pi 4 and the ‘Bullseye’ (October
   - On pourrait faire la même pour [MQTT] en vrai
   - Mérite sa tâche dédiée
   - Par contre, à quoi sert `backup_index` ?
+  - Reset à 0 à chaque démarrage de l'application
+    - Donc on ne peut pas s'y fier pour identifier et ordonner les exports
+  - Présence d'un timestamp dans le nom de l'export
+    - Qui lui devrait être strictement croissant par noeud
+  - Remplacer `backup_index` par l'identifiant du noeud plutôt ?
 - SmartSense: Monitorer fonctionnement de l'application sans workaround sur nouveau OS
   - Démarré le <2024-04-18 Thu> à ~15h46 (<2024-04-17 Wed> 23h56, heure du noeud)
   - Consommation en RAM initiale : ~215Mo
@@ -641,6 +653,17 @@ This is known to be required with Raspberry Pi 4 and the ‘Bullseye’ (October
     - Application toujours fonctionnelle
     - Consommation en RAM : ~412Mo (24,6%)
   - Vois néanmoins passer dans les logs des timeouts de temps en temps
+- SmartSense: Mise en place du dongle Wi-Fi TP-Link TL-WN823N
+  - J'ai récupéré via le SI un dongle Wi-Fi
+    - https://wikidevi.wi-cat.ru/TP-LINK_TL-WN823N_v1 ou https://wikidevi.wi-cat.ru/TP-LINK_TL-WN823N_v2
+    - La commande `lsusb` m'indique que c'est la v2/v3 utilisant le chipset Realtek RTL8192EU
+  - Étonnament, plug-and-play
+  - Noeud s'est connecté automatiquement à eduroam en utilisant la config que j'avais mis en place sur la RPi 3 de Guillermo
+  - Pourra donc l'utiliser pour réaliser des tests avec l'antenne
+  - Rencontre par contre des problèmes d'instabilité au fur et à mesure de l'exécution de l'application
+  - A perdu la connexion et noeud n'arrive pas à se reconnecter
+  - Raison évoquée dans les logs est que l'authentification prendrait trop de temps
+  - Raccord avec la lenteur du système/les timeouts que l'on rencontre par intermittence
 ** Semaine du <2024-04-08 Mon> au <2024-04-12 Fri>
 *** Planned
 **** DONE SmartSense: Monitorer noeud SmartSense sans stockage des entrées lourdes
