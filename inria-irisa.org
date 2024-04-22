@@ -75,6 +75,96 @@
   - Appeler les méthodes de ftdijtag_manager
 - Me paraît une mauvaise idée de ne pas gérer les droits plus finement
 - Déterminer si on peut configurer le système pour permettre l'exécution de l'application en tant qu'utilisateur standard
+*** TODO SmartSense: Remplacer `backup_index` par l'identifiant du noeud
+- `backup_index` est un compteur utilisé pour nommer les exports de la BD
+- Son utilité me semble néanmoins limité
+  - Le nom des backups utilise aussi un timestamp, qui permet déjà d'ordonner les backups entre eux
+  - `backup_index` est réinitialisé à chaque démarrage de l'application, i.e. ne survit pas aux crashs
+  - Donc pour un noeud donné, c'est le timestamp qui fait foi finalement
+- Serait plus utile IMO d'utiliser le couple <identifiant de noeud, timestamp> pour nommer les exports
+  - Permettrait toujours d'ordonner les exports entre eux
+  - Et permettrait d'identifier/de filtrer les exports par rapport au(x) noeud(s) à l'origine
+- Proposer ce changement (MR)
+*** TODO SmartSense: Supprimer le code relatif à `hwclock`
+- Dans `main_app`, plusieurs instructions reposent sur la commande système `hwclock`
+  - Toutes les heures, MàJ l'horloge système avec l'horloge hardware
+  - À chaque synchronisation avec le NTP, MàJ l'horloge hardware avec l'horloge système
+- Le problème étant que le noeud SmartSense n'est pas équipé d'une horloge hardware
+- Sans serveur NTP ou connexion internet, l'horloge du noeud SmartSense drift à chaque fois qu'il est éteint
+- Ces lignes sont confusantes IMO
+  - Font croire que le noeud est équipé d'une horloge hardware
+- Et elles se révèlent inutiles en l'état
+- Proposer leur suppression (MR)
+** Semaine du <2024-04-22 Mon> au <2024-04-26 Fri>
+*** Planned
+**** DONE SmartSense: Traiter les problèmes relevés lors de l'uniformisation du code
+CLOSED: [2024-04-22 Mon 09:02]
+- J'ai noté plusieurs points problématiques au cours de mon passage sur l'ensemble des modules
+  - Le module *sensor_board* est inutilisé
+    - Code obsolète à supprimer ?
+  - La librairie *telnetlib* est dépréciée
+    - Passer à https://pypi.org/project/telnetlib3/ ?
+  - Une conditionnelle étrange est effectuée dans le module *tlc59108_manager*
+    - https://gitlab.inria.fr/smartsense/3douest/node-app/smartsense-node-app/-/blob/3feb5c56dc5e74dcea9eb2f2ba98bec40029acdf/TLC59108Manager.py#L370
+    - Revient à `if data[0]`
+    - `and` est-il l'opérateur désiré ?
+    - Simplifier/corriger
+  - Les appels à *OpenOCDManager.update()* dans *test_ocd* manquent d'un paramètre
+    - J'ai l'impression que c'est le paramètre *board*
+    - Ajouter les valeurs correctes ?
+  - *USBBoardManager.read_data()* et *parse_to_mqtt()* sont particulièrement sujets aux retours de Pylint
+    - Trop d'instructions
+    - Trop de branchements
+    - Trop de blocs imbriqués
+    - Refactorer pour améliorer la lisibilité du code ?
+    - Voir si on peut aussi factoriser du code à l'aide de fonctions
+  - Corriger ces problèmes
+    - Ou si pas de solution claire et rapide, créer une issue correspondante
+**** DONE SmartSense: Suggestions
+CLOSED: [2024-04-22 Mon 09:24]
+- Mécanisme d'export de la BD
+  - Remplacer `backup_index` par l'identifiant du noeud
+- Supprimer le code relatif à hwclock
+  - Notre noeud SmartSense ne dispose pas d'une horloge BIOS
+  - Ce code semble donc sans effet et s'avère déroutant
+**** DONE SmartSense: Intégrer les branches `fix/misc_fixes` et `feat/make-optional-influxdb-export`
+CLOSED: [2024-04-22 Mon 13:31]
+- Déployer ces versions sur le noeud SmartSense
+- S'assurer de leur bon fonctionnement
+- Intégrer la branche de fixes
+- Faire une MR pour la branche concernant les exports ?
+**** IN-PROGRESS SmartSense: Rédiger un fichier de config Ansible pour le noeud SmartSense
+- Maintenant que j'ai pu déployer un noeud SmartSense et identifier les différentes étapes nécessaires
+- Serait utile de
+  - Documenter le processus
+  - L'automatiser
+- Ansible est semblerait l'outil adapté pour cela
+- Automatiser le déploiement d'un noeud SmartSense en utilisant Ansible
+**** IN-PROGRESS SmartSense: Mise en place d'un processus de CI
+- Mettre en place des tests, c'était un bon début
+- Mettre en place un processus de CI, ça serait mieux
+  - Garantirait la reproductibilité de l'environnement de tests
+  - Et que j'oublie pas de les faire tourner avant l'intégration
+- Voir comment GitLab gère ça
+**** IN-PROGRESS LivingFog: Automatiser la création d'un cluster de Raspberry virtualisé
+- Plutôt que de travailler avec le cluster physique
+- Serait intéressant d'apprendre à provisionner un cluster virtuel de Raspberry
+- Permettrait de pouvoir créer un environnement pour dev et effectuer des tests
+  - Notamment comment setup k8s ou équivalent sur un tel système
+*** Done
+- SmartSense: Suggestions
+  - Création de tâches respectives
+- SmartSense: Intégrer les branches `fix/misc_fixes` et `feat/make-optional-influxdb-export`
+  - Changements pour run le programme sur l'image actuelle
+    - Chemin du fichier de config dans main_app
+    - Désactiver l'utilisation du watchdog et du client MQTT dans fichier de config
+    - Activer l'utilisation de l'instance InfluxDB locale dans fichier de config
+    - Augmenter les tailles de buffer dans data_to_local_influxdb
+  - Pas sûr que l'on veuille intégrer ces modifs là dans le repo
+  - Version du programme lancée
+  - Fonctionne sans problème particulier
+  - Intégré
+- SmartSense: Rédiger un fichier de config Ansible pour le noeud SmartSense
 ** Semaine du <2024-04-15 Mon> au <2024-04-19 Fri>
 *** Planned
 **** DONE SmartSense: Créer image système pour le noeud
