@@ -92,7 +92,7 @@
 - Le problème étant que le noeud SmartSense n'est pas équipé d'une horloge hardware
 - Sans serveur NTP ou connexion internet, l'horloge du noeud SmartSense drift à chaque fois qu'il est éteint
 - Ces lignes sont confusantes IMO
-  - Font croire que le noeud est équipé d'une horloge hardware
+  - En laissant penser que le noeud est équipé d'une horloge hardware
 - Et elles se révèlent inutiles en l'état
 - Proposer leur suppression (MR)
 ** Semaine du <2024-04-22 Mon> au <2024-04-26 Fri>
@@ -165,6 +165,82 @@ CLOSED: [2024-04-22 Mon 13:31]
   - Fonctionne sans problème particulier
   - Intégré
 - SmartSense: Rédiger un fichier de config Ansible pour le noeud SmartSense
+  - Références
+    - https://dev.to/pencillr/test-ansible-playbooks-using-docker-ci0
+    - https://medium.com/@abhi.in/setting-up-an-ssh-server-within-a-docker-container-a-step-by-step-guide-4af15fe8787e
+    - https://askubuntu.com/questions/46424/how-do-i-add-ssh-keys-to-authorized-keys-file
+  - Existe un mode pull
+    - Est-ce que cela simplifierait le déploiement d'un nouveau noeud ?
+  - A trouvé le moyen de faire crash ma machine en jouant avec docker/podman
+  - J'ai perdu mes notes dans l'affaire, recommençons
+  - Liste de tous les modules Ansible
+    - https://docs.ansible.com/ansible/latest/collections/index_module.html
+  - Problème avec git
+    - https://docs.ansible.com/ansible/latest/collections/ansible/builtin/git_module.html
+    - Permet de cloner le repo
+    - Mais gitlab nécessite une authentification, même pour seulement cloner en HTTPS
+    - Module ne permet pas de spécifier les credentials via paramètres
+    - Utiliser ssh ?
+      - Comment gérer la clé utilisée dans ce cas ?
+    - Suis tombé sur la notion de Project Access Token
+      - https://docs.gitlab.com/ee/user/project/settings/project_access_tokens.html
+      - Permettent de conférer un ensemble de droits
+      - Notamment read_repository qui donne un droit d'accès en lecture seule au repo
+      - Peut alors cloner un projet en utilisant l'url
+        - https://<username>:<project_access_token>@<repo_url>.git
+      - Où
+        - username, une string quelconque, non-vide
+          - i.e. peut mettre n'importe quoi tant qu'on met quelque chose
+        - project_access_token, le token lui-même
+    - A créé un token
+    - Mais n'arrive toujours pas à cloner le repo
+      - Pas autorisé à cloner le repo
+      - Le token est bel et bien valide
+        - Obtiens un message d'erreur différent si je modifie la valeur du token par une valeur random
+    - Donc plutôt un problème de droits donnés par le token itself
+      - https://docs.gitlab.com/ee/user/permissions.html
+      - J'avais créé un token <guest,read_repository>
+      - Pas suffisant pour un projet privé
+      - Dois plutôt associer le rôle reporter au token
+    - A recréé un nouveau token
+      - Cette fois-ci avec le couple <reporter,read_repository>
+    - Cette fois-ci, le token est fonctionnel
+    - Pose dorénavant la question de la gestion des secrets
+  - Problème avec systemd
+    - Concerne plutôt mon setup de test avec le conteneur docker
+    - La philosophie de Docker correspondant à un service par conteneur
+    - Un conteneur n'utilise pas systemd par défaut
+    - Donc quand j'essaie de démarrer influxdb comme un service, échoue
+  - Problème avec le influxdb
+    - Concerne plutôt les différents modules pour influxdb
+    - influxdb_user a pour dépendance le package python `requests`
+      - https://docs.ansible.com/ansible/latest/collections/community/general/influxdb_user_module.html#ansible-collections-community-general-influxdb-user-module
+    - Mais rencontre des difficultés à installer cette dépendance
+      - Besoin de créer un env virtuel si je veux l'installer avec pip
+      - Mais pas moyen de préciser l'env virtuel à utiliser au module influxdb_user
+    - Installer les dépendances via les paquets debian plutôt ?
+    - Ou ne pas utiliser ce module ansible ?
+- SmartSense: Monitorer fonctionnement de l'application sans workaround sur nouveau OS
+  - A redémarré l'application <2024-04-22 Mon> dans la matinée
+  - À mon arrivée <2024-04-23 Tue>, noeud et application toujours en fonctionnement
+  - Mais clavier ne répondait plus
+  - Après un hard reset du noeud, fonctionne de nouveau
+  - Après redémarrage du noeud et lancement d'InfluxDB
+    - i.e. main_app ne tourne pas pour le moment
+    - Consommation mémoire : 255Mo (16,3%)
+    - Consommation disque : 543Mo
+      - Pour info, occupe que 4,2G des 28G de la carte
+- Réunion avec Guillaume
+  - LivingFog
+    - Reprendre LivingFog
+    - Essayer de déployer sur un couple de RPi
+      - Repo: https://github.com/FogGuru/livingfog
+      - Installation Kubernetes
+      - Configuration Kubernetes
+    - Voir pour exciser la partie concernant LoRaWAN
+    - Évaluer si on repart from scratch pour le déploiement ou si on peut juste retirer les morceaux
+    - Faire retours sur la doc
+      - http://www.fogguru.eu/livingfog/
 ** Semaine du <2024-04-15 Mon> au <2024-04-19 Fri>
 *** Planned
 **** DONE SmartSense: Créer image système pour le noeud
