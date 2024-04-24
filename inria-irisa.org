@@ -133,6 +133,11 @@ CLOSED: [2024-04-22 Mon 13:31]
 - S'assurer de leur bon fonctionnement
 - Intégrer la branche de fixes
 - Faire une MR pour la branche concernant les exports ?
+**** CANCELLED LivingFog: Automatiser la création d'un cluster de Raspberry virtualisé
+- Plutôt que de travailler avec le cluster physique
+- Serait intéressant d'apprendre à provisionner un cluster virtuel de Raspberry
+- Permettrait de pouvoir créer un environnement pour dev et effectuer des tests
+  - Notamment comment setup k8s ou équivalent sur un tel système
 **** IN-PROGRESS SmartSense: Rédiger un fichier de config Ansible pour le noeud SmartSense
 - Maintenant que j'ai pu déployer un noeud SmartSense et identifier les différentes étapes nécessaires
 - Serait utile de
@@ -146,11 +151,18 @@ CLOSED: [2024-04-22 Mon 13:31]
   - Garantirait la reproductibilité de l'environnement de tests
   - Et que j'oublie pas de les faire tourner avant l'intégration
 - Voir comment GitLab gère ça
-**** IN-PROGRESS LivingFog: Automatiser la création d'un cluster de Raspberry virtualisé
-- Plutôt que de travailler avec le cluster physique
-- Serait intéressant d'apprendre à provisionner un cluster virtuel de Raspberry
-- Permettrait de pouvoir créer un environnement pour dev et effectuer des tests
-  - Notamment comment setup k8s ou équivalent sur un tel système
+**** TODO LivingFog: Déployer LivingFog sur le PicoCluster
+- Pour prendre en main les différents outils que je vais utiliser dans le projet
+- Le mieux est de les utiliser dans le cadre d'un PoC
+- Ici, l'idée est de déployer LivingFog sur 2 noeuds du PicoCluster
+  - Noeud principal
+  - Noeud worker
+- Permet aussi de me familiariser avec l'écosystème LivingFog
+  - https://github.com/FogGuru/livingfog
+  - http://www.fogguru.eu/livingfog/
+- De remonter les difficultés/incompréhensions rencontrées
+- Et de commencer à identifier ce qui a trait à LoRaWAN
+  - Pour une potentielle excision future
 *** Done
 - SmartSense: Suggestions
   - Création de tâches respectives
@@ -241,6 +253,23 @@ CLOSED: [2024-04-22 Mon 13:31]
     - Évaluer si on repart from scratch pour le déploiement ou si on peut juste retirer les morceaux
     - Faire retours sur la doc
       - http://www.fogguru.eu/livingfog/
+- Discussion avec Matthieu
+  - Ansible
+    - M'explique que la gestion des secrets est compliquée
+    - Lui utilise un fichier de variables, partagé via un autre channel
+    - Possibile d'enregistrer des secrets dans GitLab
+      - Si met en place de la CD
+      - Vois pas trop comment on pourrait mettre cela en place avec nos noeuds autonomes
+      - Curieux aussi de comment setup ansible dans un tel contexte, i.e. pour permettre au noeud de CD de s'authentifier auprès des machines cibles
+  - CI
+    - M'explique qu'il répète les étapes nécessaires pour setup son application dans chaque phase du pipeline
+    - Mécanisme de cache permet de limiter le coût de tout réinstaller à chaque fois
+    - Devrais partir sur cette approche
+    - Raffinera par la suite si besoin et le temps
+- LivingFog: Automatiser la création d'un cluster de Raspberry virtualisé
+  - Guillaume m'a donné un PicoCluster pour travailler
+  - Un cluster virtuel serait utile, mais du coup plus une priorité
+- LivingFog: Déployer LivingFog sur le PicoCluster
 ** Semaine du <2024-04-15 Mon> au <2024-04-19 Fri>
 *** Planned
 **** DONE SmartSense: Créer image système pour le noeud
