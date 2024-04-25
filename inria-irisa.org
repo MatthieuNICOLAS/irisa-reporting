@@ -151,7 +151,7 @@ CLOSED: [2024-04-22 Mon 13:31]
   - Garantirait la reproductibilité de l'environnement de tests
   - Et que j'oublie pas de les faire tourner avant l'intégration
 - Voir comment GitLab gère ça
-**** TODO LivingFog: Déployer LivingFog sur le PicoCluster
+**** IN-PROGRESS LivingFog: Déployer LivingFog sur le PicoCluster
 - Pour prendre en main les différents outils que je vais utiliser dans le projet
 - Le mieux est de les utiliser dans le cadre d'un PoC
 - Ici, l'idée est de déployer LivingFog sur 2 noeuds du PicoCluster
@@ -163,6 +163,13 @@ CLOSED: [2024-04-22 Mon 13:31]
 - De remonter les difficultés/incompréhensions rencontrées
 - Et de commencer à identifier ce qui a trait à LoRaWAN
   - Pour une potentielle excision future
+**** IN-PROGRESS LivingFog: Mettre en place réseau de RPis
+- Pour pouvoir déployer application sur cluster
+- Doit au préalable permettre à ma machine de communiquer avec les différentes RPis
+  - Ou toute autre machine
+- Notamment, doit pouvoir récupérer les adresses IP de toutes les machines du cluster
+- Et pouvoir s'y connecter en SSH
+- Voir comment setup un tel environnement
 *** Done
 - SmartSense: Suggestions
   - Création de tâches respectives
@@ -270,6 +277,143 @@ CLOSED: [2024-04-22 Mon 13:31]
   - Guillaume m'a donné un PicoCluster pour travailler
   - Un cluster virtuel serait utile, mais du coup plus une priorité
 - LivingFog: Déployer LivingFog sur le PicoCluster
+  - Le site pointe vers une documentation technique
+    - http://www.fogguru.eu/wp-content/uploads/2021/04/The-LivingFog-Platform.pdf
+  - Me parait bien pour commencer
+  - Indique qu'il existe des configurations Kubernetes pour 5 ou 10 noeuds
+  - Dans mon cas, vise 2
+  - Devra sûrement adapter cela
+  - Schéma suivant représente l'architecture système de LivingFog
+    - [[file:img/2024-04-24-living-fog-architecture.png]]
+  - Composé de clusters
+    - Dispose d'un broker MQTT qui sert de point d'entrée et qui permet aux services de communiquer entre eux
+    - Dispose de Chirpstack
+      - Ensemble d'applications liées à LoRaWAN
+      - Chirpstack Application Server
+        - Qui ne s'occupe pas du tout de faire tourner l'application
+        - Mais de gérer le système
+          - Lister les différents composants du système (sensors, gateways)
+          - Mais aussi users, organizations et applications
+        - Gère aussi le chiffrement des communications
+      - Chirpstack Network Server
+        - Qui s'occupe principalement de dé-dupliquer les messages reçus
+          - Les capteurs émettent leurs messages via LoRa
+          - Toute gateway LoRa recevant un message le retransmet
+          - Ainsi, si plusieurs gateways reçoivent un même message, elles ré-émettront toutes le même message
+          - Le Network Server centralise les messages reçus et les dédupliquent
+        - Filtre aussi les messages pour ne conserver que les notres
+          - Comme dit précédemment, toute gateway LoRA recevant un message le retransmet
+          - Même ceux provenant de devices nous appartenant pas
+            - e.g. provenant d'un système déployé au même endroit par une autre organisation
+    - Plusieurs autres composants déployés sont en fait des dépendances de Chirpstack
+      - Postgres SQL, utilisé par Chirpstack Application Server
+      - Redis, utilisé par Chirpstack Network Server
+    - Le Preprocessor Python Code semble lui aussi lié à LoRaWAN
+      - Fait le pont entre Chirpstack et InfluxDB
+        - Traduit l'hexadecimal produit par Chirpstack pour InfluxDB
+      - Description du service mentionne qu'il génère aussi les trames MQTT correspondantes
+      - Et les re-fournit au broker
+      - N'apparaît pas sur la figure
+      - Curieux des services à qui ces nouvelles trames sont destinées
+    - Dispose d'une instance InfluXDB
+      - Utilisée pour stocker les données de manière pérenne
+    - Dispose d'une stack pour le monitoring
+      - Monitore le fonctionnement
+        - De chaque machine du cluster
+        - Du cluster Kubernetes itself
+        - Et des Kubernetes namespaces
+          - Qu'est-ce ?
+          - Semble être une feature permettant d'isoler différents groupes de ressources les uns des autres
+            - Pour du multi-tenant par exemple ?
+      - Mentionne les composants suivant
+        - Prometheus
+        - Kube-state-metrics
+        - Node exporter, qui a l'air d'être un service de Prometheus
+        - Mentionne node-port, mais pas réussi à identifier clairement ce dont il s'agit
+  - Les différents clusters remontent leurs données à un Server PC
+    - Serveur hébergeant une instance d'InfluxDB
+    - Une instance de Prometheus fédérant celles des clusters
+    - Et un grafana exposant les données de tout cela
+    - Que signifie le PC ?
+  - Intéressant de remarquer que les communications ne sont qu'uni-directionnelle pour le moment
+    - Des clusters au Server PC
+  - Pose la question de si j'ai besoin de déployer ce Server PC pour Living Fog
+    - Est-ce un composant optionnel du système ?
+      - Je suppose
+    - Est-ce qu'un Server PC est actuellement déployé ?
+      - Je doute
+  - A démarré le picocluster
+    - Machine principale a pour IP 131.254.160.97
+      - IPs des autres ?
+    - Suis con, c'est sûr INRIA-interne que la RPi est co
+    - Pas besoin que la machine soit whitelist pour ça
+    - A tenté de la connecter en filaire, sans succès
+      - Machine n'est donc probablement pas whitelist
+    - L'ensemble des machines ne doit donc pas avoir accès au réseau
+    - C'est Ammar qui a setup la machine
+      - Qu'est-ce qu'il faisait avec ?
+        - Juste l'install
+      - Pas de SSH ?
+        - Nope
+- LivingFog: Mettre en place réseau de RPis
+  - Pour les RPis, Mulugeta propose de leur attribuer des @IP fixes
+    - 192.168.1.1[0-9]
+    - Configuration correspondante à saisir dans /etc/network/interfaces
+      #+BEGIN_PLAIN
+auto eth0
+iface eth0 inet static
+address 192.168.1.10
+netmask 255.255.255.0
+gateway 192.168.1.1
+dns-nameservers 192.168.1.1 8.8.8.8
+      #+END_PLAIN
+  - Ne comprends pas trop à quoi correspondent l'adresse 192.168.1.1 utilisée ici
+  - La machine hôte ?
+    - Est-ce qu'une machine peut servir de gateway ?
+    - Oui : https://www.baeldung.com/linux/network-gateway
+  - Peut sinon simplement être un routeur
+  - Mais par contre dans le cadre du réseau de l'IRISA, Guillaume m'expliquait que c'était détecté et coupé par le SI
+  - Dans notre cas de figure, on souhaite donc éviter ce comportement
+  - Connecter chaque machine à Internet, e.g. via Inria-Interne ?
+  - Permettrait même de rendre l'install du cluster autonome
+  - Depuis l'une machine, on exécute Ansible pour configurer le cluster
+    - Bien plus simple
+  - Dans ce cas, configuration requise
+    - Pour chaque RPi
+      - RPi OS
+      - Avec Python3
+        - Dispo par défaut avec RPi OS Lite
+      - Avec le serveur ssh d'activé
+      - Avec une adresse ip fixe pour l'interface eth0
+      - Et un hostname
+      - Avec une connexion internet via INRIA-interne
+      - Avec la clé ssh publique de la RPi principale comme ~/.ssh/authorized_keys
+    - Pour la RPi principale
+      - Avec un couple de clés ssh défini
+      - Avec Ansible
+  - Procédure pour setup
+    - Pour chaque RPi
+      - Installer RPi OS
+        - Set hostname
+        - Enable ssh lors de l'install
+      - Comme le système de fichiers de l'image système est ensuite accessible, peut
+        - Définir une adresse ip fixe pour l'interface ethernet
+          - Dans /etc/network/interfaces.d/picocluster
+            #+BEGIN_PLAIN
+auto eth0
+iface eth0 inet static
+address 192.168.1.1[0-9]
+netmask 255.255.255.0
+            #+END_PLAIN
+    - Démarrer le cluster
+    - Sur la RPi principale
+      - Récupérer le certificat pour INRIA-interne
+      - Générer paire de clés ssh
+      - Renseigner clé publique comme authorized_keys des autres RPis
+    - Puis exécuter pour chaque RPi script qui
+    - Puis utiliser Ansible pour
+      - Setup Inria-interne
+      - Setup LivingFog
 ** Semaine du <2024-04-15 Mon> au <2024-04-19 Fri>
 *** Planned
 **** DONE SmartSense: Créer image système pour le noeud
