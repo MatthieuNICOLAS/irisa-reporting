@@ -138,6 +138,14 @@ CLOSED: [2024-04-22 Mon 13:31]
 - Serait intéressant d'apprendre à provisionner un cluster virtuel de Raspberry
 - Permettrait de pouvoir créer un environnement pour dev et effectuer des tests
   - Notamment comment setup k8s ou équivalent sur un tel système
+**** DONE LivingFog: Mettre en place réseau de RPis
+CLOSED: [2024-04-26 Fri 10:57]
+- Pour pouvoir déployer application sur cluster
+- Doit au préalable permettre à ma machine de communiquer avec les différentes RPis
+  - Ou toute autre machine
+- Notamment, doit pouvoir récupérer les adresses IP de toutes les machines du cluster
+- Et pouvoir s'y connecter en SSH
+- Voir comment setup un tel environnement
 **** IN-PROGRESS SmartSense: Rédiger un fichier de config Ansible pour le noeud SmartSense
 - Maintenant que j'ai pu déployer un noeud SmartSense et identifier les différentes étapes nécessaires
 - Serait utile de
@@ -163,13 +171,13 @@ CLOSED: [2024-04-22 Mon 13:31]
 - De remonter les difficultés/incompréhensions rencontrées
 - Et de commencer à identifier ce qui a trait à LoRaWAN
   - Pour une potentielle excision future
-**** IN-PROGRESS LivingFog: Mettre en place réseau de RPis
-- Pour pouvoir déployer application sur cluster
-- Doit au préalable permettre à ma machine de communiquer avec les différentes RPis
-  - Ou toute autre machine
-- Notamment, doit pouvoir récupérer les adresses IP de toutes les machines du cluster
-- Et pouvoir s'y connecter en SSH
-- Voir comment setup un tel environnement
+**** IN-PROGRESS LivingFog: Étudier le playbook *Kubeadm Ansible Playbook*
+- Ce playbook semble être le point d'entrée
+  - https://github.com/FogGuru/livingfog/blob/main/kubeadm-ansible/site.yaml
+- Il est décrit comme un moyen simple pour déployer un cluster Kubernetes sur le picocluster
+- Personnellement, il ne me semble pas si simple
+- Étudier le playbook
+- Et identifier les différentes tâches et étapes qu'il effectue
 *** Done
 - SmartSense: Suggestions
   - Création de tâches respectives
@@ -239,6 +247,18 @@ CLOSED: [2024-04-22 Mon 13:31]
       - Mais pas moyen de préciser l'env virtuel à utiliser au module influxdb_user
     - Installer les dépendances via les paquets debian plutôt ?
     - Ou ne pas utiliser ce module ansible ?
+    - Viens de retomber sur la commande pipx inject --include-apps ansible <package>
+    - C'est p-e ça qu'il faut que j'utilise
+    - Nope, ça ne corrige pas mon problème
+    - C'est bien sur la machine target que je dois installer les dépendances du module
+    - Fonctionne avec les paquets debian
+      - Mais pas trop fan d'installer des paquets juste pour un plugin
+    - Me paraît mieux d'utiliser l'API HTTP
+      #+BEGIN_PLAIN
+curl -XPOST 'http://localhost:8086/query?u={{ influxdb_username }}&p={{ influxdb_password }}' --data-urlencode "q=CREATE USER {{ influxdb_username }} WITH PASSWORD '{{ influxdb_password }}' WITH ALL PRIVILEGES"
+curl -XPOST 'http://localhost:8086/query?u={{ influxdb_username }}&p={{ influxdb_password }}' --data-urlencode "q=CREATE DATABASE SensorData WITH SHARD DURATION 1h NAME short_duration"
+      #+END_PLAIN
+    - À tester
 - SmartSense: Monitorer fonctionnement de l'application sans workaround sur nouveau OS
   - A redémarré l'application <2024-04-22 Mon> dans la matinée
   - À mon arrivée <2024-04-23 Tue>, noeud et application toujours en fonctionnement
@@ -410,10 +430,70 @@ netmask 255.255.255.0
       - Récupérer le certificat pour INRIA-interne
       - Générer paire de clés ssh
       - Renseigner clé publique comme authorized_keys des autres RPis
-    - Puis exécuter pour chaque RPi script qui
     - Puis utiliser Ansible pour
       - Setup Inria-interne
       - Setup LivingFog
+  - Essayons ça
+    - A installé RPi OS pour pc0
+    - A rédigé script pour setup connexion à INRIA-interne
+    - A créé une config ethernet sur ma machine pour interagir avec le picocluster
+    - De cette manière, a pu me connecter au cluster
+    - Mais connexion instable
+    - Vais plutôt travailler depuis pc0 dans ce cas
+    - A installé RPi OS pour pc1 et pc2
+    - Arrive depuis pc0 à me co en ssh sur pc1 et pc2
+    - Génération de la clé ssh de pc0
+      - ssh-keygen -t ed25519
+    - Ajout de la clé publique comme authorized_keys des autres RPi
+      - ssh-copy-id -i /home/livingfog/id_ed25519.pub 192.168.1.1[1-2]
+    - Installation de pipx sur pc0
+    - Exécution de pipx ensurepath
+    - Exit/Login
+    - Installation d'Ansible
+      - pipx install --include-deps ansible
+      - pipx inject --include-apps ansible argcomplete
+  - Ça me paraît bon pour le setup
+  - Peut revenir au déploiement de LivingFog sur ce cluster
+- LivingFog: Étudier le playbook *Kubeadm Ansible Playbook*
+  - Repose sur des rôles
+    - Qui ont l'air d'être la feature d'Ansible pour décomposer un Playbook en différents fichiers
+    - cf. https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_reuse.html
+      - For some use cases, simple playbooks work well. However, starting at a certain level of complexity, roles work better than playbooks.
+      - A role lets you store your defaults, handlers, variables, and tasks in separate directories, instead of in a single long document.
+      - Roles are easy to share on Ansible Galaxy.
+      - For complex use cases, most users find roles easier to read, understand, and maintain than all-in-one playbooks.
+  - [X] Docker
+    - Installe le Docker engine en prenant en compte la distrib (Debian/RedHat)
+    - Fixe la version de Docker utilisé
+      - Pourquoi ?
+    - Copie ensuite deux fichiers de config
+      - Fichiers
+        - docker.service.j2
+        - docker.j2
+      - À quoi servent ces fichiers, quelle est leur utilité ?
+      - docker.j2 permet de clear plusieurs variables utilisées dans sa commande de démarrage
+        - INSECURE_REGISTRY
+        - DOCKER_OPTS
+      - Et permet de spécifier le driver utilisé pour le stockage
+      - docker.service.j2 permet de spécifier la commande utilisée pour démarrer le service docker
+      - Et notamment de spécifier le host du daemon
+    - Modifie ensuite à la volée le fichier docker.j2 pour spécifier de nouveaux registres
+    - Finalement, démarre le service Docker
+  - [X] Commons
+    - Regroupe des helpers définit pour simplifier l'écriture des tâches principales
+    - Chargés comme dépendances via le meta/main.yml de chaque rôle
+  - [ ] Kubernetes-master
+    - Utilise kubeadm pour déployer le cluster
+      - Donc installe la version "vanilla" de kubernetes ?
+      - Ça serait pas mieux k3s pour les RPis ?
+      - Quoique les RPi 4 sont un minimum puissantes
+  - [ ] cni
+  - [ ] Kubernetes-node
+  - [ ] Helm
+  - [ ] MetalLB
+  - [ ] Healthcheck
+  - [ ] GlusterFS-node
+  - [ ] GlusterFS-master
 ** Semaine du <2024-04-15 Mon> au <2024-04-19 Fri>
 *** Planned
 **** DONE SmartSense: Créer image système pour le noeud
@@ -6836,6 +6916,8 @@ CLOSED: [2024-01-05 Fri 07:57]
   - sudo reboot
 - Réquisitionner une partie de la RAM
   - Réquisitionner 500Mo : head -c 500m /dev/zero | tail
+- Remplacer une chaîne dans un fichier
+  - sed -i 's/<old string>/<new string>/g' <file>
 ** Raccourcis utiles
 *** Fedora
 - Se déplacer entre bureaux virtuels
