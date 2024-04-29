@@ -176,18 +176,50 @@
       - How changes are propagated to other nodes also impact the design of the CRDT
       - Several approaches were proposed
     - [ ] State-based synchronisation
-      - 
+      - Nodes periodically send their current states to others
+      - A merge function enables nodes to fuse the current state and received one to obtain an up-to-date one
+        - merge has to be associative, commutative and idempotent
+      - Limits
+        - Not suited for real-time updates propagation
+    - [ ] Operation-based synchronisation
+      - Sending the whole state may be expensive according to data type
+      - Instead, encode updates as messages called operations
+      - And broadcast them to other nodes
+        - Smaller footprint, suited to real-time
+      - Concurrent operations have to be commutative
+        - But no constraints on the idempotency and associativity of operations
+      - However, operations may have to be delivered in given order
+        - e.g. insertion of an element must be delivered before its deletion
+      - Operation-based CRDTs have to be pair with a delivery layer to handle network faults
+        - Re-ordering of operations
+        - De-duplication of operations
+        - Anti-entropy mechanism to detect and retrieve lost operations
+    - [ ] Delta-based synchronisation
+      - Proposed more recently as a "best of the two worlds approach"
+      - Instead of encoding updates as arbitrary messages
+      - Encode updates as the minimal corresponding states, called deltas
+      - Nodes use merge function to integrate deltas in their own copy
+      - Nodes broadcast their whole state as an anti-entropy mechanism
+    - [ ] Recap of synchronisation models
     - [ ] Use-cases
       - Collaborative peer-to-peer applications (MUTE, Teletype, Apple Notes)
-      - Multi-master replication for geo-distributed datacenters (Redis)
+        - Libraries have been proposed to ease development of such applications (Automerge, Yjs)
+      - Multi-master replication for distributed databases (Redis, Microsoft Azure CosmoDB)
     - [ ] Ongoing research topics
       - Designing CRDTs for new data types
         - Tree data type
       - Reducing overhead introduced by the conflict resolution mechanism
+        - Topic of my PhD, in the context of Sequence-CRDTs
       - Designing CRDTs ensuring global invariants
         - An always positive counter
-        - ElectricSQL
+        - Integrity constraints in relational databases
       - Designing CRDTs for systems with Byzantin adversaries
+      - Trade-offs between efficiency and user experience
+        - By default, users expect that applications enforce the causal consistency model
+          - e.g. expect the answer to follow the question, not the other way around
+        - Enforcing this consistency model is expensive, especially as the number of nodes increases
+        - CRDTs can relax this constraint
+        - What is the impact of these "anomalies" on user experience?
 ** Semaine du <2024-04-22 Mon> au <2024-04-26 Fri>
 *** Planned
 **** DONE SmartSense: Traiter les problèmes relevés lors de l'uniformisation du code
