@@ -95,6 +95,99 @@
   - En laissant penser que le noeud est équipé d'une horloge hardware
 - Et elles se révèlent inutiles en l'état
 - Proposer leur suppression (MR)
+** Semaine du <2024-04-29 Mon> au <2024-05-03 Fri>
+*** Planned
+**** IN-PROGRESS Magellan: Préparer présentation sur CRDTs
+- Me suis proposé de présenter mes travaux précédants dans le cadre du séminaire Magellan <2024-05-02 Thu>
+- À la réflexion, me paraît pas super intéressant de parler de RLS spécifiquement
+- Préfererais parler des CRDTs de manière générale
+- Préparer présentation
+**** IN-PROGRESS SmartSense: Rédiger un fichier de config Ansible pour le noeud SmartSense
+- Maintenant que j'ai pu déployer un noeud SmartSense et identifier les différentes étapes nécessaires
+- Serait utile de
+  - Documenter le processus
+  - L'automatiser
+- Ansible est semblerait l'outil adapté pour cela
+- Automatiser le déploiement d'un noeud SmartSense en utilisant Ansible
+**** IN-PROGRESS SmartSense: Mise en place d'un processus de CI
+- Mettre en place des tests, c'était un bon début
+- Mettre en place un processus de CI, ça serait mieux
+  - Garantirait la reproductibilité de l'environnement de tests
+  - Et que j'oublie pas de les faire tourner avant l'intégration
+- Voir comment GitLab gère ça
+**** IN-PROGRESS LivingFog: Déployer LivingFog sur le PicoCluster
+- Pour prendre en main les différents outils que je vais utiliser dans le projet
+- Le mieux est de les utiliser dans le cadre d'un PoC
+- Ici, l'idée est de déployer LivingFog sur 2 noeuds du PicoCluster
+  - Noeud principal
+  - Noeud worker
+- Permet aussi de me familiariser avec l'écosystème LivingFog
+  - https://github.com/FogGuru/livingfog
+  - http://www.fogguru.eu/livingfog/
+- De remonter les difficultés/incompréhensions rencontrées
+- Et de commencer à identifier ce qui a trait à LoRaWAN
+  - Pour une potentielle excision future
+**** IN-PROGRESS LivingFog: Étudier le playbook *Kubeadm Ansible Playbook*
+- Ce playbook semble être le point d'entrée
+  - https://github.com/FogGuru/livingfog/blob/main/kubeadm-ansible/site.yaml
+- Il est décrit comme un moyen simple pour déployer un cluster Kubernetes sur le picocluster
+- Personnellement, il ne me semble pas si simple
+- Étudier le playbook
+- Et identifier les différentes tâches et étapes qu'il effectue
+*** Done
+- Magellan: Préparer présentation sur CRDTs
+  - Plan
+    - [ ] Local-First Softwares
+      - Coast team interested in collaborative peer-to-peer applications to ensure
+        - Availability
+        - Ownership
+        - Privacy
+      - Coined a few years ago as Local-First Softwares
+    - [ ] Challenges of data replication in peer-to-peer systems
+      - Peers collaborate on a shared document
+      - Each peer owns a copy of the document
+      - May edit it without synchronous coordination (aka consensus)
+      - Systems have to ensure eventual consistency
+      - Despite the different orders of integration of updates
+      - Rely on conflict resolution mechanisms to do so
+    - [ ] CRDTs: an overview
+      - What are CRDTs ?
+      - Specification of CRDTs
+      - Current use-cases
+      - Ongoing research topics
+    - [ ] What are CRDTs ?
+      - New specification of data types
+      - Embed in their design a conflict resolution mechanism
+      - Properties of CRDTs
+        - Enable updates without coordination
+        - Ensure SEC
+    - [ ] Specification of CRDTs
+      - Several CRDTs may be proposed for a given data type
+      - What mainly characterize one CRDT is its
+        - Conflict resolution semantic
+        - Synchronisation model
+    - [ ] Conflict resolution semantic
+      - Encounters new scenarios only possible in distributed settings
+      - Result of such scenarios is undefined
+      - To design the CRDT, have to define what is the expected result
+      - Several semantics may be proposed for a given data type
+        - e.g. Add-Wins, Remove-Wins, Causal Length for Set
+    - [ ] Synchronisation model
+      - How changes are propagated to other nodes also impact the design of the CRDT
+      - Several approaches were proposed
+    - [ ] State-based synchronisation
+      - 
+    - [ ] Use-cases
+      - Collaborative peer-to-peer applications (MUTE, Teletype, Apple Notes)
+      - Multi-master replication for geo-distributed datacenters (Redis)
+    - [ ] Ongoing research topics
+      - Designing CRDTs for new data types
+        - Tree data type
+      - Reducing overhead introduced by the conflict resolution mechanism
+      - Designing CRDTs ensuring global invariants
+        - An always positive counter
+        - ElectricSQL
+      - Designing CRDTs for systems with Byzantin adversaries
 ** Semaine du <2024-04-22 Mon> au <2024-04-26 Fri>
 *** Planned
 **** DONE SmartSense: Traiter les problèmes relevés lors de l'uniformisation du code
