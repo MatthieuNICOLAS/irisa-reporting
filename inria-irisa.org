@@ -137,51 +137,51 @@
 *** Done
 - Magellan: Préparer présentation sur CRDTs
   - Plan
-    - [ ] Local-First Softwares
+    - [X] Local-First Softwares
       - Coast team interested in collaborative peer-to-peer applications to ensure
         - Availability
         - Ownership
         - Privacy
       - Coined a few years ago as Local-First Softwares
-    - [ ] Challenges of data replication in peer-to-peer systems
+    - [X] Challenges of data replication in peer-to-peer systems
       - Peers collaborate on a shared document
       - Each peer owns a copy of the document
       - May edit it without synchronous coordination (aka consensus)
       - Systems have to ensure eventual consistency
       - Despite the different orders of integration of updates
       - Rely on conflict resolution mechanisms to do so
-    - [ ] CRDTs: an overview
+    - [X] CRDTs: an overview
       - What are CRDTs ?
       - Specification of CRDTs
       - Current use-cases
       - Ongoing research topics
-    - [ ] What are CRDTs ?
+    - [X] What are CRDTs ?
       - New specification of data types
       - Embed in their design a conflict resolution mechanism
       - Properties of CRDTs
         - Enable updates without coordination
         - Ensure SEC
-    - [ ] Specification of CRDTs
+    - [X] Specification of CRDTs
       - Several CRDTs may be proposed for a given data type
       - What mainly characterize one CRDT is its
         - Conflict resolution semantic
         - Synchronisation model
-    - [ ] Conflict resolution semantic
+    - [X] Conflict resolution semantic
       - Encounters new scenarios only possible in distributed settings
       - Result of such scenarios is undefined
       - To design the CRDT, have to define what is the expected result
       - Several semantics may be proposed for a given data type
         - e.g. Add-Wins, Remove-Wins, Causal Length for Set
-    - [ ] Synchronisation model
+    - [X] Synchronisation model
       - How changes are propagated to other nodes also impact the design of the CRDT
       - Several approaches were proposed
-    - [ ] State-based synchronisation
+    - [X] State-based synchronisation
       - Nodes periodically send their current states to others
       - A merge function enables nodes to fuse the current state and received one to obtain an up-to-date one
         - merge has to be associative, commutative and idempotent
       - Limits
         - Not suited for real-time updates propagation
-    - [ ] Operation-based synchronisation
+    - [X] Operation-based synchronisation
       - Sending the whole state may be expensive according to data type
       - Instead, encode updates as messages called operations
       - And broadcast them to other nodes
@@ -200,13 +200,13 @@
       - Encode updates as the minimal corresponding states, called deltas
       - Nodes use merge function to integrate deltas in their own copy
       - Nodes broadcast their whole state as an anti-entropy mechanism
-    - [ ] Recap of synchronisation models
-    - [ ] Use-cases
+    - [X] Recap of synchronisation models
+    - [X] State of the art
       - Collaborative peer-to-peer applications (MUTE, Teletype, Apple Notes)
         - Libraries have been proposed to ease development of such applications (Automerge, Yjs)
       - Multi-master replication for distributed databases (Redis, Microsoft Azure CosmoDB)
-    - [ ] Ongoing research topics
-      - Designing CRDTs for new data types
+    - [X] Ongoing research topics
+      - Designing CRDTs for other data types
         - Tree data type
       - Reducing overhead introduced by the conflict resolution mechanism
         - Topic of my PhD, in the context of Sequence-CRDTs
@@ -220,6 +220,57 @@
         - Enforcing this consistency model is expensive, especially as the number of nodes increases
         - CRDTs can relax this constraint
         - What is the impact of these "anomalies" on user experience?
+  - A une version quasi-complète des slides
+  - Reste à
+    - [ ] Remplacer figure pour Op-based CRDTs par scénario plus simple
+    - [ ] Animer les figures
+    - [ ] Améliorer slide de synthèse
+    - [ ] Préparer back-up slides sur Delta-based CRDTs
+- Réunion Guillaume
+  - Notes
+    - Depuis la semaine dernière, prend en main le picocluster et livingfog
+    - Picocluster
+      - A re-déployé de nouvelles images systèmes sur 3 RPis
+      - Et les a configurées pour qu'elles se connaissent
+      - A préparé une d'entre elles pour qu'elle se charge du déploiement du système
+        - Installation d'Ansible
+        - Installation de Python
+        - Enregistrement de la clé ssh sur les autres RPis
+    - LivingFog
+      - A parcouru le repo github
+      - Et lu la documentation technique
+      - Me paraît plutôt claire sur les différents composants du système
+      - Notamment, pointe les composants liés à LoRaWAN
+        - Chirpstack
+        - Et ses dépendances Postgres et Redis
+      - Juste pas au clair sur
+        - La partie *Preprocessor Python Code*
+          - Traduit les trames Chirpstack au format InfluxDB
+          - Description mentionne qu'il génère aussi les trames MQTT correspondantes et les re-fournit au broker MQTT
+          - Pour qui ?
+        - La partie *Server PC*
+          - Sert à centraliser l'ensemble des données collectées par les différents clusters LivingFog
+          - Et à offrir une interface de monitoring
+          - Y en a-t-il un de déployé ?
+          - N'a pas l'air d'envoyer de messages aux fogs
+          - C'est bien le cas ?
+      - Parcours à présent les playbooks Ansible mis à disposition sur le repo
+      - Le *Kubeadm Ansible Playbook* semble tout indiqué pour commencer
+        - Met en place et configure seulement un cluter k8s
+        - i.e. rien de lié à LoRaWAN
+      - Avant de le lancer, essaie de comprendre ce qu'il fait exactement
+      - Les différents composants qu'il installe
+        - Quid des tâches CNI, MetalLB, GlusterFS ?
+        - Et du rôle de Helm ?
+      - Et ce qu'il déploie
+        - Quid de Vagrant ?
+      - Pour déployer ensuite les services, faudra me pencher sur les scripts dans *chirpstack-kubernetes*
+        - Et filtrer ce qui nous intéresse ici
+  - Questions
+    - [ ] Trames MQTT du Preprocessor Python Code ?
+    - [ ] Server PC déployé ?
+    - [ ] Server PC communique avec clusters ?
+    - [ ] À terme, utiliser kubeadm ou k3s ?
 ** Semaine du <2024-04-22 Mon> au <2024-04-26 Fri>
 *** Planned
 **** DONE SmartSense: Traiter les problèmes relevés lors de l'uniformisation du code
