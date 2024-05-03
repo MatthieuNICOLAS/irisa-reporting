@@ -97,7 +97,8 @@
 - Proposer leur suppression (MR)
 ** Semaine du <2024-04-29 Mon> au <2024-05-03 Fri>
 *** Planned
-**** IN-PROGRESS Magellan: Préparer présentation sur CRDTs
+**** DONE Magellan: Préparer présentation sur CRDTs
+CLOSED: [2024-05-02 Thu 10:54]
 - Me suis proposé de présenter mes travaux précédants dans le cadre du séminaire Magellan <2024-05-02 Thu>
 - À la réflexion, me paraît pas super intéressant de parler de RLS spécifiquement
 - Préfererais parler des CRDTs de manière générale
@@ -194,7 +195,7 @@
         - Re-ordering of operations
         - De-duplication of operations
         - Anti-entropy mechanism to detect and retrieve lost operations
-    - [ ] Delta-based synchronisation
+    - [-] Delta-based synchronisation
       - Proposed more recently as a "best of the two worlds approach"
       - Instead of encoding updates as arbitrary messages
       - Encode updates as the minimal corresponding states, called deltas
@@ -222,10 +223,10 @@
         - What is the impact of these "anomalies" on user experience?
   - A une version quasi-complète des slides
   - Reste à
-    - [ ] Remplacer figure pour Op-based CRDTs par scénario plus simple
-    - [ ] Animer les figures
-    - [ ] Améliorer slide de synthèse
-    - [ ] Préparer back-up slides sur Delta-based CRDTs
+    - [X] Remplacer figure pour Op-based CRDTs par scénario plus simple
+    - [X] Animer les figures
+    - [X] Améliorer slide de synthèse
+    - [-] Préparer back-up slides sur Delta-based CRDTs
 - Réunion Guillaume
   - Notes
     - Depuis la semaine dernière, prend en main le picocluster et livingfog
@@ -268,9 +269,157 @@
         - Et filtrer ce qui nous intéresse ici
   - Questions
     - [ ] Trames MQTT du Preprocessor Python Code ?
-    - [ ] Server PC déployé ?
-    - [ ] Server PC communique avec clusters ?
-    - [ ] À terme, utiliser kubeadm ou k3s ?
+    - [X] Server PC déployé ?
+      - Non
+      - Mais un serveur à disposition si besoin
+    - [X] Server PC communique avec clusters ?
+      - Non
+      - Communication du cluster aux capteurs, c'est compliqué en LoRa
+    - [X] À terme, utiliser kubeadm ou k3s ?
+      - kubeadm car k3s n'était pas forcément connu à l'époque
+      - Pourquoi pas plus tard
+  - Réunion
+    - Nepal
+      - But de l'appel est l'amélioration d'observatoires existant
+        - Cas de l'observatoire au Népal
+        - Plusieurs années qu'ils suivent l'état d'une rivière
+        - Des capteurs à plusieurs endroits de la rivière
+        - Font des prélèvements de l'eau
+        - Remonte les données en 3G à l'heure actuelle
+        - Tout le réseau cellulaire du Népal est derrière une @ip
+        - Utilise des VPNs pour recréer un réseau derrière
+        - Réseau cellulaire instable globalement
+        - Projet de Christoff, Laurent comme chef d'équipe
+        - De temps en temps, ne reçoit plus de données en FR
+        - But est de mettre en place un système de monitoring de l'observatoire
+          - Mettre en place des alertes en cas de dysfonctionnement
+          - Catégoriser les pannes rencontrées
+          - Mettre en place prétraitements sur place
+          - Mettre en place un système d'alertes en cas de crues
+          - Avec des contraintes énergétiques, réseau
+            - Peut ne plus avoir d'énergie (solaire, hydraulique)
+            - Donc doit pouvoir résister à une coupure
+      - Objectif serait de déployer prototype ici à Rennes
+        - Mise en place d'un noeud Fog
+    - LivingFog
+      - Partie multi-tenants
+        - Pas une priorité
+        - Mais serait bien de comprendre comment cela marche
+        - Un sujet qui risque de monter lors du déploiement de TerraForm
+        - Faut regarder du côté des namespaces
+- LivingFog: Étudier le playbook *Kubeadm Ansible Playbook*
+  - [ ] Kubernetes-master
+  - [X] cni
+    - Container Network Interface
+    - Fournit les configurations des différentes interfaces réseau possibles pour les containers
+    - La configuration utilisée est ensuite précisée dans le fichier group_vars/all.yaml
+    - La documentation mentionne flannel
+    - Pourquoi celui-ci par rapport à un autre ?
+      - Ne vois pas les implications pour le moment
+  - [ ] Kubernetes-node
+  - [X] Helm
+    - Est un service de recettes pour k8s
+    - Installe Helm
+    - Et donne les droits sur la config du cluster à Tiller
+      - Le composant qui tourne au sein du cluster k8s
+      - Et qui se charge d'effectuer les modifications de l'état
+    - Tiller semble ne plus exister dans la version courante de Helm
+    - Service optionnel
+    - Non mis en place avec la config actuelle
+  - [X] MetalLB
+    - Est un service de load-balancing pour k8s
+      - https://metallb.org/
+    - Installe et configure MetalLB
+    - La config générale actuelle skip l'installation de ce composant
+    - À quel endroit du système a-t-on besoin de load balancing ?
+      - Y a-t-il plusieurs instances d'un même service dans un cluster LivingFog?
+  - [X] Healthcheck
+    - S'agit d'une petite app
+      - https://github.com/emrekenci/k8s-healthcheck
+    - Qui monitore la santé des différents noeuds du cluster k8s
+    - Installe et déploie l'application au sein du cluster
+    - Feature optionnelle, actuellement désactivée
+  - [X] GlusterFS-node
+    - GlusterFS est un distributed FS
+    - Offre sous un namespace unique des fichiers répartis sur plusieurs serveurs
+    - Chaque serveur appartenant au cluster va héberger des bricks
+    - GlusterFS expose alors l'ensemble des bricks sous la forme d'un volume unique
+    - Les fichiers vont être répartis en fonction de la configuration choisie
+      - Distributed Glusterfs Volume
+        - Pas de réplication
+        - Chaque fichier est stocké sur une brick unique
+      - Replicated Glusterfs Volume
+        - Réplication activée
+        - Chaque fichier va être stockée sur l'ensemble des bricks
+        - Les bricks sont donc des répliques les unes des autres
+        - Pas possible d'avoir un replication factor < nombre de noeuds ?
+      - Distributed Replicated Glusterfs Volume
+        - Une combinaison des settings précédents
+        - Utilise des Replicated Glusterfs Volume au sein d'un Distributed Glusterfs Volume
+        - Smart ma foi
+        - Possible dans ce cas de spécifier le replication factor utilisé
+      - Dispersed Glusterfs Volume
+        - Repose sur des erasure codes
+        - i.e. split le fichier en chunks, disséminé sur les différentes bricks
+        - Les chunks sont enrichis de façon à permettre de recomposer le fichier en cas de panne d'une ou plusieurs bricks
+        - Entraîne cependant un overhead en terme de stockage
+          - Moins lourd qu'une copie complète nonobstant
+        - Donc ici, va créer ces chunks et les répartir sur les bricks
+      - Distributed Dispersed Glusterfs Volume
+        - Utilise des Dispersed Glusterfs Volume au sein de Distributed Glusterfs Volume
+        - Permet de répartir les fichiers sur des Disperse Volumes distincts
+    - Utilise consistent hashing et une DHT pour placer les fichiers sur les bricks
+      - Avec les problèmes inhérents
+      - e.g. modification du set de bricks modifiant la répartition supposée des fichiers existants
+      - e.g. modification du set de bricks alors qu'une brick est offline, qui va résulter en des overlaps entre bricks
+    - Description du playbook
+      - Installe et active GlusterFS
+      - Rien de fancy semblerait
+  - [ ] GlusterFS-master
+    - Installe et active GlusterFS
+    - Setup le distributed FS
+    - Créé les différents volumes GlusterFS
+      - mosquitto, postgre, influxdb
+      - 2 replicas par volume
+      - Rebalance si changement du cluster
+      - A l'air par contre d'utiliser 1 seule brick
+      - Donc des Replicated Glusterfs Volume ?
+      - Nope, faudrait plusieurs briques pour ça
+      - Comprends pas trop la config, est-elle valide ?
+      - Laisse le bénéfice du doute, ça doit être une brick par noeud
+  - Par contre, ne vois pas la mention de version des différents composants
+    - Y a une version pour le docker engine dans kubeadm-ansible/roles/docker/defaults/main.yml
+      - 17.03
+      - On est à la 26.1
+    - Mais pas pour le reste
+    - Est-ce une bonne ou une mauvaise idée ?
+    - On a par contre des tâches/arguments qui ont l'air d'être spécifiques à des bugs, donc à des versions
+      - Dans kubeadm-ansible/roles/kubernetes/master/tasks/init.yml
+      - Vu l'historique de l'issue référencée, pas sûr que le problème initial soit effectivement corrigé nowadays
+    - Indiquer les versions permettrait de décrire un environnement fonctionnel
+      - Et d'assurer qu'on pourra le reproduire
+    - Par contre, spécifier les versions risque de bloquer le projet dans un état donné
+      - Et nécessiterait un effort supplémentaire de maintenance
+    - Ah y aussi une version pour k8s spécifiée dans kubeadm-ansible/group_vars/all.yml
+      - 1.18
+      - On est à la 1.30
+  - Par contre, le playbook repose aussi sur l'utilisation de yum
+    - Plus trop d'actualité
+    - Si je pige bien, a été remplacé par dnf depuis
+  - Questions
+    - À quoi sert healthcheck vs les applications de monitoring ?
+    - À quoi sert Helm ici ?
+    - À quoi sert Vagrant ici ?
+    - Est-ce que les dépendances du projet sont toujours d'actualités ?
+      - Repose par exemple sur GlusterFS et MetalLB
+      - Est-ce que k8s propose à présent nativement ces features ?
+    - Est-ce que la config des volumes GlusterFS est valide ?
+      - Incohérence entre le nombre de replicas et la brick fournie
+    - Comment les bricks sont gérées par GlusterFS ?
+      - Est-ce que c'est par noeud ?
+      - Auquel cas, on retombe sur nos pattes
+      - Chaque noeud possède sa brick
+      - Et les fichiers vont être répartis sur ces bricks, avec un replication factor de 2
 ** Semaine du <2024-04-22 Mon> au <2024-04-26 Fri>
 *** Planned
 **** DONE SmartSense: Traiter les problèmes relevés lors de l'uniformisation du code
