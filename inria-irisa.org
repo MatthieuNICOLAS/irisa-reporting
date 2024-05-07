@@ -95,6 +95,135 @@
   - En laissant penser que le noeud est équipé d'une horloge hardware
 - Et elles se révèlent inutiles en l'état
 - Proposer leur suppression (MR)
+** Semaine du <2024-05-06 Mon> au <2024-05-07 Tue>
+*** Planned
+**** IN-PROGRESS LivingFog: Déployer LivingFog sur le PicoCluster
+- Pour prendre en main les différents outils que je vais utiliser dans le projet
+- Le mieux est de les utiliser dans le cadre d'un PoC
+- Ici, l'idée est de déployer LivingFog sur 2 noeuds du PicoCluster
+  - Noeud principal
+  - Noeud worker
+- Permet aussi de me familiariser avec l'écosystème LivingFog
+  - https://github.com/FogGuru/livingfog
+  - http://www.fogguru.eu/livingfog/
+- De remonter les difficultés/incompréhensions rencontrées
+- Et de commencer à identifier ce qui a trait à LoRaWAN
+  - Pour une potentielle excision future
+**** IN-PROGRESS SmartSense: Rédiger un fichier de config Ansible pour le noeud SmartSense
+- Maintenant que j'ai pu déployer un noeud SmartSense et identifier les différentes étapes nécessaires
+- Serait utile de
+  - Documenter le processus
+  - L'automatiser
+- Ansible est semblerait l'outil adapté pour cela
+- Automatiser le déploiement d'un noeud SmartSense en utilisant Ansible
+**** IN-PROGRESS SmartSense: Mise en place d'un processus de CI
+- Mettre en place des tests, c'était un bon début
+- Mettre en place un processus de CI, ça serait mieux
+  - Garantirait la reproductibilité de l'environnement de tests
+  - Et que j'oublie pas de les faire tourner avant l'intégration
+- Voir comment GitLab gère ça
+*** Done
+- LivingFog: Déployer LivingFog sur le PicoCluster
+  - IMO faudrait procéder à quelques modifications
+  - Surtout MàJ les versions installées de Docker et de Kubernetes
+  - Les versions récentes de k8s n'utilisent plus Docker-Engine mais un Container Runtime (CR) respectant la CR Interface (CRI)
+    - Entre autres, containerd
+    - cf. https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-kubeadm/#installing-runtime
+  - Devrais plutôt setup LivingFog avec ça nowadays
+    - S'installe soit depuis les binaires officiels
+      - https://github.com/containerd/containerd/blob/main/docs/getting-started.md
+    - Soit via le repo apt de Docker
+      - https://docs.docker.com/engine/install/debian/
+  - De même, pour kubeadm
+    - Installe pour le moment depuis le repo pour Ubuntu Xenial
+  - Setup Vagrant
+    - Plutôt que de bosser à même les RPis
+    - Préfère travailler sur des VMs pour le moment
+    - Avec Vagrant, spawn 2 VMs
+      #+BEGIN_PLAIN
+Vagrant.configure("2") do |config|
+  config.vm.define "master" do |master|
+    master.vm.box = "generic/debian12"
+    master.vm.hostname = "master"
+    master.vm.network "private_network", ip: "192.168.60.10"
+
+    master.vm.provider "virtualbox" do |vb|
+      vb.gui = false
+      vb.memory = "4096"
+    end
+  end
+
+  config.vm.define "worker" do |worker|
+    worker.vm.box = "generic/debian12"
+    worker.vm.hostname = "worker"
+    worker.vm.network "private_network", ip: "192.168.60.11"
+
+    worker.vm.provider "virtualbox" do |vb|
+      vb.gui = false
+      vb.memory = "4096"
+    end
+  end
+end
+      #+END_PLAIN
+    - A configuré les hosts d'Ansible en accord
+      #+BEGIN_PLAIN
+vm0 ansible_ssh_host=127.0.0.1 ansible_port=2222   ansible_user=vagrant    ansible_ssh_private_key_file=/home/mnicolas/Documents/livingfog/kubeadm-ansible/.vagrant/machines/master/virtualbox/private_key
+vm1 ansible_ssh_host=127.0.0.1 ansible_port=2200   ansible_user=vagrant    ansible_ssh_private_key_file=/home/mnicolas/Documents/livingfog/kubeadm-ansible/.vagrant/machines/worker/virtualbox/private_key
+
+[master]
+vm0
+
+[node]
+vm1
+
+[kube-cluster:children]
+master
+node
+      #+END_PLAIN
+    - Utilise cela pour le moment
+  - Setup LivingFog
+    - [X] MàJ à la dernière version de Docker
+    - [X] Installer containerd
+    - Par défaut, le plugin CRI est désactivé
+    - Nécessite de modifier /etc/containerd/config.toml
+    - [X] Modifier la config de containerd
+      - Ajout d'une tâche qui commente la ligne
+    - [X] Redémarrer le service containerd
+      - Pour prendre en compte l'activation du plugin CRI
+    - Rencontre une erreur pour la tâche *Deploy kubernetes dashboard into cluster*
+      - Exécute la commande suivante
+        - kubectl --kubeconfig={{ kubeadmin_config }} apply -f https://raw.githubusercontent.com/kubernetes/dashboard/master/aio/deploy/recommended.yaml
+      - Sauf que ce n'est plus la façon de procéder nowadays
+        - cf. https://github.com/kubernetes/dashboard?tab=readme-ov-file#installation
+      - Plutôt à base d'Helm
+    - Rencontre une erreur non-reproductible concernant le Container Network Interface
+      - À la première exécution du playbook, les tâches concernant flannel échouent
+      - Mais à une seconde exécution, les deux tâches passent
+      - Faux positif?
+      - A-t-on toujours besoin d'un CNI ?
+      - Oui
+      - Étape suivante indiquée quand démarre le cluster avec kubeadm init
+      - Commande utilisées
+        - sudo kubeadm init --pod-network-cidr 10.244.0.0/16 --token b0f7b8.8d1767876297d85c --control-plane-endpoint vm0
+        - sudo kubeadm join --token - b0f7b8.8d1767876297d85c -discovery-token-unsafe-skip-ca-verification vm0:6443
+      - Ne fonctionne pas sans le paramètre --pod-network-cidr
+        - Semble être à cause de flannel qui spécifie ce cidr à un moment dans config par défaut
+      - Ai-je besoin de l'option --control-plane-endpoint ?
+        - Pris d'un doute
+        - Pense que oui, avec mon setup actuel
+        - Permet en fait d'éviter d'utiliser l'@ip de l'interface par défaut
+    - Rencontre une erreur avec l'@ip utilisée
+      - Par défaut, Vagrant met en place et semble requérir une interface réseau eth0
+      - Distincte de l'interface réseau correspondant au réseau privé que je veux mettre en place
+      - Et donc notamment avec une autre @ip
+      - Sauf que Kubernetes lui veut utiliser l'interface réseau par défaut pour son fonctionnement
+      - La configuration par défaut se base donc sur cette interface réseau que je ne maitrise pas
+      - A contourné le problème initialement en ajoutant vm0 comme host connu de mes noeuds
+      - Et en utilisant vm0 dans la commande kubeadm init/join
+      - Mais a l'air de rencontrer un conflit avec flannel
+        - Est-ce que lui aussi se base sur l'interface réseau par défaut ?
+      - En parcourant brièvement la config proposée par défaut pour flannel, ne vois pas d'option par rapport à cela ?
+        - À creuser
 ** Semaine du <2024-04-29 Mon> au <2024-05-03 Fri>
 *** Planned
 **** DONE Magellan: Préparer présentation sur CRDTs
@@ -103,6 +232,14 @@ CLOSED: [2024-05-02 Thu 10:54]
 - À la réflexion, me paraît pas super intéressant de parler de RLS spécifiquement
 - Préfererais parler des CRDTs de manière générale
 - Préparer présentation
+**** DONE LivingFog: Étudier le playbook *Kubeadm Ansible Playbook*
+CLOSED: [2024-05-03 Fri 14:21]
+- Ce playbook semble être le point d'entrée
+  - https://github.com/FogGuru/livingfog/blob/main/kubeadm-ansible/site.yaml
+- Il est décrit comme un moyen simple pour déployer un cluster Kubernetes sur le picocluster
+- Personnellement, il ne me semble pas si simple
+- Étudier le playbook
+- Et identifier les différentes tâches et étapes qu'il effectue
 **** IN-PROGRESS SmartSense: Rédiger un fichier de config Ansible pour le noeud SmartSense
 - Maintenant que j'ai pu déployer un noeud SmartSense et identifier les différentes étapes nécessaires
 - Serait utile de
@@ -128,13 +265,6 @@ CLOSED: [2024-05-02 Thu 10:54]
 - De remonter les difficultés/incompréhensions rencontrées
 - Et de commencer à identifier ce qui a trait à LoRaWAN
   - Pour une potentielle excision future
-**** IN-PROGRESS LivingFog: Étudier le playbook *Kubeadm Ansible Playbook*
-- Ce playbook semble être le point d'entrée
-  - https://github.com/FogGuru/livingfog/blob/main/kubeadm-ansible/site.yaml
-- Il est décrit comme un moyen simple pour déployer un cluster Kubernetes sur le picocluster
-- Personnellement, il ne me semble pas si simple
-- Étudier le playbook
-- Et identifier les différentes tâches et étapes qu'il effectue
 *** Done
 - Magellan: Préparer présentation sur CRDTs
   - Plan
@@ -308,7 +438,10 @@ CLOSED: [2024-05-02 Thu 10:54]
         - Un sujet qui risque de monter lors du déploiement de TerraForm
         - Faut regarder du côté des namespaces
 - LivingFog: Étudier le playbook *Kubeadm Ansible Playbook*
-  - [ ] Kubernetes-master
+  - [X] Kubernetes-master
+    - Installe la version 1.18 de kubelet, kubectl, kubeadm
+    - Démarre le cluster
+    - Met en place le dashboard
   - [X] cni
     - Container Network Interface
     - Fournit les configurations des différentes interfaces réseau possibles pour les containers
@@ -316,7 +449,9 @@ CLOSED: [2024-05-02 Thu 10:54]
     - La documentation mentionne flannel
     - Pourquoi celui-ci par rapport à un autre ?
       - Ne vois pas les implications pour le moment
-  - [ ] Kubernetes-node
+  - [X] Kubernetes-node
+    - Installe k8s
+    - Fait rejoindre le cluster
   - [X] Helm
     - Est un service de recettes pour k8s
     - Installe Helm
@@ -375,7 +510,7 @@ CLOSED: [2024-05-02 Thu 10:54]
     - Description du playbook
       - Installe et active GlusterFS
       - Rien de fancy semblerait
-  - [ ] GlusterFS-master
+  - [X] GlusterFS-master
     - Installe et active GlusterFS
     - Setup le distributed FS
     - Créé les différents volumes GlusterFS
@@ -406,6 +541,10 @@ CLOSED: [2024-05-02 Thu 10:54]
   - Par contre, le playbook repose aussi sur l'utilisation de yum
     - Plus trop d'actualité
     - Si je pige bien, a été remplacé par dnf depuis
+  - Où et quand est mis en place/configuré le VPN ?
+    - Le README ainsi que le fichier de vars mentionne l'existence d'un VPN
+    - Je ne vois où ce dernier est créé
+    - Et son rôle
   - Questions
     - À quoi sert healthcheck vs les applications de monitoring ?
     - À quoi sert Helm ici ?
@@ -420,6 +559,17 @@ CLOSED: [2024-05-02 Thu 10:54]
       - Auquel cas, on retombe sur nos pattes
       - Chaque noeud possède sa brick
       - Et les fichiers vont être répartis sur ces bricks, avec un replication factor de 2
+- LivingFog: Déployer LivingFog sur le PicoCluster
+  - Problèmes rencontrés au lancement du playbook
+  - N'arrive pas à installer docker-ce avec la version demandée
+    - En retirant le num de version, cela fonctionne
+    - À voir si je rencontre une erreur plus tard
+    - Problème étant aussi que le repo ajouté et utilisé pour docker-engine est vieux
+    - Correspond à Ubuntu Xenial, i.e. 2016
+    - Serait p-e bien de mettre à jour cela
+  - N'arrive pas à installer kubeadm
+    - Repo utilisé est là aussi trop ancien
+    - La clé PGP n'a plus l'air valide
 ** Semaine du <2024-04-22 Mon> au <2024-04-26 Fri>
 *** Planned
 **** DONE SmartSense: Traiter les problèmes relevés lors de l'uniformisation du code
