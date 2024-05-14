@@ -95,6 +95,119 @@
   - En laissant penser que le noeud est équipé d'une horloge hardware
 - Et elles se révèlent inutiles en l'état
 - Proposer leur suppression (MR)
+** Semaine du <2024-05-14 Tue> au <2024-05-17 Fri>
+*** Planned
+**** IN-PROGRESS LivingFog: Déployer LivingFog sur le PicoCluster
+- Pour prendre en main les différents outils que je vais utiliser dans le projet
+- Le mieux est de les utiliser dans le cadre d'un PoC
+- Ici, l'idée est de déployer LivingFog sur 2 noeuds du PicoCluster
+  - Noeud principal
+  - Noeud worker
+- Permet aussi de me familiariser avec l'écosystème LivingFog
+  - https://github.com/FogGuru/livingfog
+  - http://www.fogguru.eu/livingfog/
+- De remonter les difficultés/incompréhensions rencontrées
+- Et de commencer à identifier ce qui a trait à LoRaWAN
+  - Pour une potentielle excision future
+**** IN-PROGRESS SmartSense: Rédiger un fichier de config Ansible pour le noeud SmartSense
+- Maintenant que j'ai pu déployer un noeud SmartSense et identifier les différentes étapes nécessaires
+- Serait utile de
+  - Documenter le processus
+  - L'automatiser
+- Ansible est semblerait l'outil adapté pour cela
+- Automatiser le déploiement d'un noeud SmartSense en utilisant Ansible
+**** IN-PROGRESS SmartSense: Mise en place d'un processus de CI
+- Mettre en place des tests, c'était un bon début
+- Mettre en place un processus de CI, ça serait mieux
+  - Garantirait la reproductibilité de l'environnement de tests
+  - Et que j'oublie pas de les faire tourner avant l'intégration
+- Voir comment GitLab gère ça
+*** Done
+- Réunion avec Guillaume du <2024-05-14 Tue>, 14h00
+  - Préparation
+    - LivingFog
+      - Fini de parcourir le playbook Ansible et de faire le tour des différents composants de LivingFog
+      - Pas trop compris quelques points
+        - Incorpore un petit outil *k8s-healthcheck*
+          - https://github.com/emrekenci/k8s-healthcheck
+          - Monitore l'état des différents composants Kubernetes
+            - apiServer, etcd, control plane, deployments, etc.
+          - Projet date de 6 ans et semble peu utilisé
+          - Toujours d'actualité ?
+          - Ou remplacé désormais par un plugin ou une feature native ?
+        - Configure Gluster pour avoir 2 replicas par volume
+          - Mais ne précise qu'une seule brick par volume
+          - ne devrait pas y avoir au moins 2 bricks du coup ?
+      - A tenté de lancer le playbook sur le picocluster, sans succès
+      - Suis passé sur des VMs Vagrant pour essayer de débugger et gérer plus facilement l'état du système
+      - Version de Docker pas compatible avec nouveau OS
+        - Semble utiliser cgroup v1
+        - Alors que les OS récents ont l'air d'être passé à cgroup v2
+      - Préférable d'upgrade la version de Docker
+        - Et de passer à un système de conteneurs respectant la Container Runtime Interface (CRI)
+        - Plutôt d'installer containerd non ?
+      - Erreur lors de l'installation de Kubernetes
+        - Rencontre une erreur liée à la dépréciation de apt-key
+        - Comprends pas pourquoi je rencontre pas la même erreur pour Docker
+      - A aussi MàJ la version de Kubernetes installé
+      - Mais du coup a rencontré diverses erreurs
+        - Flannel
+          - Des propriétés qui sont passés du statut beta au statut officiel
+        - Dashboard
+          - Ne s'installe plus de la même manière
+          - Nécessite Helm
+      - A pu setup le cluster sur mes VMs
+        - kubeadm init
+        - kubeadm join
+      - Mais rencontre une erreur à l'utilisation liée au réseau
+        - k8s utilise l'interface réseau par défaut
+        - Dans le cas de mes VMs, ne correspond pas à l'interface réseau pour laquelle j'ai spécifié les @ip
+        - Du coup les noeuds du cluster n'arrivent pas à communiquer
+      - Devrait pas rencontrer ce problème sur le picocluster
+  - Questions
+    - LivingFog
+      - CNI
+        - Propose plusieurs choix possibles comme CNI
+        - Calico, Canal, Flannel (défaut)
+        - Quelles sont les différences entre ces outils ?
+    - SmartSense
+      - A emprunté un dongle Wi-Fi à la DSI pour SmartSense
+      - Mais serait bien que je leur rende un jour
+      - Est-ce que je peux passer commande d'un ou plusieurs simples dongles Wi-Fi simples ?
+    - Népal
+      - Des nouvelles d'une réunion de démarrage ?
+      - Si voyage prévu cette année, quelle fenêtre ?
+        - Que je fasse pas surprendre
+  - Notes
+- Réunion de suivi du <2024-05-16 Thu>
+  - Préparation
+    - SmartSense
+      - A mis en place une nouvelle image système basé sur RPi OS bookworm 64bits
+      - A pu lancer l'application sur cette nouvelle image
+      - A fait tourner l'appli 24h, sans rencontrer le problème lié à InfluxDB
+      - Mais problème avec la carte SD récupérée
+        - Extrêmement lente, e.g. plusieurs secondes pour exécuter ls
+      - A souhaité setup une seconde carte avant de procéder à des tests plus poussés
+      - A permis de faire le point sur les différentes étapes nécessaires pour créer l'image
+        - Dépendances à installer
+        - Configuration, e.g. de l'interface I2C
+      - Et d'en profiter pour brancher un dongle Wi-Fi et le faire fonctionner
+        - TP-Link TL-WN823N, récupéré à la DSI
+        - A pu me connecter à INRIA-Interne avec
+        - C'était pas clair qu'un driver était disponible pour le chipset de ce dongle
+      - A commencé à rédiger un playbook Ansible pour automatiser le setup de l'image système
+    - LivingFog
+      - A repris avec Guillaume les travaux sur LivingFog
+      - Me penche sur le playbook Ansible utilisé pour setup le cluster k8s
+        - Cluster sur lequel tournent ensuite les applis
+      - Playbook date de plusieurs années
+      - Et n'est plus particulièrement à jour
+        - Paquets, versions, configuration
+    - TerraForma
+      - Échangé avec Mickaël au sujet de la démo pour les journées TF
+  - Questions
+    - Antenne Wi-Fi
+      - Des nouvelles de la DSI à propos de la mise en place de cet équipement ?
 ** Semaine du <2024-05-06 Mon> au <2024-05-07 Tue>
 *** Planned
 **** IN-PROGRESS LivingFog: Déployer LivingFog sur le PicoCluster
