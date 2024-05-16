@@ -176,14 +176,32 @@
       - Est-ce que je peux passer commande d'un ou plusieurs simples dongles Wi-Fi simples ?
     - Népal
       - Des nouvelles d'une réunion de démarrage ?
+        - Non, il faudrait
+        - Serait bien de faire ça assez vite
       - Si voyage prévu cette année, quelle fenêtre ?
-        - Que je fasse pas surprendre
-  - Notes
+        - Que je ne me fasse pas surprendre
+        - Avant l'hiver probablement
+      - Quel est le plan ?
+        - Doit fournir un rapport d'avancement en fin d'année
+        - Doit donc d'ici là avoir de la matière et un début de solution
+        - Idée serait de déployer le noeud fog sur le campus
+        - Et d'avoir avancer sur ces problématiques
+          - Monitoring du système
+          - Fonctionnement du noeud fog en milieu naturel
+            - Sources d'énergie à disposition
+              - Peut mettre en place des panneaux solaires
+              - Présence aussi d'une turbine hydraulique au niveau du village
+                - Mais si elle produit une quantité d'énergie limitée, faudrait pas non plus piller cette ressource
+            - Doit être capable de redémarrer après coupure d'énergie
+          - Qualité des données
+            - Un simple filtre sur les valeurs pour détecter celles qui sont incohérentes
+          - Un objectif suivant du projet est d'alerter quant aux crues
 - Réunion de suivi du <2024-05-16 Thu>
   - Préparation
     - SmartSense
       - A mis en place une nouvelle image système basé sur RPi OS bookworm 64bits
-      - A pu lancer l'application sur cette nouvelle image
+      - A dû corriger des bugs introduits lors du refactoring des modules du code
+      - Mais a pu lancer l'application sur cette nouvelle image
       - A fait tourner l'appli 24h, sans rencontrer le problème lié à InfluxDB
       - Mais problème avec la carte SD récupérée
         - Extrêmement lente, e.g. plusieurs secondes pour exécuter ls
@@ -191,11 +209,15 @@
       - A permis de faire le point sur les différentes étapes nécessaires pour créer l'image
         - Dépendances à installer
         - Configuration, e.g. de l'interface I2C
-      - Et d'en profiter pour brancher un dongle Wi-Fi et le faire fonctionner
+      - A commencé à rédiger un playbook Ansible pour automatiser le setup de l'image système
+      - Sinon en profiter pour brancher un dongle Wi-Fi et le faire fonctionner
         - TP-Link TL-WN823N, récupéré à la DSI
         - A pu me connecter à INRIA-Interne avec
         - C'était pas clair qu'un driver était disponible pour le chipset de ce dongle
-      - A commencé à rédiger un playbook Ansible pour automatiser le setup de l'image système
+      - Sinon, Raspberry a annoncé la RPi Compute Module 4S
+        - Une nouvelle carte au format du CM3
+        - Permettrait un boost de perfs sans devoir redesign le noeud SmartSense
+        - Notamment niveau RAM, des modèles ont 8Go
     - LivingFog
       - A repris avec Guillaume les travaux sur LivingFog
       - Me penche sur le playbook Ansible utilisé pour setup le cluster k8s
@@ -203,11 +225,185 @@
       - Playbook date de plusieurs années
       - Et n'est plus particulièrement à jour
         - Paquets, versions, configuration
+      - Reprend from scratch le setup
+      - Là a mis en place le cluster Kubernetes sur le picocluster
+      - Vois à présent pour automatiser ces premières étapes
+      - Et pour réintroduire les composants suivants dans le système
     - TerraForma
-      - Échangé avec Mickaël au sujet de la démo pour les journées TF
+      - Pour rappel, les journées TF ont lieu du <2024-05-28 Tue> au <2024-05-30 Thu>
+      - Y présenterait le noeud SmartSense dans le cadre d'une démo
+      - Échangé avec Mickaël au sujet des démos/présentations précédentes
+        - Et récupéré du contenu (présentations, commandes utiles)
+      - Creuse cela ces prochains jours
   - Questions
     - Antenne Wi-Fi
       - Des nouvelles de la DSI à propos de la mise en place de cet équipement ?
+  - Notes
+    - Connexion Wi-Fi
+      - Serait intéressant de pouvoir se connecter à un réseau sans login/mdp
+      - Pourrait utiliser le réseau robotique
+        - Réseau ad-hoc géré pour les drones
+      - Voir avec eux le réseau qu'ils ont mis en place, comment, et pour quelles raisons/usages
+      - Et voir si on peut en tirer des enseignements
+- Kubernetes
+  - Pods and Containers - Kubernetes Networking | Container Communication inside the Pod
+    - https://www.youtube.com/watch?v=5cNrTU6o3Fw
+  - Container Network Interface (CNI) Simplified | Kubernetes Networking | Pod Security Group
+    - https://www.youtube.com/watch?v=kA0C44nTwjU
+    - CNI est l'interface entre la Container Runtime Interface (CRI) et le network
+    - Configure les routes réseau
+      - Globalement, quand CRI ajoute/retire un container (et donc pod), demande à la CNI d'ajouter le pod au réseau
+    - Tous les pods peuvent communiquer entre eux w/o Network Address Translation (NAT)
+    - Tous les nodes peuvent communiquer avec les pods w/o NAT
+    - Pour gérer le multi-tenant, doit mettre en place des Kubernetes Network Policies
+      - Si je veux pas que mes pods puissent aller fouiller ceux du voisin
+      - S'applique sur des pods selectionnés grâce aux labels
+      - Policies décomposées en 2 parties
+      - ingress gère les connexions entrantes
+      - egress les connexions sortantes
+      - Peut spécifier les adresses d'entrée/sortie et les tags des pods que doivent avoir les pods correspondants
+      - e.g. seuls les pods du namespace myproject ayant pour rôle frontend ont le droit de contacter mes pods db
+    - Certaines CNIs ont l'air de proposer la Pod Security Group
+      - Permet de définir une police de sécurité au niveau d'un pod donné
+      - Mais comprend pas trop par qui ces polices sont établies
+      - Parle que c'est une feature pour le multi-tenant
+      - Est-ce que c'est à l'owner de la plateforme de les mettre en place ?
+        - Mais dans ce cas, doit connaître les détails des applications qui tournent sur la plateforme
+      - Est-ce que c'est aux users de la plateforme de les mettre en place ?
+        - Mais dans ce cas, s'applique aux pods des autres tenants ?
+        - Si oui, possibilité de deny une ressource aux autres
+    - Différences entre Service Mesh et Network Policy Enforcer
+      - Service Mesh se place au niveau de la couche application
+      - Tandis que Network Policy Enforcer au niveau de la couche réseau
+      - Les deux font office de load balancer, mais pour des entités différentes
+        - Après, ne vois pas trop ce qu'est le Service Mesh pour le moment
+  - Kubernetes Services explained | ClusterIP vs NodePort vs LoadBalancer vs Headless Service
+    - https://www.youtube.com/watch?v=T4Z7visMM4E
+    - Pods ont une @IP
+    - Mais sont éphémères
+    - Ne peut pas rely sur ces @IP
+    - Services permettent de fournir une @IP stable
+    - Permettent aussi de faire du load balancing
+    - Plusieurs types de Services proposés par Kubernetes
+    - ClusterIP
+      - Default type
+      - Remplit le rôle d'un service interne
+      - Cluster k8s dispose d'une front-end, Ingress
+      - Lorsque requête arrive, Ingress redirige cette dernière vers service approprié
+        - Utilise des règles définies via configuration pour déterminer à quel service déléguer la requête
+      - Service se base alors sur le selector défini pour déterminer à quel pod envoyer la requête
+      - Pods doivent avoir déclaré les labels correspondants
+      - Utilise alors le targetPort déclaré pour déterminer sur quel port contacter le pod sélectionné
+      - Si Service doit gérer des requêtes destinées à des ports différents des pods
+        - e.g. pod MongoDB qui expose un container MongoDB mais aussi un container de metrics
+      - Peut alors lui-même ouvrir plusieurs ports et accepter des requêtes sur les différents ports
+    - Headless
+      - Client/Pod veut communiquer directement avec un Pod spécifique
+      - e.g. stateful applications
+        - Pod exposant une BD qui démarre et qui doit récupérer l'état depuis le pod précédent (chain replication)
+      - Pour créer un tel service, se base sur la config de ClusterIP
+      - Juste on précise que ce n'est pas un clusterIP Service
+        - `clusterIP=None`
+      - Va alors créer le service as Headless
+    - NodePort
+      - Ici, créé et expose le service directement au niveau du noeud
+        - i.e. pas seulement accessible en interne, noeuds peuvent être directement contactés de l'extérieur du réseau
+      - Configuration nécessite de spécifier le port du endpoint, targetPort, du service lui-même, port, et du noeud, nodePort
+      - Warning: valeur de nodePort doit être l'intervalle 30000-32767
+      - Approche considérée inefficace et non-secure
+      - Pas utilisée en production, même pour permettre les connexions externes
+        - Plutôt en dev pour tester rapidement un service
+      - Repose sur Ingress ou un service LoadBalancer si nécessaire
+    - LoadBalancer
+      - Service devient accessible depuis l'extérieur du cluster par le biais d'un load balancer d'un cloud provider
+        - i.e. type spécifique à l'environnement cloud
+    - Notes
+      - Endpoint
+        - Quand met en place un Service, k8s créé un objet Endpoint correspondant
+        - Permet de lister et référencer pour chaque service les actual endpoints
+- LivingFog: Déployer LivingFog sur le PicoCluster
+  - Quelques erreurs rencontrées
+  - Ajout du cgroup memory
+    - Ajout de `cgroup_enable=memory` dans /boot/firmware/cmdline.txt
+    - https://forums.raspberrypi.com/viewtopic.php?t=203128
+    - Doit reboot dans la foulée
+  - Permet à la commande kubeadm init de réussir
+  - Mais cluster plante ensuite
+  - Commandes kubectl échouent
+    - Erreur XXX:6443 Connection refused
+    - Le serveur API, qui tourne en local sur le noeud, qui plante régulièrement semblerait
+  - Comprend pas particulièrement d'où vient l'erreur
+  - Configuration de flannel pour utiliser l'interface eth0 des noeuds
+    - Ajout de l'argument `--iface=eth0` dans la configuration de flannel
+    - Dans la config du DaemonSet
+      - Qu'est-ce que c'est ?
+    - Modification effectuée
+      #+BEGIN_PLAIN
+      containers:
+      - args:
+      - --ip-masq
+      - --kube-subnet-mgr
+      - --iface=eth0
+      #+END_PLAIN
+  - Permet de garantir que les noeuds communiquent via la bonne interface réseau
+  - Mais ne corrige pas mon problème
+  - Configuration de containerd
+    - Les pages suivantes attribuent cette erreur à une configuration invalide de containerd
+      - https://www.vnoob.com/2022/12/kubectl-6443-connection-refused/
+      - https://github.com/containerd/containerd/issues/4581
+    - Effectivement, j'ai pas touché à la conf de containerd
+      - Juste retiré la ligne `disabled_plugins["cri"]` comme indiqué dans la doc de kubeadm
+      - Mais ma conf par défaut ne ressemble pas à la conf par défaut proposée par containerd
+    - Remplacement de la conf par défaut
+      - `containerd config default | sudo tee /etc/containerd/config.toml`
+    - Utiliser le cgroup systemd pour containerd
+      - `SystemdCgroup = true`
+      - Indiqué ici : https://kubernetes.io/docs/setup/production-environment/container-runtimes/#containerd
+  - Tombe en marche !
+  - A pu faire join les autres noeuds du PicoCluster
+  - A pu démarrer une application hello-world sur le cluster k8s
+    - kubectl create deployment hello-node --image=registry.k8s.io/e2e-test-images/agnhost:2.39 -- /agnhost netexec --http-port=8080
+  - État du cluster
+    #+BEGIN_PLAIN
+livingfog@pc0:~ $ kubectl get nodes -o wide
+NAME   STATUS   ROLES           AGE    VERSION   INTERNAL-IP    EXTERNAL-IP   OS-IMAGE                         KERNEL-VERSION      CONTAINER-RUNTIME
+pc0    Ready    control-plane   22h    v1.30.1   192.168.1.10   <none>        Debian GNU/Linux 12 (bookworm)   6.6.28+rpt-rpi-v8   containerd://1.6.31
+pc1    Ready    <none>          21h    v1.30.1   192.168.1.11   <none>        Debian GNU/Linux 12 (bookworm)   6.6.20+rpt-rpi-v8   containerd://1.6.31
+pc2    Ready    <none>          4m8s   v1.30.1   192.168.1.12   <none>        Debian GNU/Linux 12 (bookworm)   6.6.20+rpt-rpi-v8   containerd://1.6.31
+livingfog@pc0:~ $ kubectl get pods -A -o wide
+NAMESPACE      NAME                          READY   STATUS    RESTARTS       AGE     IP             NODE   NOMINATED NODE   READINESS GATES
+default        hello-node-55fdcd95bf-zzhzh   1/1     Running   1 (21h ago)    21h     10.244.1.3     pc1    <none>           <none>
+kube-flannel   kube-flannel-ds-5ssnd         1/1     Running   1 (21h ago)    21h     192.168.1.10   pc0    <none>           <none>
+kube-flannel   kube-flannel-ds-csbff         1/1     Running   3 (21h ago)    21h     192.168.1.11   pc1    <none>           <none>
+kube-flannel   kube-flannel-ds-kn6ft         1/1     Running   0              5m10s   192.168.1.12   pc2    <none>           <none>
+kube-system    coredns-7db6d8ff4d-gtt92      1/1     Running   1 (21h ago)    22h     10.244.0.76    pc0    <none>           <none>
+kube-system    coredns-7db6d8ff4d-qmrfz      1/1     Running   1 (21h ago)    22h     10.244.0.77    pc0    <none>           <none>
+kube-system    etcd-pc0                      1/1     Running   68 (21h ago)   22h     192.168.1.10   pc0    <none>           <none>
+kube-system    kube-apiserver-pc0            1/1     Running   67 (21h ago)   22h     192.168.1.10   pc0    <none>           <none>
+kube-system    kube-controller-manager-pc0   1/1     Running   81 (21h ago)   22h     192.168.1.10   pc0    <none>           <none>
+kube-system    kube-proxy-26fmx              1/1     Running   0              5m10s   192.168.1.12   pc2    <none>           <none>
+kube-system    kube-proxy-mlg2x              1/1     Running   4 (21h ago)    21h     192.168.1.11   pc1    <none>           <none>
+kube-system    kube-proxy-t89tf              1/1     Running   10 (21h ago)   22h     192.168.1.10   pc0    <none>           <none>
+kube-system    kube-scheduler-pc0            1/1     Running   74 (21h ago)   22h     192.168.1.10   pc0    <none>           <none>
+    #+END_PLAIN
+  - Comment exposer le pod hello-node?
+  - En mettant en place un service de type NodePort
+    - kubectl expose deployment hello-node --type=NodePort --port=8080
+    - Résultat
+      #+BEGIN_PLAIN
+livingfog@pc0:~ $ kubectl get services -o wide
+NAME         TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)          AGE   SELECTOR
+hello-node   NodePort    10.105.13.107   <none>        8080:30171/TCP   32m   app=hello-node
+kubernetes   ClusterIP   10.96.0.1       <none>        443/TCP          22h   <none>
+      #+END_PLAIN
+  - De manière non-intuitive, indique que mon application est accessible sur pc0:30171
+    - wget 131.254.162.2:30171 me permet bien d'interroger in fine le pod et de récupérer sa réponse
+  - Pas clair si j'ai juste de la chance là-dessus
+  - Comment ça fonctionne un service NodePort ?
+    - Est-ce un simple routage ?
+    - Ou est-ce un fonctionnement plus complexe ?
+    - Si cela prend la forme d'un composant, e.g. un pod, est-ce que le service est forcément mis en place sur pc0, i.e. le control plane ?
+    - Ou est-ce qu'il peut être affecté à n'importe quel noeud ?
 ** Semaine du <2024-05-06 Mon> au <2024-05-07 Tue>
 *** Planned
 **** IN-PROGRESS LivingFog: Déployer LivingFog sur le PicoCluster
