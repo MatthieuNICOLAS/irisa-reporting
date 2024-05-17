@@ -97,7 +97,8 @@
 - Proposer leur suppression (MR)
 ** Semaine du <2024-05-14 Tue> au <2024-05-17 Fri>
 *** Planned
-**** IN-PROGRESS LivingFog: Déployer LivingFog sur le PicoCluster
+**** DONE LivingFog: Déployer LivingFog sur le PicoCluster
+CLOSED: [2024-05-16 Thu 16:56]
 - Pour prendre en main les différents outils que je vais utiliser dans le projet
 - Le mieux est de les utiliser dans le cadre d'un PoC
 - Ici, l'idée est de déployer LivingFog sur 2 noeuds du PicoCluster
@@ -122,6 +123,15 @@
   - Garantirait la reproductibilité de l'environnement de tests
   - Et que j'oublie pas de les faire tourner avant l'intégration
 - Voir comment GitLab gère ça
+**** IN-PROGRESS LivingFog: Mettre à jour le playbook Ansible
+- Maintenant que j'ai identifié les premières étapes nécessaires pour setup un cluster k8s sur le PicoCluster
+- Devrais documenter/automatiser cela via un playbook
+- Devrais aussi retester cela sur des VMs
+  - Attribué à la config réseau de Vagrant les erreurs que je rencontrais
+  - Mais probable qu'elles étaient plutôt liées à ma config incomplète de containerd
+- Me permettrait de valider cette première étape
+- Et d'offrir une base stable pour la suite
+  - Configuration de Flannel, Helm, Dashboard, GlusterFS
 *** Done
 - Réunion avec Guillaume du <2024-05-14 Tue>, 14h00
   - Préparation
@@ -404,6 +414,47 @@ kubernetes   ClusterIP   10.96.0.1       <none>        443/TCP          22h   <n
     - Ou est-ce un fonctionnement plus complexe ?
     - Si cela prend la forme d'un composant, e.g. un pod, est-ce que le service est forcément mis en place sur pc0, i.e. le control plane ?
     - Ou est-ce qu'il peut être affecté à n'importe quel noeud ?
+  - De ce que je lis, affecte tous les nodes du cluster
+    - https://medium.com/@berkayhelvacioglu/understanding-and-using-nodeport-services-in-kubernetes-5eba94666646
+    - A NodePort service is a type of service that binds a service to a specific port number on each Kubernetes node.
+    - Once a NodePort service is created, you can access it from outside the cluster using the IP address of any Kubernetes node and the assigned port number.
+  - Effectivement, peut accéder à mon appli depuis n'importe lequel de mes noeuds sur le port indiqué
+    - http://<node-ip>:30171
+  - C'est bon à savoir
+- LivingFog: Mettre à jour le playbook Ansible
+  - [ ] Enable le cgroup memory
+    - Est-ce que ça doit vraiment être géré par Ansible ?
+    - Vu que le fichier /boot/firmware/cmdline.txt correspond à une seule et unique ligne
+    - Peut p-e juste remplacer la ligne
+    - Sauf qu'une partie de la ligne semble spécifique au device
+      - root=PARTUUID=<value>
+      - Correspond au partition ID de notre système
+        - cf. https://raspberrytips.com/raspberry-pi-cmdline-txt/
+        - Par exemple si notre carte SD est partitionnée en /boot (p1) et /root (p2)
+        - Et a pour disk ID 0xf7cf2c94
+          - Obtenu via `sudo fdisk -l`
+        - Obtient f7cf2c94-02 comme value
+    - Nécessite un redémarrage
+  - [ ] Mettre en place la config par défaut de containerd et setup containerd pour utiliser le cgroup systemd
+    - Comment rendre cet ensemble de tâches exécuté only-once ?
+      - i.e. générer le fichier de config par défaut, le modifier et remplacer le fichier de conf actuel
+    - Actions idempotentes
+    - Peut même rendre le tout atomique en maintenant une copie du fichier à côté du playbook et en la copiant directement
+    - Mais vais "changer" l'état du noeud à chaque exécution du playbook
+    - Et donc forcer un redémarrage du service containerd inutile
+    - Est-ce qu'Ansible permet de gérer ce type d'actions proprement ?
+  - [ ] Désactiver le swap
+    - Sur Debian
+      - sudo swapoff -a
+    - Sur RPi
+      - sudo systemctl disable dphys-swapfile
+  - [ ] Créer le cluster k8s
+    - sudo kubeadm config images pull
+    - sudo kubeadm init --pod-network-cidr 10.244.0.0/16 --apiserver-advertise-address 192.168.1.10 --control-plane-endpoint pc0
+  - [ ] Déployer le plugin CNI
+    - Utilise pour le moment la config par défaut de flannel
+    - Modifiée pour spécifier d'utiliser eth0
+  - [ ] Faire rejoindre aux worker le cluster k8s
 ** Semaine du <2024-05-06 Mon> au <2024-05-07 Tue>
 *** Planned
 **** IN-PROGRESS LivingFog: Déployer LivingFog sur le PicoCluster
