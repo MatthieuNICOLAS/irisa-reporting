@@ -422,39 +422,74 @@ kubernetes   ClusterIP   10.96.0.1       <none>        443/TCP          22h   <n
     - http://<node-ip>:30171
   - C'est bon à savoir
 - LivingFog: Mettre à jour le playbook Ansible
-  - [ ] Enable le cgroup memory
-    - Est-ce que ça doit vraiment être géré par Ansible ?
-    - Vu que le fichier /boot/firmware/cmdline.txt correspond à une seule et unique ligne
-    - Peut p-e juste remplacer la ligne
-    - Sauf qu'une partie de la ligne semble spécifique au device
-      - root=PARTUUID=<value>
-      - Correspond au partition ID de notre système
-        - cf. https://raspberrytips.com/raspberry-pi-cmdline-txt/
-        - Par exemple si notre carte SD est partitionnée en /boot (p1) et /root (p2)
-        - Et a pour disk ID 0xf7cf2c94
-          - Obtenu via `sudo fdisk -l`
-        - Obtient f7cf2c94-02 comme value
-    - Nécessite un redémarrage
-  - [ ] Mettre en place la config par défaut de containerd et setup containerd pour utiliser le cgroup systemd
-    - Comment rendre cet ensemble de tâches exécuté only-once ?
-      - i.e. générer le fichier de config par défaut, le modifier et remplacer le fichier de conf actuel
-    - Actions idempotentes
-    - Peut même rendre le tout atomique en maintenant une copie du fichier à côté du playbook et en la copiant directement
-    - Mais vais "changer" l'état du noeud à chaque exécution du playbook
-    - Et donc forcer un redémarrage du service containerd inutile
-    - Est-ce qu'Ansible permet de gérer ce type d'actions proprement ?
-  - [ ] Désactiver le swap
-    - Sur Debian
-      - sudo swapoff -a
-    - Sur RPi
-      - sudo systemctl disable dphys-swapfile
-  - [ ] Créer le cluster k8s
-    - sudo kubeadm config images pull
-    - sudo kubeadm init --pod-network-cidr 10.244.0.0/16 --apiserver-advertise-address 192.168.1.10 --control-plane-endpoint pc0
-  - [ ] Déployer le plugin CNI
-    - Utilise pour le moment la config par défaut de flannel
-    - Modifiée pour spécifier d'utiliser eth0
-  - [ ] Faire rejoindre aux worker le cluster k8s
+  - Étapes
+    - [ ] Enable le cgroup memory
+      - Est-ce que ça doit vraiment être géré par Ansible ?
+      - Vu que le fichier /boot/firmware/cmdline.txt correspond à une seule et unique ligne
+      - Peut p-e juste remplacer la ligne
+      - Sauf qu'une partie de la ligne semble spécifique au device
+        - root=PARTUUID=<value>
+        - Correspond au partition ID de notre système
+          - cf. https://raspberrytips.com/raspberry-pi-cmdline-txt/
+          - Par exemple si notre carte SD est partitionnée en /boot (p1) et /root (p2)
+          - Et a pour disk ID 0xf7cf2c94
+            - Obtenu via `sudo fdisk -l`
+          - Obtient f7cf2c94-02 comme value
+      - Nécessite un redémarrage
+    - [ ] Mettre en place la config par défaut de containerd et setup containerd pour utiliser le cgroup systemd
+      - Comment rendre cet ensemble de tâches exécuté only-once ?
+        - i.e. générer le fichier de config par défaut, le modifier et remplacer le fichier de conf actuel
+      - Actions idempotentes
+      - Peut même rendre le tout atomique en maintenant une copie du fichier à côté du playbook et en la copiant directement
+      - Mais vais "changer" l'état du noeud à chaque exécution du playbook
+      - Et donc forcer un redémarrage du service containerd inutile
+      - Est-ce qu'Ansible permet de gérer ce type d'actions proprement ?
+    - [ ] Désactiver le swap
+      - Sur Debian
+        - sudo swapoff -a
+        - Ah non, ça désactive le swap que pour cette session
+        - Doit plutôt identifier quel unit gérée par systemd est responsable du swap
+          #+BEGIN_PLAIN
+  vagrant@worker:~$ sudo systemctl --type swap
+    UNIT                                                                      LOAD   ACTIVE SUB    DESCRIPTION           >
+    dev-disk-by\x2duuid-351a3e49\x2d6c73\x2d4e98\x2da3c7\x2d908a8c12839f.swap loaded active active /dev/disk/by-uuid/351a>
+          #+END_PLAIN
+        - Et la désactiver
+        - sudo systemctl mask "dev-disk-by\x2duuid-351a3e49\x2d6c73\x2d4e98\x2da3c7\x2d908a8c12839f.swap"
+      - Sur RPi
+        - sudo systemctl disable dphys-swapfile
+    - [ ] Créer le cluster k8s
+      - sudo kubeadm config images pull
+      - sudo kubeadm init --pod-network-cidr 10.244.0.0/16 --apiserver-advertise-address 192.168.1.10 --control-plane-endpoint pc0
+    - [ ] Déployer le plugin CNI
+      - Utilise pour le moment la config par défaut de flannel
+      - Modifiée pour spécifier d'utiliser l'interface appropriée pour que les noeuds communiquent entre eux
+    - [ ] Faire rejoindre aux worker le cluster k8s
+  - Tests sur VMs
+    - Histoire de valider mes résultats d'hier, j'ai relancé le setup du cluster k8s sur VMs
+    - Pas pu enable le cgroup memory
+      - Pas de fichier /boot/firmware/cmdline.txt sur Debian
+    - Mais en fait, enabled par défaut
+      #+BEGIN_PLAIN
+vagrant@master:~$ cat /sys/fs/cgroup/cgroup.controllers
+cpuset cpu io memory hugetlb pids rdma misc
+      #+END_PLAIN
+    - A pu constaté que la config de base de containerd est vide, à l'exception de la désactivation du plugin CRI
+      - Pas celle avec containerd config default
+      - Mais celle qui est présente suite à l'install de containerd dans /etc/containerd/config.yaml
+    - A tenté de démarrer le cluster sans avoir désactivé le swap
+      - Échoue au cours de la commande init, au moment de démarrer kubelet
+    - A tenté de déployer flannel sans spécifier l'interface réseau
+      - Cluster semble fonctionnel
+      - Mais a rencontré une erreur lorsque j'ai mis en place un Service NodePort pour mon appli Hello World
+      - Le service est créé, j'ai pas noté d'erreur particulière
+      - Mais en pratique, ne peut contacté l'appli que via l'url <ip_worker>:<port_service>
+      - Et non pas en utilisant l'ip de n'importe quel noeud du cluster, ici le master
+      - En modifiant la config de flannel pour utiliser l'interface permettant aux noeuds de communiquer, résout le problème
+    - A perdu la commande générée par kubeadm init pour permettre à un noeud de rejoindre
+      - A appris l'existence d'une commande pour regénérer la commande souhaitée
+      - kubeadm token create --print-join-command
+    - Reste plus qu'à automatiser tout ça
 ** Semaine du <2024-05-06 Mon> au <2024-05-07 Tue>
 *** Planned
 **** IN-PROGRESS LivingFog: Déployer LivingFog sur le PicoCluster
