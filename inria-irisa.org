@@ -95,6 +95,53 @@
   - En laissant penser que le noeud est équipé d'une horloge hardware
 - Et elles se révèlent inutiles en l'état
 - Proposer leur suppression (MR)
+** Semaine du <2024-05-21 Tue> au <2024-05-24 Fri>
+*** Planned
+**** IN-PROGRESS LivingFog: Mettre à jour le playbook Ansible
+- Maintenant que j'ai identifié les premières étapes nécessaires pour setup un cluster k8s sur le PicoCluster
+- Devrais documenter/automatiser cela via un playbook
+- Devrais aussi retester cela sur des VMs
+  - Attribué à la config réseau de Vagrant les erreurs que je rencontrais
+  - Mais probable qu'elles étaient plutôt liées à ma config incomplète de containerd
+- Me permettrait de valider cette première étape
+- Et d'offrir une base stable pour la suite
+  - Configuration de Flannel, Helm, Dashboard, GlusterFS
+**** IN-PROGRESS SmartSense: Rédiger un fichier de config Ansible pour le noeud SmartSense
+- Maintenant que j'ai pu déployer un noeud SmartSense et identifier les différentes étapes nécessaires
+- Serait utile de
+  - Documenter le processus
+  - L'automatiser
+- Ansible est semblerait l'outil adapté pour cela
+- Automatiser le déploiement d'un noeud SmartSense en utilisant Ansible
+**** IN-PROGRESS SmartSense: Mise en place d'un processus de CI
+- Mettre en place des tests, c'était un bon début
+- Mettre en place un processus de CI, ça serait mieux
+  - Garantirait la reproductibilité de l'environnement de tests
+  - Et que j'oublie pas de les faire tourner avant l'intégration
+- Voir comment GitLab gère ça
+**** TODO SmartSense: Remonter le noeud
+- Pour tester la nouvelle image système, avais démonté le noeud SmartSense
+- Afin de préparer au voyage aux journées TF de la semaine pro, remonter le noeud
+**** TODO SmartSense: Tester le fonctionnement du noeud sur batterie
+- Toujours dans le but de préparer la démo
+- Serait préférable en amont de faire une session de test du noeud sur batterie
+- De façon à vérifier son bon fonctionnement dans ces conditions pour la fenêtre de temps de la démo
+**** TODO SmartSense: Tester la mise en place du trépied
+- Mickaël m'a passé un trépied comme support pour le noeud SmartSense pour la démo
+- Voir pour monter le noeud dessus
+- De façon à voir comment mettre en place le noeud
+- Et les outils nécessaires pour cela
+**** TODO SmartSense: Préparer le discours de la démo
+- Revoir les documents que m'avait transmis Mickaël au sujet du noeud SmartSense
+- Et mettre en place le discours a répéter lors de la démo
+  - Qui sommes-nous ?
+  - Qu'est-ce qu'on fait ?
+  - Pourquoi on le fait ?
+  - Comment on le fait ?
+  - Avancement du projet
+  - Perspectives
+- Et le cas échéant, recontacter Olivier et/ou Mickaël pour obtenir infos/détails supplémentaires
+*** Done
 ** Semaine du <2024-05-14 Tue> au <2024-05-17 Fri>
 *** Planned
 **** DONE LivingFog: Déployer LivingFog sur le PicoCluster
@@ -110,6 +157,14 @@ CLOSED: [2024-05-16 Thu 16:56]
 - De remonter les difficultés/incompréhensions rencontrées
 - Et de commencer à identifier ce qui a trait à LoRaWAN
   - Pour une potentielle excision future
+**** DONE LivingFog: Déployer un cluster Kubernetes sur VMs
+CLOSED: [2024-05-21 Tue 08:53]
+- J'avais tenté de mettre en place un cluster k8s sur des VMs
+- Mais avais rencontré une erreur lors de `kubeadm join`
+- Erreur que j'imputais à l'utilisation de la mauvaise interface réseau par k8s/flannel
+- Lors du déploiement sur RPi, j'ai pu découvrir que l'absence de config de containerd pouvait aussi être une cause possible
+- J'ai aussi appris comment spécifier l'interface réseau à utiliser à flannel
+- Procéder à la mise en place d'un cluster k8s sur VMs, histoire de vérifier et valider le process
 **** IN-PROGRESS SmartSense: Rédiger un fichier de config Ansible pour le noeud SmartSense
 - Maintenant que j'ai pu déployer un noeud SmartSense et identifier les différentes étapes nécessaires
 - Serait utile de
@@ -421,6 +476,31 @@ kubernetes   ClusterIP   10.96.0.1       <none>        443/TCP          22h   <n
   - Effectivement, peut accéder à mon appli depuis n'importe lequel de mes noeuds sur le port indiqué
     - http://<node-ip>:30171
   - C'est bon à savoir
+- LivingFog: Déployer un cluster Kubernetes sur VMs
+  - Histoire de valider mes résultats d'hier, j'ai relancé le setup du cluster k8s sur VMs
+  - Pas pu enable le cgroup memory
+    - Pas de fichier /boot/firmware/cmdline.txt sur Debian
+  - Mais en fait, enabled par défaut
+    #+BEGIN_PLAIN
+vagrant@master:~$ cat /sys/fs/cgroup/cgroup.controllers
+cpuset cpu io memory hugetlb pids rdma misc
+    #+END_PLAIN
+  - A pu constaté que la config de base de containerd est vide, à l'exception de la désactivation du plugin CRI
+    - Pas celle avec containerd config default
+    - Mais celle qui est présente suite à l'install de containerd dans /etc/containerd/config.yaml
+  - A tenté de démarrer le cluster sans avoir désactivé le swap
+    - Échoue au cours de la commande init, au moment de démarrer kubelet
+  - A tenté de déployer flannel sans spécifier l'interface réseau
+    - Cluster semble fonctionnel
+    - Mais a rencontré une erreur lorsque j'ai mis en place un Service NodePort pour mon appli Hello World
+    - Le service est créé, j'ai pas noté d'erreur particulière
+    - Mais en pratique, ne peut contacté l'appli que via l'url <ip_worker>:<port_service>
+    - Et non pas en utilisant l'ip de n'importe quel noeud du cluster, ici le master
+    - En modifiant la config de flannel pour utiliser l'interface permettant aux noeuds de communiquer, résout le problème
+  - A perdu la commande générée par kubeadm init pour permettre à un noeud de rejoindre
+    - A appris l'existence d'une commande pour regénérer la commande souhaitée
+    - kubeadm token create --print-join-command
+  - Reste plus qu'à automatiser tout ça
 - LivingFog: Mettre à jour le playbook Ansible
   - Étapes
     - [ ] Enable le cgroup memory
@@ -465,31 +545,6 @@ kubernetes   ClusterIP   10.96.0.1       <none>        443/TCP          22h   <n
       - Utilise pour le moment la config par défaut de flannel
       - Modifiée pour spécifier d'utiliser l'interface appropriée pour que les noeuds communiquent entre eux
     - [ ] Faire rejoindre aux worker le cluster k8s
-  - Tests sur VMs
-    - Histoire de valider mes résultats d'hier, j'ai relancé le setup du cluster k8s sur VMs
-    - Pas pu enable le cgroup memory
-      - Pas de fichier /boot/firmware/cmdline.txt sur Debian
-    - Mais en fait, enabled par défaut
-      #+BEGIN_PLAIN
-vagrant@master:~$ cat /sys/fs/cgroup/cgroup.controllers
-cpuset cpu io memory hugetlb pids rdma misc
-      #+END_PLAIN
-    - A pu constaté que la config de base de containerd est vide, à l'exception de la désactivation du plugin CRI
-      - Pas celle avec containerd config default
-      - Mais celle qui est présente suite à l'install de containerd dans /etc/containerd/config.yaml
-    - A tenté de démarrer le cluster sans avoir désactivé le swap
-      - Échoue au cours de la commande init, au moment de démarrer kubelet
-    - A tenté de déployer flannel sans spécifier l'interface réseau
-      - Cluster semble fonctionnel
-      - Mais a rencontré une erreur lorsque j'ai mis en place un Service NodePort pour mon appli Hello World
-      - Le service est créé, j'ai pas noté d'erreur particulière
-      - Mais en pratique, ne peut contacté l'appli que via l'url <ip_worker>:<port_service>
-      - Et non pas en utilisant l'ip de n'importe quel noeud du cluster, ici le master
-      - En modifiant la config de flannel pour utiliser l'interface permettant aux noeuds de communiquer, résout le problème
-    - A perdu la commande générée par kubeadm init pour permettre à un noeud de rejoindre
-      - A appris l'existence d'une commande pour regénérer la commande souhaitée
-      - kubeadm token create --print-join-command
-    - Reste plus qu'à automatiser tout ça
 ** Semaine du <2024-05-06 Mon> au <2024-05-07 Tue>
 *** Planned
 **** IN-PROGRESS LivingFog: Déployer LivingFog sur le PicoCluster
