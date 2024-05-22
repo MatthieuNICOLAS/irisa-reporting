@@ -332,6 +332,63 @@ ok: [vm0] => {
         - Dispose-t-on d'équipement pour mettre en place un mini observatoire ici ?
           - Capteurs, data loggers ?
           - A-t-on un noeud Fog outdoor-proof ?
+  - Réunion
+    - Question principale du CNRS
+      - What does it means to have long-term measurements/observatories ?
+    - Faudra développer cet aspect lors de notre projet/réponse/rapport
+    - Réunion de suivi vers décembre
+    - Rapport en novembre
+    - Kristen a déjà prévu un séjour au Népal d'octobre à décembre
+      - Faudrait organiser notre voyage à cette période
+    - Besoins
+      - Modifier l'observatoire pour le rendre plus pérenne/substainable
+        - Besoins de remote management
+        - Existe un remote access, mais via Potsdam
+        - Mais support de Potsdam diminue/disparait, besoin d'un nouveau moyen
+      - Besoin d'observations continues
+        - Long-term
+        - Seasonal data
+        - Détection des évènements extraordinaires
+    - Rivière intéressante
+      - Traverse plusieurs zones sédimentaires/altitudes/climats le long de son parcours
+      - Région dynamique : activité tectonique, mousson
+      - Beaucoup d'interactions entre les différents systèmes
+      - Majorité du débit s'infiltre dans le sol
+        - Comment cela fonctionne ?
+      - Mesures
+        - Activités sismiques (débit important par rapport à d'autres flux)
+          - But est de traiter ces données en local pour produire une synthèse du résultat obtenu
+        - Paramètres du climat
+        - Concentration en sédiments
+        - Niveau de l'eau
+        - Topologie du terrain (voir si le lit de la rivière évolue)
+        - Font aussi des coupes d'arbre pour suivre l'impact/la composition des moussons années après années
+    - Globalement, observatoire fonctionne correctement majoritairement
+      - Mais nécessite un entretien continu
+    - Alerte crues
+      - En fonction de la distance avec l'origine, fenêtre de temps varie de minutes à heures
+    - Besoins
+      - Monitorer le système
+        - Pour le moment, si système fail, attendre que Christoff check les données pour détecter la panne
+        - Dépend donc de la fréquence à laquelle les données de ce sensor
+        - Si les données sont juste bogus, peut prendre bien plus de temps à s'en apercevoir
+        - Besoin de mettre en place de la redondance
+        - Ou mettre en parallèle les données d'un sensor avec celles d'autres sensors (détecter la pluie avec l'activité sismique)
+      - Sécurité/pérennité des données
+      - Local Apps
+      - Routine to monitor the quality of data
+        - How to distinguish good/bad data ?
+      - 1ère piste serait de mettre en place un mécanisme de détection des données bogus
+      - Croix-verte
+        - Y a déjà des capteurs mis en place
+        - Peut mettre en place des capteurs utilisés au Népal
+        - De façon à qu'on puisse interagir/les manipuler
+      - Commence à mettre en place une base de données
+      - Faudrait se greffer au système sans le remplacer
+      - Comment faire pour cross-compare des données de débit/throughput différents ?
+      - Dispose déjà d'un dataset des 10 dernières années
+        - Avec des données valides et bogus
+        - Peut utiliser cela pour l'apprentissage
 ** Semaine du <2024-05-14 Tue> au <2024-05-17 Fri>
 *** Planned
 **** DONE LivingFog: Déployer LivingFog sur le PicoCluster
