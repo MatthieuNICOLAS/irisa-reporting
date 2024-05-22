@@ -142,6 +142,196 @@
   - Perspectives
 - Et le cas échéant, recontacter Olivier et/ou Mickaël pour obtenir infos/détails supplémentaires
 *** Done
+- LivingFog: Mettre à jour le playbook Ansible
+  - Étapes
+    - [ ] Assert qu'on est sur un debian bookworm, soit arm64 ou x86_64
+    - [X] Enable le cgroup memory
+      - Pas si straightforward
+      - Le module lineinfile n'a pas l'air d'avoir été très adapté pour
+      - Peut facilement détecter la présence ou non du pattern
+      - Mais peut difficilement modifier la ligne pour l'ajouter
+      - Solution un peu complexe
+        - https://stackoverflow.com/questions/61972815/ansible-modify-cmdline-txt-on-raspberry-pi
+      - Me paraît plus simple d'utiliser une commande shell
+      - Alex m'a aidé à réaliser la cmd appropriée
+        - `sed -i 'cgroup_enable=memory/!s/$/ cgroup_enable=memory' /boot/firmware/cmdline.txt`
+      - Seul problème étant que cela marque comme changé l'état de la machine à chaque exec
+      - Faudra p-e décomposer en 2 étapes dans ce cas
+    - [X] Mettre en place la config par défaut de containerd et setup containerd pour utiliser le cgroup systemd
+      - Peut check si je vois la ligne intéressante dans le fichier
+        - SystemdCgroup = true
+      - Si non, copie fichier pré-fait
+    - [X] Désactiver le swap
+    - [X] Prendre en compte l'archi système lors de l'ajout du repo pour Docker
+      - Ajout d'une ternary
+    - [X] Créer le cluster k8s
+      - Peut enregistrer le résultat de la commande `kubeadm init`
+      - Notamment pour récupérer le token/la commande permettant aux workers de join
+      - Exemple
+        #+BEGIN_PLAIN
+ok: [vm0] => {
+    "init_cluster": {
+        "changed": true,
+        "cmd": "kubeadm init --pod-network-cidr 10.244.0.0/16             --apiserver-advertise-address 192.168.60.10             --control-plane-endpoint master\n",
+        "delta": "0:02:29.268177",
+        "end": "2024-05-21 15:17:55.395970",
+        "failed": false,
+        "msg": "",
+        "rc": 0,
+        "start": "2024-05-21 15:15:26.127793",
+        "stderr": "W0521 15:15:26.767939   10944 checks.go:844] detected that the sandbox image \"registry.k8s.io/pause:3.6\" of the container runtime is inconsistent with that used by kubeadm.It is recommended to use \"registry.k8s.io/pause:3.9\" as the CRI sandbox image.",
+        "stderr_lines": [
+            "W0521 15:15:26.767939   10944 checks.go:844] detected that the sandbox image \"registry.k8s.io/pause:3.6\" of the container runtime is inconsistent with that used by kubeadm.It is recommended to use \"registry.k8s.io/pause:3.9\" as the CRI sandbox image."
+        ],
+        "stdout": "[init] Using Kubernetes version: v1.30.1\n[preflight] Running pre-flight checks\n[preflight] Pulling images required for setting up a Kubernetes cluster\n[preflight] This might take a minute or two, depending on the speed of your internet connection\n[preflight] You can also perform this action in beforehand using 'kubeadm config images pull'\n[certs] Using certificateDir folder \"/etc/kubernetes/pki\"\n[certs] Generating \"ca\" certificate and key\n[certs] Generating \"apiserver\" certificate and key\n[certs] apiserver serving cert is signed for DNS names [kubernetes kubernetes.default kubernetes.default.svc kubernetes.default.svc.cluster.local master] and IPs [10.96.0.1 192.168.60.10]\n[certs] Generating \"apiserver-kubelet-client\" certificate and key\n[certs] Generating \"front-proxy-ca\" certificate and key\n[certs] Generating \"front-proxy-client\" certificate and key\n[certs] Generating \"etcd/ca\" certificate and key\n[certs] Generating \"etcd/server\" certificate and key\n[certs] etcd/server serving cert is signed for DNS names [localhost master] and IPs [192.168.60.10 127.0.0.1 ::1]\n[certs] Generating \"etcd/peer\" certificate and key\n[certs] etcd/peer serving cert is signed for DNS names [localhost master] and IPs [192.168.60.10 127.0.0.1 ::1]\n[certs] Generating \"etcd/healthcheck-client\" certificate and key\n[certs] Generating \"apiserver-etcd-client\" certificate and key\n[certs] Generating \"sa\" key and public key\n[kubeconfig] Using kubeconfig folder \"/etc/kubernetes\"\n[kubeconfig] Writing \"admin.conf\" kubeconfig file\n[kubeconfig] Writing \"super-admin.conf\" kubeconfig file\n[kubeconfig] Writing \"kubelet.conf\" kubeconfig file\n[kubeconfig] Writing \"controller-manager.conf\" kubeconfig file\n[kubeconfig] Writing \"scheduler.conf\" kubeconfig file\n[etcd] Creating static Pod manifest for local etcd in \"/etc/kubernetes/manifests\"\n[control-plane] Using manifest folder \"/etc/kubernetes/manifests\"\n[control-plane] Creating static Pod manifest for \"kube-apiserver\"\n[control-plane] Creating static Pod manifest for \"kube-controller-manager\"\n[control-plane] Creating static Pod manifest for \"kube-scheduler\"\n[kubelet-start] Writing kubelet environment file with flags to file \"/var/lib/kubelet/kubeadm-flags.env\"\n[kubelet-start] Writing kubelet configuration to file \"/var/lib/kubelet/config.yaml\"\n[kubelet-start] Starting the kubelet\n[wait-control-plane] Waiting for the kubelet to boot up the control plane as static Pods from directory \"/etc/kubernetes/manifests\"\n[kubelet-check] Waiting for a healthy kubelet. This can take up to 4m0s\n[kubelet-check] The kubelet is healthy after 501.995167ms\n[api-check] Waiting for a healthy API server. This can take up to 4m0s\n[api-check] The API server is healthy after 5.002756911s\n[upload-config] Storing the configuration used in ConfigMap \"kubeadm-config\" in the \"kube-system\" Namespace\n[kubelet] Creating a ConfigMap \"kubelet-config\" in namespace kube-system with the configuration for the kubelets in the cluster\n[upload-certs] Skipping phase. Please see --upload-certs\n[mark-control-plane] Marking the node master as control-plane by adding the labels: [node-role.kubernetes.io/control-plane node.kubernetes.io/exclude-from-external-load-balancers]\n[mark-control-plane] Marking the node master as control-plane by adding the taints [node-role.kubernetes.io/control-plane:NoSchedule]\n[bootstrap-token] Using token: xopq34.xkhh08e3vk3tglb9\n[bootstrap-token] Configuring bootstrap tokens, cluster-info ConfigMap, RBAC Roles\n[bootstrap-token] Configured RBAC rules to allow Node Bootstrap tokens to get nodes\n[bootstrap-token] Configured RBAC rules to allow Node Bootstrap tokens to post CSRs in order for nodes to get long term certificate credentials\n[bootstrap-token] Configured RBAC rules to allow the csrapprover controller automatically approve CSRs from a Node Bootstrap Token\n[bootstrap-token] Configured RBAC rules to allow certificate rotation for all node client certificates in the cluster\n[bootstrap-token] Creating the \"cluster-info\" ConfigMap in the \"kube-public\" namespace\n[kubelet-finalize] Updating \"/etc/kubernetes/kubelet.conf\" to point to a rotatable kubelet client certificate and key\n[addons] Applied essential addon: CoreDNS\n[addons] Applied essential addon: kube-proxy\n\nYour Kubernetes control-plane has initialized successfully!\n\nTo start using your cluster, you need to run the following as a regular user:\n\n  mkdir -p $HOME/.kube\n  sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config\n  sudo chown $(id -u):$(id -g) $HOME/.kube/config\n\nAlternatively, if you are the root user, you can run:\n\n  export KUBECONFIG=/etc/kubernetes/admin.conf\n\nYou should now deploy a pod network to the cluster.\nRun \"kubectl apply -f [podnetwork].yaml\" with one of the options listed at:\n  https://kubernetes.io/docs/concepts/cluster-administration/addons/\n\nYou can now join any number of control-plane nodes by copying certificate authorities\nand service account keys on each node and then running the following as root:\n\n  kubeadm join master:6443 --token xopq34.xkhh08e3vk3tglb9 \\\n\t--discovery-token-ca-cert-hash sha256:90a6af24fcb37710b056db9d3c743f4bd73f7bef0a204db7d123c9a9a3abaf08 \\\n\t--control-plane \n\nThen you can join any number of worker nodes by running the following on each as root:\n\nkubeadm join master:6443 --token xopq34.xkhh08e3vk3tglb9 \\\n\t--discovery-token-ca-cert-hash sha256:90a6af24fcb37710b056db9d3c743f4bd73f7bef0a204db7d123c9a9a3abaf08 ",
+        "stdout_lines": [
+            "[init] Using Kubernetes version: v1.30.1",
+            "[preflight] Running pre-flight checks",
+            "[preflight] Pulling images required for setting up a Kubernetes cluster",
+            "[preflight] This might take a minute or two, depending on the speed of your internet connection",
+            "[preflight] You can also perform this action in beforehand using 'kubeadm config images pull'",
+            "[certs] Using certificateDir folder \"/etc/kubernetes/pki\"",
+            "[certs] Generating \"ca\" certificate and key",
+            "[certs] Generating \"apiserver\" certificate and key",
+            "[certs] apiserver serving cert is signed for DNS names [kubernetes kubernetes.default kubernetes.default.svc kubernetes.default.svc.cluster.local master] and IPs [10.96.0.1 192.168.60.10]",
+            "[certs] Generating \"apiserver-kubelet-client\" certificate and key",
+            "[certs] Generating \"front-proxy-ca\" certificate and key",
+            "[certs] Generating \"front-proxy-client\" certificate and key",
+            "[certs] Generating \"etcd/ca\" certificate and key",
+            "[certs] Generating \"etcd/server\" certificate and key",
+            "[certs] etcd/server serving cert is signed for DNS names [localhost master] and IPs [192.168.60.10 127.0.0.1 ::1]",
+            "[certs] Generating \"etcd/peer\" certificate and key",
+            "[certs] etcd/peer serving cert is signed for DNS names [localhost master] and IPs [192.168.60.10 127.0.0.1 ::1]",
+            "[certs] Generating \"etcd/healthcheck-client\" certificate and key",
+            "[certs] Generating \"apiserver-etcd-client\" certificate and key",
+            "[certs] Generating \"sa\" key and public key",
+            "[kubeconfig] Using kubeconfig folder \"/etc/kubernetes\"",
+            "[kubeconfig] Writing \"admin.conf\" kubeconfig file",
+            "[kubeconfig] Writing \"super-admin.conf\" kubeconfig file",
+            "[kubeconfig] Writing \"kubelet.conf\" kubeconfig file",
+            "[kubeconfig] Writing \"controller-manager.conf\" kubeconfig file",
+            "[kubeconfig] Writing \"scheduler.conf\" kubeconfig file",
+            "[etcd] Creating static Pod manifest for local etcd in \"/etc/kubernetes/manifests\"",
+            "[control-plane] Using manifest folder \"/etc/kubernetes/manifests\"",
+            "[control-plane] Creating static Pod manifest for \"kube-apiserver\"",
+            "[control-plane] Creating static Pod manifest for \"kube-controller-manager\"",
+            "[control-plane] Creating static Pod manifest for \"kube-scheduler\"",
+            "[kubelet-start] Writing kubelet environment file with flags to file \"/var/lib/kubelet/kubeadm-flags.env\"",
+            "[kubelet-start] Writing kubelet configuration to file \"/var/lib/kubelet/config.yaml\"",
+            "[kubelet-start] Starting the kubelet",
+            "[wait-control-plane] Waiting for the kubelet to boot up the control plane as static Pods from directory \"/etc/kubernetes/manifests\"",
+            "[kubelet-check] Waiting for a healthy kubelet. This can take up to 4m0s",
+            "[kubelet-check] The kubelet is healthy after 501.995167ms",
+            "[api-check] Waiting for a healthy API server. This can take up to 4m0s",
+            "[api-check] The API server is healthy after 5.002756911s",
+            "[upload-config] Storing the configuration used in ConfigMap \"kubeadm-config\" in the \"kube-system\" Namespace",
+            "[kubelet] Creating a ConfigMap \"kubelet-config\" in namespace kube-system with the configuration for the kubelets in the cluster",
+            "[upload-certs] Skipping phase. Please see --upload-certs",
+            "[mark-control-plane] Marking the node master as control-plane by adding the labels: [node-role.kubernetes.io/control-plane node.kubernetes.io/exclude-from-external-load-balancers]",
+            "[mark-control-plane] Marking the node master as control-plane by adding the taints [node-role.kubernetes.io/control-plane:NoSchedule]",
+            "[bootstrap-token] Using token: xopq34.xkhh08e3vk3tglb9",
+            "[bootstrap-token] Configuring bootstrap tokens, cluster-info ConfigMap, RBAC Roles",
+            "[bootstrap-token] Configured RBAC rules to allow Node Bootstrap tokens to get nodes",
+            "[bootstrap-token] Configured RBAC rules to allow Node Bootstrap tokens to post CSRs in order for nodes to get long term certificate credentials",
+            "[bootstrap-token] Configured RBAC rules to allow the csrapprover controller automatically approve CSRs from a Node Bootstrap Token",
+            "[bootstrap-token] Configured RBAC rules to allow certificate rotation for all node client certificates in the cluster",
+            "[bootstrap-token] Creating the \"cluster-info\" ConfigMap in the \"kube-public\" namespace",
+            "[kubelet-finalize] Updating \"/etc/kubernetes/kubelet.conf\" to point to a rotatable kubelet client certificate and key",
+            "[addons] Applied essential addon: CoreDNS",
+            "[addons] Applied essential addon: kube-proxy",
+            "",
+            "Your Kubernetes control-plane has initialized successfully!",
+            "",
+            "To start using your cluster, you need to run the following as a regular user:",
+            "",
+            "  mkdir -p $HOME/.kube",
+            "  sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config",
+            "  sudo chown $(id -u):$(id -g) $HOME/.kube/config",
+            "",
+            "Alternatively, if you are the root user, you can run:",
+            "",
+            "  export KUBECONFIG=/etc/kubernetes/admin.conf",
+            "",
+            "You should now deploy a pod network to the cluster.",
+            "Run \"kubectl apply -f [podnetwork].yaml\" with one of the options listed at:",
+            "  https://kubernetes.io/docs/concepts/cluster-administration/addons/",
+            "",
+            "You can now join any number of control-plane nodes by copying certificate authorities",
+            "and service account keys on each node and then running the following as root:",
+            "",
+            "  kubeadm join master:6443 --token xopq34.xkhh08e3vk3tglb9 \\",
+            "\t--discovery-token-ca-cert-hash sha256:90a6af24fcb37710b056db9d3c743f4bd73f7bef0a204db7d123c9a9a3abaf08 \\",
+            "\t--control-plane ",
+            "",
+            "Then you can join any number of worker nodes by running the following on each as root:",
+            "",
+            "kubeadm join master:6443 --token xopq34.xkhh08e3vk3tglb9 \\",
+            "\t--discovery-token-ca-cert-hash sha256:90a6af24fcb37710b056db9d3c743f4bd73f7bef0a204db7d123c9a9a3abaf08 "
+        ]
+    }
+}
+        #+END_PLAIN
+      - Me paraît délicat d'extraire uniquement les deux dernières lignes
+    - [ ] Déployer le plugin CNI
+      - Doit faire de l'interface utilisée un paramètre
+    - [X] Faire rejoindre aux workers le cluster k8s
+      - Suis tombé sur un exemple simple
+        - https://github.com/npflan/k8s-ansible/blob/main/kubeadm-join.yml
+      - Consiste à utiliser la commande `kubeadm token create --print-join-command`
+      - À stocker la commande obtenue comme variable du master
+      - Et de la récupérer et de l'exécuter sur les workers
+      - Permet ainsi à de nouveau workers de rejoindre le cluster facilement
+  - Notes
+    - Possible de debug la valeur d'une variable à l'aide d'une tâche
+      #+BEGIN_PLAIN
+- name: Print all available facts
+  ansible.builtin.debug:
+    var: cgroup_containerd
+      #+END_PLAIN
+    - 
+  - Questions
+    - Comment mettre en place les différents use cases ?
+      - Veut pouvoir
+        - Mettre en place le cluster k8s (master + workers)
+        - Faire rejoindre de nouveaux workers
+        - Faire quitter des workers
+        - Détruire le cluster k8s complet (master + workers)
+      - Comment permettre cela de manière claire et élégante ?
+- Réunion projet Distant du <2024-05-22 Wed>
+  - Préparation
+    - Participant-es
+      - Christoff Andermann
+      - Laurent Longuevergne
+      - Kristen Cook
+    - Rivière monitorée : Kaligandaki River
+    - Objectifs
+      - Remettre en place l'équipement d'observation à Lete
+        - Je crois que Christoff s'en est occupé
+      - Déployer noeuds Fogs dans l'/les Observatoires du Kaligandaki Catchment (bassin versant) pour
+        - Assurer qualité des données
+        - Mettre en place des traitements sur place
+    - Assurer qualité des données
+      - Monitorer état des différents composants de l'observatoires (capteurs, data loggers, équipement réseau)
+      - Filtrer les données incohérentes
+        - e.g. températures trop basses ou élevées
+        - Peut mettre en place algo d'apprentissage pour aller plus loin
+      - Générer des alertes précises sur les dysfonctionnements observés
+    - Mettre en place des traitements sur place
+      - Mécanisme de détection et d'alerte de crues
+    - Questions
+      - Quelles données doit stocker un noeud Fog ?
+        - Mentionne que le noeud Fog doit offrir "a secured data storage and transmission for further archiving and public distribution"
+        - À quelles données cela fait référence ?
+          - Monitoring ?
+          - Données environnementales ?
+      - Où se place le noeud dans l'architecture du système ?
+        - Dans le schéma, se place en parallèle des data loggers
+        - Mais si veut détecter les données erronnées, doit les récuperer aussi
+        - Est-ce qu'il se place entre les capteurs et les data loggers ?
+      - Comment tester localement ?
+        - Dispose-t-on d'équipement pour mettre en place un mini observatoire ici ?
+          - Capteurs, data loggers ?
+          - A-t-on un noeud Fog outdoor-proof ?
 ** Semaine du <2024-05-14 Tue> au <2024-05-17 Fri>
 *** Planned
 **** DONE LivingFog: Déployer LivingFog sur le PicoCluster
@@ -544,7 +734,7 @@ cpuset cpu io memory hugetlb pids rdma misc
     - [ ] Déployer le plugin CNI
       - Utilise pour le moment la config par défaut de flannel
       - Modifiée pour spécifier d'utiliser l'interface appropriée pour que les noeuds communiquent entre eux
-    - [ ] Faire rejoindre aux worker le cluster k8s
+    - [ ] Faire rejoindre aux workers le cluster k8s
 ** Semaine du <2024-05-06 Mon> au <2024-05-07 Tue>
 *** Planned
 **** IN-PROGRESS LivingFog: Déployer LivingFog sur le PicoCluster
