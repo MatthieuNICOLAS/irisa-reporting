@@ -3,6 +3,37 @@
 
 * Journal de bord
 ** Backlog
+*** TODO Distant: Déployer Mosquitto sur le cluster Kubernetes
+- Première étape du projet est de voir comment on déploie proprement un pod
+- Fichier de configuration ?
+*** TODO Distant: Mettre en place service pour permettre aux pods d'interagir avec le broker
+- Est-ce qu'on doit passer par la même approche pour permettre aux pods d'interagir avec l'instance Mosquitto ?
+- Ou comme il s'agit de pods au sein d'un même namespace, peut s'en affranchir ?
+- Ou une autre est plus indiquée ?
+- Quoique, est-ce qu'on mettrait vraiment le broker dans le même namespace que les pods qui le lisent ?
+*** TODO Distant: Mettre en place pod qui traite un flux de données du broker
+- En guise d'exemple, faire une application qui s'abonne à un flux du broker
+- Pour chaque donnée, vérifie si valeur cohérente
+  - e.g. pour température, vérifie qu'est entre 0 et 100
+- Lève alerte en cas de multiples valeurs incohérentes
+  - Fenêtre de temps ?
+  - Fenêtre de valeurs ?
+- Comment représenter alerte ?
+- Requête à un pod dédié me paraît une bonne idée
+  - Permet de centraliser le process
+- Ou repasser par le broker carrément ?
+  - À ce moment là, est-ce qu'on prend un broker avec persistence des messages ?
+*** TODO Distant: Mettre en place service pour offrir un accès externe au broker
+- Voir du côté d'Ingress?
+- Pareil, voir comment faire cela proprement
+*** TODO Distant: Mettre en place script fournissant données au broker
+- Par ex, générateur de températures
+  - 1 toutes les secondes
+- Les envoie au broker
+- Voir pour mettre un mode de fonctionnement correcte et l'autre "défaillant"
+- Reste à déterminer où se place ce script
+  - Dans le cluster Kubernetes, i.e. un pod
+  - Ou à l'extérieur de ce dernier, et interagit avec le broker via le service dédié
 *** TODO Automatiser le setup de k3s sur un cluster de Raspberry
 - Permettrait de graduate de minikube
   - Et d'apprendre ainsi tout ce qu'il gère pour moi automatiquement
@@ -120,6 +151,16 @@ CLOSED: [2024-05-23 Thu 11:36]
   - Garantirait la reproductibilité de l'environnement de tests
   - Et que j'oublie pas de les faire tourner avant l'intégration
 - Voir comment GitLab gère ça
+**** IN-PROGRESS SmartSense: Remettre en fonctionnement le noeud
+- Ça commence à faire un moment que je n'ai pas travaillé sur le noeud SmartSense
+- Encore plus que je l'ai fait tourner dans son état d'origine
+- Le redémarrer avec sa carte SD d'origine
+- Vérifier la version de l'application SmartSense qui tourne
+  - Avec le workaround ou sans ?
+  - Serait probablement mieux avec le workaround
+  - Peut p-e tune sa durée si nécessaire
+- Reparcourir mes notes pour voir s'il y a d'autres détails à régler
+  - Genre l'heure du noeud
 **** TODO SmartSense: Remonter le noeud
 - Pour tester la nouvelle image système, avais démonté le noeud SmartSense
 - Afin de préparer au voyage aux journées TF de la semaine pro, remonter le noeud
@@ -317,8 +358,11 @@ fatal: [vm0]: FAILED! => {"changed": false,
         - Mettre en place le cluster k8s (master + workers)
         - Faire rejoindre de nouveaux workers
         - Faire quitter des workers
+        - Déployer des applications
+        - Supprimer des applications
         - Détruire le cluster k8s complet (master + workers)
       - Comment permettre cela de manière claire et élégante ?
+        - Et en minimisant la surface d'erreur de manips possibles
       - Est-ce bien la façon d'utiliser Ansible ?
     - Comment gérer les différents inventaires ?
       - J'ai un même playbook pour setup un cluster k8s sur VMs et sur RPis
@@ -441,6 +485,51 @@ fatal: [vm0]: FAILED! => {"changed": false,
       - Par exemple monitorer l'état des sensors en vérifiant que le sensor fournit des données
     - Plutôt que d'avoir un rôle actif dans le système
       - E.g. ping régulier des capteurs pour s'assurer de leur fonctionnement
+- SmartSense: Remettre en fonctionnement le noeud
+  - A retrouvé la carte SD originelle
+  - Le noeud fonctionne correctement
+  - Pour rappel, peut s'y connecter avec la commande suivante
+    - ssh pi@192.168.1.2
+  - Commande pour spécifier l'heure
+    - sudo timedatectl set-time 'yyyy-mm-dd hh:mm:ss'
+  - Juste besoin de redémarrer mainApp ensuite
+    - sudo systemctl restart mainApp
+  - Fonctionne instant pour le hardware et collectd
+  - Mais ne fonctionne pas tout de suite pour les données environnementales
+  - Notamment à cause du délai introduit par le buffer
+- Réunion Guillaume du <2024-05-23 Thu>
+  - A progressé sur la mise en place du cluster k8s sur le PicoCluster
+    - Lors de la dernière réunion, avais commencé à le setup sur le PicoCluster après avoir atteint une impasse sur VMs
+    - Mais a rencontré la même erreur, et plus encore, sur le PicoCluster
+    - Voyant que ce n'était pas lié à l'environnement VMs mais à ma config, a pu creuser et me débloquer sur ce point
+    - A réussi à mettre en place le cluster k8s et à vérifier son bon fonctionnement avec une application Hello World
+  - Fort de ces connaissances, a pu retester le setup de k8s sur VMs et arriver au bout cette fois-ci
+  - A automatisé cette partie là avec un playbook Ansible
+    - A pu retester son fonctionnement sur VMs
+    - À refaire tourner sur RPis
+  - Vois Guillermo lundi matin pour revue de code
+    - Histoire d'avoir des retours et conseils sur cette partie
+    - Et répondre à quelques
+  - Pour la suite
+    - Utilisateur connecté à un des workers
+    - Objectif suivi
+      - Mettre à disposition la plateforme/noeud Fog
+      - Mettre en place l'alimentation de données
+        - Capteurs écrivent dans un bus de message tournant sur le noeud Fog
+      - Mettre en place template pour pods pour piocher dans ce bus
+        - Et déterminer la qualité des données
+    - Questions
+      - Quelle temporalité de données stockées dans le message bus ?
+        - Réponse: on considère qu'ils traitent uniquement les données à partir de leur mise en ligne
+      - Comment fournir les données au message bus ?
+        - Ça va dépendre de leur station/système actuel
+        - Pour le moment, générer et fournir ces données à la main au message bus
+        - Et se pencher plutôt sur la partie
+          - Déploiement d'un message bus
+            - Quel message bus ?
+          - Déploiement d'un service pour l'exposer aux pods
+          - Déploiement d'un pod qui s'y connecte, traite les données et déclenche alerte
+    - Estime en avoir pour 2-3 mois
 ** Semaine du <2024-05-14 Tue> au <2024-05-17 Fri>
 *** Planned
 **** DONE LivingFog: Déployer LivingFog sur le PicoCluster
