@@ -97,7 +97,8 @@
 - Proposer leur suppression (MR)
 ** Semaine du <2024-05-21 Tue> au <2024-05-24 Fri>
 *** Planned
-**** IN-PROGRESS LivingFog: Mettre à jour le playbook Ansible
+**** DONE LivingFog: Mettre à jour le playbook Ansible
+CLOSED: [2024-05-23 Thu 11:36]
 - Maintenant que j'ai identifié les premières étapes nécessaires pour setup un cluster k8s sur le PicoCluster
 - Devrais documenter/automatiser cela via un playbook
 - Devrais aussi retester cela sur des VMs
@@ -157,6 +158,7 @@
         - `sed -i 'cgroup_enable=memory/!s/$/ cgroup_enable=memory' /boot/firmware/cmdline.txt`
       - Seul problème étant que cela marque comme changé l'état de la machine à chaque exec
       - Faudra p-e décomposer en 2 étapes dans ce cas
+    - [X] Ajouter la machine master dans /etc/hosts des workers
     - [X] Mettre en place la config par défaut de containerd et setup containerd pour utiliser le cgroup systemd
       - Peut check si je vois la ligne intéressante dans le fichier
         - SystemdCgroup = true
@@ -272,8 +274,25 @@ ok: [vm0] => {
 }
         #+END_PLAIN
       - Me paraît délicat d'extraire uniquement les deux dernières lignes
-    - [ ] Déployer le plugin CNI
+    - [X] Déployer le plugin CNI
       - Doit faire de l'interface utilisée un paramètre
+      - A trouvé comment faire avec le système de template d'Ansible
+      - Rencontre désormais un problème au moment de déployer la configuration
+      - Le module Kubernetes pour Ansible a des dépendances
+        - https://docs.ansible.com/ansible/latest/collections/kubernetes/core/k8s_module.html#ansible-collections-kubernetes-core-k8s-module
+      - Qui ne sont pas installées par défaut sur le noeud master
+        #+BEGIN_PLAIN
+TASK [Deploy flannel configuration] ********************************************************************************************************************************************************************************************************
+fatal: [vm0]: FAILED! => {"changed": false,
+       "msg": "Failed to import the required Python library (kubernetes) on master's Python /usr/bin/python3.
+               Please read the module documentation and install it in the appropriate location.
+               If the required library is installed, but Ansible is using the wrong Python interpreter, please consult the documentation on ansible_python_interpreter"}
+        #+END_PLAIN
+      - Et pas moyen de les installer simplement
+        - PyYAML pas dispo dans apt
+      - Retombe sur mon problème d'env virtuel sur la machine qui est setup
+      - Voir cette approche ?
+        - https://stackoverflow.com/questions/20575084/best-way-to-always-run-ansible-inside-a-virtualenv-on-remote-machines
     - [X] Faire rejoindre aux workers le cluster k8s
       - Suis tombé sur un exemple simple
         - https://github.com/npflan/k8s-ansible/blob/main/kubeadm-join.yml
@@ -288,8 +307,11 @@ ok: [vm0] => {
   ansible.builtin.debug:
     var: cgroup_containerd
       #+END_PLAIN
-    - 
   - Questions
+    - Comment organiser un playbook avec des tâches conditionnelles ?
+      - J'ai des tâches qui concernent uniquement les machines ARM, d'autres uniquement les machines x86
+      - Le mélange des deux au sein d'un playbook me paraît le complexifier inutilement
+      - Comment organiser cela correctement ?
     - Comment mettre en place les différents use cases ?
       - Veut pouvoir
         - Mettre en place le cluster k8s (master + workers)
@@ -297,6 +319,19 @@ ok: [vm0] => {
         - Faire quitter des workers
         - Détruire le cluster k8s complet (master + workers)
       - Comment permettre cela de manière claire et élégante ?
+      - Est-ce bien la façon d'utiliser Ansible ?
+    - Comment gérer les différents inventaires ?
+      - J'ai un même playbook pour setup un cluster k8s sur VMs et sur RPis
+      - Avec des variables qui diffèrent en fonction du mode d'exécution
+        - Une variable `mode` à fournir à l'exécution, soit `dev` soit `test`
+      - Mais je dois aussi utiliser un fichier d'inventaire différent en fonction de ce mode
+      - Est-ce possible de lier l'inventaire utiliser à une variable ?
+      - Ou une variable à un inventaire ?
+    - Comment gérer les dépendances des modules Ansible ?
+      - Certains modules Ansibles nécessitent d'installer des packages Python sur les machines hôtes
+      - Peut les installer dans un virtual env
+      - Mais ne vois pas comment spécifier à Ansible d'utiliser ce virtualenv
+      - Des idées ?
 - Réunion projet Distant du <2024-05-22 Wed>
   - Préparation
     - Participant-es
@@ -389,6 +424,23 @@ ok: [vm0] => {
       - Dispose déjà d'un dataset des 10 dernières années
         - Avec des données valides et bogus
         - Peut utiliser cela pour l'apprentissage
+  - Discussion avec Ammar
+    - En débriefant informellement avec Ammar après la réunion
+    - M'a tenu des propos particulièrement intéressants
+    - IHO la plateforme fog devrait être découplée du système
+    - Et seulement permettre des applications répondant au besoin
+    - Pose la question de notre rôle
+      - Est-ce concevoir et mettre à disposition la plateforme Fog ?
+        - Auquel cas dois seulement déterminer comment la plateforme s'intègre et interagit avec le système
+        - Mais doit restée générique
+        - Et fournir des PoCs
+      - Ou de concevoir et mettre en place les applications répondant au besoin ?
+        - Dans ce cas, doit pousser plus loin la partie dev
+        - Mais peut se permettre d'être plus spécifique au système
+    - Mais en bref, devrais seulement reposer sur les flux de données existants dans le système
+      - Par exemple monitorer l'état des sensors en vérifiant que le sensor fournit des données
+    - Plutôt que d'avoir un rôle actif dans le système
+      - E.g. ping régulier des capteurs pour s'assurer de leur fonctionnement
 ** Semaine du <2024-05-14 Tue> au <2024-05-17 Fri>
 *** Planned
 **** DONE LivingFog: Déployer LivingFog sur le PicoCluster
