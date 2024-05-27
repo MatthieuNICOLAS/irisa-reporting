@@ -126,6 +126,106 @@
   - En laissant penser que le noeud est équipé d'une horloge hardware
 - Et elles se révèlent inutiles en l'état
 - Proposer leur suppression (MR)
+** Semaine du <2024-05-27 Mon> au <2024-05-31 Fri>
+*** Planned
+**** IN-PROGRESS LivingFog: Faire revue de code du playbook Ansible avec Guillermo
+- A demandé à Guillermo s'il était disponible pour qu'on regarde ensemble ce que j'ai fait pour LivingFog
+- A réunion avec lui <2024-05-27 Mon> à 10:15
+**** IN-PROGRESS SmartSense: Remettre en fonctionnement le noeud
+- Ça commence à faire un moment que je n'ai pas travaillé sur le noeud SmartSense
+- Encore plus que je l'ai fait tourner dans son état d'origine
+- Le redémarrer avec sa carte SD d'origine
+- Vérifier la version de l'application SmartSense qui tourne
+  - Avec le workaround ou sans ?
+  - Serait probablement mieux avec le workaround
+  - Peut p-e tune sa durée si nécessaire
+- Reparcourir mes notes pour voir s'il y a d'autres détails à régler
+  - Genre l'heure du noeud
+**** IN-PROGRESS SmartSense: Préparer le discours de la démo
+- Revoir les documents que m'avait transmis Mickaël au sujet du noeud SmartSense
+- Et mettre en place le discours a répéter lors de la démo
+  - Qui sommes-nous ?
+  - Qu'est-ce qu'on fait ?
+  - Pourquoi on le fait ?
+  - Comment on le fait ?
+  - Avancement du projet
+  - Perspectives
+- Et le cas échéant, recontacter Olivier et/ou Mickaël pour obtenir infos/détails supplémentaires
+**** IN-PROGRESS SmartSense: Tester la mise en place du trépied
+- Mickaël m'a passé un trépied comme support pour le noeud SmartSense pour la démo
+- Voir pour monter le noeud dessus
+- De façon à voir comment mettre en place le noeud
+- Et les outils nécessaires pour cela
+**** IN-PROGRESS SmartSense: Rédiger un fichier de config Ansible pour le noeud SmartSense
+- Maintenant que j'ai pu déployer un noeud SmartSense et identifier les différentes étapes nécessaires
+- Serait utile de
+  - Documenter le processus
+  - L'automatiser
+- Ansible est semblerait l'outil adapté pour cela
+- Automatiser le déploiement d'un noeud SmartSense en utilisant Ansible
+**** IN-PROGRESS SmartSense: Mise en place d'un processus de CI
+- Mettre en place des tests, c'était un bon début
+- Mettre en place un processus de CI, ça serait mieux
+  - Garantirait la reproductibilité de l'environnement de tests
+  - Et que j'oublie pas de les faire tourner avant l'intégration
+- Voir comment GitLab gère ça
+*** Done
+- LivingFog: Faire revue de code du playbook Ansible avec Guillermo
+  - Repo : https://gitlab.inria.fr/smartsense/smartobs/setup-livingfog
+  - Questions de mon côté
+    - [ ] Comment organiser un playbook avec des tâches conditionnelles ?
+      - J'ai des tâches qui concernent uniquement les machines ARM, d'autres uniquement les machines x86
+      - Le mélange des deux au sein d'un playbook me paraît le complexifier inutilement
+      - Comment organiser cela correctement ?
+    - [ ] Comment mettre en place les différents use cases ?
+      - Veut pouvoir
+        - Mettre en place le cluster k8s (master + workers)
+        - Faire rejoindre de nouveaux workers
+        - Faire quitter des workers
+        - Déployer des applications
+        - Supprimer des applications
+        - Détruire le cluster k8s complet (master + workers)
+      - Comment permettre cela de manière claire et élégante ?
+        - Et en minimisant la surface d'erreur de manips possibles
+      - Est-ce bien la façon d'utiliser Ansible ?
+    - [ ] Comment gérer les différents inventaires ?
+      - J'ai un même playbook pour setup un cluster k8s sur VMs et sur RPis
+      - Avec des variables qui diffèrent en fonction du mode d'exécution
+        - Une variable `mode` à fournir à l'exécution, soit `dev` soit `test`
+      - Mais je dois aussi utiliser un fichier d'inventaire différent en fonction de ce mode
+      - Est-ce possible de lier l'inventaire utiliser à une variable ?
+      - Ou une variable à un inventaire ?
+    - [ ] Comment gérer les dépendances des modules Ansible ?
+      - Certains modules Ansibles nécessitent d'installer des packages Python sur les machines hôtes
+      - Peut les installer dans un virtual env
+      - Mais ne vois pas comment spécifier à Ansible d'utiliser ce virtualenv
+      - Des idées ?
+- SmartSense: Remettre en fonctionnement le noeud
+  - [X] Déployer version antérieure du code
+  - [X] Réinitialiser la DB
+  - [X] Répertorier les commandes utiles pour la démo
+    - [X] Se connecter au noeud
+      - ssh pi@192.168.1.2
+    - [X] Set la date du noeud
+      - sudo timedatectl set-time 'yyyy-mm-dd hh:mm:ss'
+      - sudo systemctl restart mainApp
+    - [X] Réinitialiser la DB
+      - Se connecter à influx
+        - Recherche via l'historique en utilisant le mot clé password aide bien
+      - drop database SensorData
+    - [X] Suivre les logs de mainApp
+      - journalctl -f -u mainApp
+    - [X] Observer les données collectées
+      - Accéder à http://192.168.1.2:3000
+  - [X] Sélectionner la fréquence d'export de la DB
+    - Par défaut, export toutes 50k valeurs
+    - Sachant qu'on produit 100 valeurs toutes les ~5s
+      - i.e. 20 val/s
+    - Donc atteint le seuil après 2500s, ~40min
+    - Raccord avec ce que j'ai pu observer ce matin
+    - A passé le seuil pour export toutes les 100k valeurs
+    - A pu stopper mainApp, modifier la valeur, redémarrer influxDB et relancer mainApp sans soucis particulier
+- SmartSense: Préparer le discours de la démo
 ** Semaine du <2024-05-21 Tue> au <2024-05-24 Fri>
 *** Planned
 **** DONE LivingFog: Mettre à jour le playbook Ansible
