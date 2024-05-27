@@ -128,10 +128,8 @@
 - Proposer leur suppression (MR)
 ** Semaine du <2024-05-27 Mon> au <2024-05-31 Fri>
 *** Planned
-**** IN-PROGRESS LivingFog: Faire revue de code du playbook Ansible avec Guillermo
-- A demandé à Guillermo s'il était disponible pour qu'on regarde ensemble ce que j'ai fait pour LivingFog
-- A réunion avec lui <2024-05-27 Mon> à 10:15
-**** IN-PROGRESS SmartSense: Remettre en fonctionnement le noeud
+**** DONE SmartSense: Remettre en fonctionnement le noeud
+CLOSED: [2024-05-27 Mon 14:23]
 - Ça commence à faire un moment que je n'ai pas travaillé sur le noeud SmartSense
 - Encore plus que je l'ai fait tourner dans son état d'origine
 - Le redémarrer avec sa carte SD d'origine
@@ -141,6 +139,15 @@
   - Peut p-e tune sa durée si nécessaire
 - Reparcourir mes notes pour voir s'il y a d'autres détails à régler
   - Genre l'heure du noeud
+**** DONE LivingFog: Faire revue de code du playbook Ansible avec Guillermo
+CLOSED: [2024-05-27 Mon 14:23]
+- A demandé à Guillermo s'il était disponible pour qu'on regarde ensemble ce que j'ai fait pour LivingFog
+- A réunion avec lui <2024-05-27 Mon> à 10:15
+**** DONE SmartSense: Préparer le voyage
+CLOSED: [2024-05-27 Mon 14:33]
+- Revoir un peu l'adresse du point de RDV
+- Et comment s'y rendtre depuis la gare
+- Voir aussi à quelle heure je dois partir de chez moi si je veux choper le train
 **** IN-PROGRESS SmartSense: Préparer le discours de la démo
 - Revoir les documents que m'avait transmis Mickaël au sujet du noeud SmartSense
 - Et mettre en place le discours a répéter lors de la démo
@@ -200,6 +207,18 @@
       - Peut les installer dans un virtual env
       - Mais ne vois pas comment spécifier à Ansible d'utiliser ce virtualenv
       - Des idées ?
+  - Notes
+    - Utilisation de rôles pour décomposer en plusieurs playbooks
+    - Ajouter des tags pour gérer plus finement quoi exécuter
+    - Préférer l'utilisation de modules ansible que shell
+      - Pas pu m'aider par contre sur l'utilisation d'env virtuels python pour gérer les dépendances des modules
+    - Se pencher sur les inventories en YAML
+      - Permet de gérer les variables avec les hosts
+      - Permettra p-e de coupler de manière plus propre les variables de chaque env de déploiement avec les machines correspondantes
+    - M'a donné accès à un repo de Matthieu
+      - Voir pour reproduire structure et pratiques
+    - Ainsi qu'aux slides d'une formation du SED sur Ansible
+      - Se pencher dessus
 - SmartSense: Remettre en fonctionnement le noeud
   - [X] Déployer version antérieure du code
   - [X] Réinitialiser la DB
@@ -225,6 +244,17 @@
     - Raccord avec ce que j'ai pu observer ce matin
     - A passé le seuil pour export toutes les 100k valeurs
     - A pu stopper mainApp, modifier la valeur, redémarrer influxDB et relancer mainApp sans soucis particulier
+- SmartSense: Préparer le voyage
+  - A lieu à Maison Jean Kuntzmann, 110 Rue de la Chimie, 38400 Saint-Martin-d'Hères
+  - Accessible depuis la gare en prenant le tram B
+    - Peut payer directement via CB dans le tram
+    - Ou acheter ticket à borne
+    - 2€ pour le voyage
+    - Devrais en avoir besoin que d'un, le bus nous redépose à la gare le jeudi
+  - Tram B direction Gières, Plaine des Sports
+    - Arrêt Bibliothèques Universitaires
+  - Bus à 06:50
+    - Comme ça j'ai encore des options si je le rate
 - SmartSense: Préparer le discours de la démo
 ** Semaine du <2024-05-21 Tue> au <2024-05-24 Fri>
 *** Planned
@@ -679,6 +709,8 @@ fatal: [vm0]: FAILED! => {"changed": false,
     - Me paraît plus prudent de l'avoir avec moi
   - Petit cable batterie <-> noeud
     - Pour pouvoir alimenter le noeud sur batterie
+  - Alim du noeud
+    - Au cas où la batterie rencontre un défaut?
   - Trépied (son support + vis)
   - Clé Allen 1 pour fixation au trépied
     - Pour les vis qui fixe le noeud SmartSense au support
@@ -695,6 +727,8 @@ fatal: [vm0]: FAILED! => {"changed": false,
     - Toujours mieux pour interagir avec le noeud
     - Et pour le présenter
   - Chargeur PC
+    - Mon chargeur de Mac était compatible de mémoire
+    - Sinon je dois avoir le chargeur du HP chez moi
   - Cable Ethernet
     - Pour relier ma machine au noeud SmartSense
   - Adapteur USB-C vers Ethernet
