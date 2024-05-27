@@ -148,7 +148,8 @@ CLOSED: [2024-05-27 Mon 14:33]
 - Revoir un peu l'adresse du point de RDV
 - Et comment s'y rendtre depuis la gare
 - Voir aussi à quelle heure je dois partir de chez moi si je veux choper le train
-**** IN-PROGRESS SmartSense: Préparer le discours de la démo
+**** DONE SmartSense: Préparer le discours de la démo
+CLOSED: [2024-05-27 Mon 16:26]
 - Revoir les documents que m'avait transmis Mickaël au sujet du noeud SmartSense
 - Et mettre en place le discours a répéter lors de la démo
   - Qui sommes-nous ?
@@ -256,6 +257,66 @@ CLOSED: [2024-05-27 Mon 14:33]
   - Bus à 06:50
     - Comme ça j'ai encore des options si je le rate
 - SmartSense: Préparer le discours de la démo
+  - Équipe Taran (anciennement Cairn) basée aux centres de recherches Inria de Rennes et Lannion
+  - Depuis circa 2017, développe avec partenaires industriels le noeud SmartSense
+    - 3D Ouest pour la partie logicielle
+    - Feichter Electronics pour la partie hardware
+  - But initial était de concevoir et proposer un capteur pour application de Smart Building
+    - Suivi de la consommation électrique
+      - Associé à des prises connectées
+      - Monitore la consommation électrique des différents équipements
+      - Permet par exemple de détecter consommation anormale d'équipements (défaillance, utilisation incorrecte...)
+      - En utilisant des techniques de Non-Intrusive Appliance Load Monitoring
+  - Mais carte enrichie de nombreux capteurs
+    - Qualité de l'air
+      - CO2, Composés Organiques Volatils (COV ou Volatile Organic Compounds, VOCs), température, humidité, pression
+    - Caméras
+      - Simple et thermiques
+    - Microphones
+      - 4, permettant ainsi spatialisation
+    - Accéléromètre
+    - Télémètre
+      - Détection d'obstacle à 4m, précision au cm
+  - Qui ouvrent la voie à de nouvelles applications
+    - En matière de santé et/ou sécurité
+  - Et d'un micro-ordinateur, une RPi
+    - Qui permet de faire directement des traitements sur les données
+    - E.g. uniformiser leur format avant de les remonter au serveur centralisé
+  - Sur cette base, travaille à présent sur un noeud autonome pour utilisation dans milieux naturels
+    - Mais implique un peu de boulot
+  - Efforts pour rendre le matériel compatible à ce nouveau type d'environnement et ses conditions
+    - Tropicalisation
+    - Mise en place d'une carte externe pour les capteurs nécessitant d'être au contact de l'air libre
+  - Mais d'autres effort restent à fournir
+    - Alimentation
+      - Mise en place d'une batterie
+        - Mais comment la recharger ?
+      - Et rationner l'énergie en cas de quantité limitée ?
+    - Gestion des données
+      - Ne peut plus remonter les données à un serveur via cable Ethernet
+      - Besoin de mettre en place télécommunications
+        - Wi-Fi HaLow, x00m outdoor, débit variant du Ko/s au Mo/s en fonction des conditions
+      - Souhaite stocker les données en local et commencer à les traiter avant de les remonter
+        - e.g. plutôt que d'envoyer le flux audio ou les images, juste transmettre les évènements détectés tel que la présence d'un animal
+  - Projet est de coupler ce(s) noeud(s) avec une plateforme de calcul déployée elle aussi au sein du milieu naturel
+    - La plateforme LivingFog, développée au sein de l'équipe Magellan à Inria Rennes
+    - Permet de centraliser les données récupérées par ensemble de capteurs
+    - D'offrir puissance de calculs plus conséquente
+    - Et de faire le pont avec le monde extérieur
+    - Mais qui elle aussi rencontre les mêmes contraintes, notamment d'un POV énergie
+    - Cadre de la thèse d'Ammar Kazem
+  - Serait intéressant d'avoir votre avis sur ce type de capteurs all-in-one
+    - Et vos besoins par rapport aux capteurs/plateformes de calculs sur place
+  - Perspectives
+    - Déploiement du noeud SmartSense sur le campus de Beaulieu de l'Université de Rennes
+      - Afin de vérifier son bon fonctionnement/bonnes mesures
+      - Et de tester la partie ajout d'une interface Wi-Fi
+    - Déploiement de la plateforme de calculs LivingFog au sein de l'Observatoire de la rivière Kaligandaki au Népal
+      - But serait de l'utiliser pour le monitoring de l'observatoire existant
+        - i.e. états des capteurs
+      - Assurer la qualité des données remontées
+        - i.e. vérifier que les données sont cohérentes
+      - Et proposer un système d'alerte le cas échéant
 ** Semaine du <2024-05-21 Tue> au <2024-05-24 Fri>
 *** Planned
 **** DONE LivingFog: Mettre à jour le playbook Ansible
