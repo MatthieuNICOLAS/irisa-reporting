@@ -3,9 +3,6 @@
 
 * Journal de bord
 ** Backlog
-*** TODO Distant: Déployer Mosquitto sur le cluster Kubernetes
-- Première étape du projet est de voir comment on déploie proprement un pod
-- Fichier de configuration ?
 *** TODO Distant: Mettre en place service pour permettre aux pods d'interagir avec le broker
 - Est-ce qu'on doit passer par la même approche pour permettre aux pods d'interagir avec l'instance Mosquitto ?
 - Ou comme il s'agit de pods au sein d'un même namespace, peut s'en affranchir ?
@@ -23,18 +20,7 @@
   - Permet de centraliser le process
 - Ou repasser par le broker carrément ?
   - À ce moment là, est-ce qu'on prend un broker avec persistence des messages ?
-*** TODO Distant: Mettre en place service pour offrir un accès externe au broker
-- Voir du côté d'Ingress?
-- Pareil, voir comment faire cela proprement
-*** TODO Distant: Mettre en place script fournissant données au broker
-- Par ex, générateur de températures
-  - 1 toutes les secondes
-- Les envoie au broker
-- Voir pour mettre un mode de fonctionnement correcte et l'autre "défaillant"
-- Reste à déterminer où se place ce script
-  - Dans le cluster Kubernetes, i.e. un pod
-  - Ou à l'extérieur de ce dernier, et interagit avec le broker via le service dédié
-*** TODO Automatiser le setup de k3s sur un cluster de Raspberry
+*** TODO LivingFog: Automatiser le setup de k3s sur un cluster de Raspberry
 - Permettrait de graduate de minikube
   - Et d'apprendre ainsi tout ce qu'il gère pour moi automatiquement
 - Et d'aller plus loin dans notre mise en place automatique d'environnements de dev et de test
@@ -126,6 +112,59 @@
   - En laissant penser que le noeud est équipé d'une horloge hardware
 - Et elles se révèlent inutiles en l'état
 - Proposer leur suppression (MR)
+*** TODO SmartSense: Mise en place d'un processus de CI
+- Mettre en place des tests, c'était un bon début
+- Mettre en place un processus de CI, ça serait mieux
+  - Garantirait la reproductibilité de l'environnement de tests
+  - Et que j'oublie pas de les faire tourner avant l'intégration
+- Voir comment GitLab gère ça
+** Semaine du <2024-06-03 Mon> au <2024-06-07 Fri>
+*** Planned
+**** IN-PROGRESS SmartSense: Rédiger un fichier de config Ansible pour le noeud SmartSense
+- Maintenant que j'ai pu déployer un noeud SmartSense et identifier les différentes étapes nécessaires
+- Serait utile de
+  - Documenter le processus
+  - L'automatiser
+- Ansible est semblerait l'outil adapté pour cela
+- Automatiser le déploiement d'un noeud SmartSense en utilisant Ansible
+**** TODO Terra Forma: Demander accès au Resana
+- Suis intéressé par récupérer les slides présentées lors des rencontres Terra Forma
+- Particulièrement celles portant sur la gestion du flux de données
+- Et les bonnes pratiques sur le formatage des données
+- D'après Ammar, il existe un Resana où ces documents seront postés
+- Y demander l'accès
+**** TODO LivingFog: Décomposer le playbook en rôles
+- Guillermo m'a suggéré de regrouper l'ensemble des tâches de mon playbook en différents rôles
+  - Requirements
+  - Docker
+  - Kubernetes
+  - CNI
+- De plus, Khaled m'a expliqué avoir défini une version *add* et une version *remove* de chacun de ses rôles
+- Me paraît une feature intéressante à mettre en place
+- Préparer le terrain
+**** TODO LivingFog: Utiliser un inventory en YAML
+- Semble permettre de coupler plus élégamment les modes de déploiement avec les hosts et les variables correspondants
+- Permettrait d'éviter de devoir préciser le mode et le bon inventaire lorsqu'on lance le playbook
+- Confirmer ce point et mettre en place le cas échéant cette nouvelle approche
+**** TODO Distant: Déployer Mosquitto sur le cluster Kubernetes
+- Première étape du projet est de voir comment on déploie proprement un pod
+- Fichier de configuration ?
+**** TODO Distant: Mettre en place service pour offrir un accès externe au broker
+- Voir du côté d'Ingress?
+- Pareil, voir comment faire cela proprement
+**** TODO Distant: Mettre en place script fournissant données au broker
+- Par ex, générateur de températures
+  - 1 toutes les secondes
+- Les envoie au broker
+- Voir pour mettre un mode de fonctionnement correcte et l'autre "défaillant"
+- Reste à déterminer où se place ce script
+  - Dans le cluster Kubernetes, i.e. un pod
+  - Ou à l'extérieur de ce dernier, et interagit avec le broker via le service dédié
+**** TODO SmartSense: Lire *Practical evaluation of Wi-Fi HaLow performance*
+- Article de Sébastien Maudet de 2023
+- Dispo ici : https://www.sciencedirect.com/science/article/pii/S2542660523002809
+- Permettra p-e d'avoir une meilleure vision de l'état actuelle de la technologie
+*** Done
 ** Semaine du <2024-05-27 Mon> au <2024-05-31 Fri>
 *** Planned
 **** DONE SmartSense: Remettre en fonctionnement le noeud
@@ -159,7 +198,8 @@ CLOSED: [2024-05-27 Mon 16:26]
   - Avancement du projet
   - Perspectives
 - Et le cas échéant, recontacter Olivier et/ou Mickaël pour obtenir infos/détails supplémentaires
-**** IN-PROGRESS SmartSense: Tester la mise en place du trépied
+**** DONE SmartSense: Tester la mise en place du trépied
+CLOSED: [2024-05-31 Fri 09:30]
 - Mickaël m'a passé un trépied comme support pour le noeud SmartSense pour la démo
 - Voir pour monter le noeud dessus
 - De façon à voir comment mettre en place le noeud
@@ -317,6 +357,152 @@ CLOSED: [2024-05-27 Mon 16:26]
       - Assurer la qualité des données remontées
         - i.e. vérifier que les données sont cohérentes
       - Et proposer un système d'alerte le cas échéant
+- SmartSense: Préparer le matériel
+  - [X] Noeud SmartSense
+  - [X] Chargeur batterie
+  - [X] Petit cable batterie <-> noeud
+  - [X] Alim du noeud
+  - [X] Trépied (support + vis)
+  - [X] Clés Allen 1 et 2
+  - [X] PC
+  - [X] Chargeur PC
+  - [X] Cable Ethernet
+  - [X] Adaptateur USB-C vers Ethernet
+- TerraForma: Flux de données
+  - But est d'intégrer les flux de données du projet à l'existant national
+    - Actuellement, données remontent aux institutions locales pour traitement
+    - Puis aux pôles de données/aux registres européens
+    - Données peuvent néanmoins remonter directement aux pôles si pas possible de les traiter au niveau local
+  - Dans TF, une nouvelle voie se rajoute
+  - Idée est ensuite de créer des passerelles entre différents niveaux
+  - Donnée chaude vs froide
+    - Donnée chaude est une donnée très utilisée
+      - Peut être utilisée pour monitorer état du système
+    - Donnée froide donnée archivée
+      - Permettent généralement de produire des "produits élaborés"
+  - Dans e-Infrastuctures, progresse de données chaudes à données froides
+  - Dans TF, gère principalement des données chaudes
+  - Architecture proposée
+    - Serveur local déployé sur site qui va récupérer la donnée brute puis remontée la donnée structurée au cloud TF
+    - En parallèle, d'autres sites peuvent remonter les données directement aux serveurs nationaux/cloud TF
+  - Big Data
+    - Critères des 5V
+      - Volume, Variété, Vitesse, Valeur, Véracité
+    - Dans notre cas, pas si vrai sur l'aspect Volume
+    - Mais retrouve in fine les mêmes problématiques que le Big Data
+  - Données chaudes/froides
+    - Ne va pas chercher à offrir la même QoS (vitesse de réponse) pour l'accès à une donnée chaude qu'à une donnée froide
+  - Ingestion des données
+    - Plutôt prendre l'approche des données non-structurées/semi-structurées
+    - Vois ensuite comment les rendre exploitables
+  - Parcours vers les données froides
+    - Landing Zone
+      - Va nettoyer, filtrer et aggréger les données reçues
+      - Avant de les transmettre à la staging zone
+    - Staging Zone
+      - Continuer le process de nettoyage des données
+      - Mais avec des données de base plus propres/contrôlées
+    - Analytics Sandbox
+    - Curated Data Zone
+      - Données validées et exploitables
+  - Besoin d'enrichir les données
+    - Ajout de métadonnées pour la rendre exploitable
+  - Recommande l'utilisation de thesaurus pour préciser le data type d'une donnée (dbpedia)
+  - Bonnes pratiques pour TF
+    - Faciliter interprétation et réutilisation
+      - En métadonnées
+        - Date au format ISO avec décalage horaire
+        - Unité
+        - Type de la donnée
+        - Lieu de déploiement (appName)
+      - Mettre à disposition documentation sur formatage des données
+    - Minimiser métadonnées nonobstant
+      - Coût en énergie/calculs
+      - Introduit des coûts de maintenance/d'évolution
+    - Utiliser des noms de champ fixes
+      - Par ex, un champ "valeur", un champ "unité"
+      - Et un champ "type" qui précise la donnée manipulée
+      - Au lieu d'avoir un champ "airHumidity-val", "airTemperature-val", "airTemperature-unit"
+  - Dans leur exemple, enrichisse les données à plusieurs endroits du flux
+- TerraForma: Récap
+  - Démo SmartSense
+    - Aucun dysfonctionnement du noeud
+    - Intérêt pour la partie "carte d'extension du capteur"
+    - Problématique des traitements en local partagée avec d'autres capteurs
+      - Silvert Gousset et Samuel Barnola de l'Institut de Planétologie et d'Astrophysique de Grenoble (IPAG)
+      - Travaillent sur une caméra spectrometre
+      - Génèrent un ensemble d'images, chacune capturant un spectre précis
+      - Se retrouvent avec des dizaines de Mo de données à chaque prise d'échantillon
+      - Souhaiteraient appliquer des traitements sur les clichés pour en extraire seulement les données utiles
+    - Remarque sur l'accès aux données en local
+      - Appréciaient qu'on puisse observer les données directement
+      - Mais préfereraient connexion sans-fil
+        - e.g. par jour de mauvais temps
+    - Remarque sur la partie transmission de données
+      - Pas besoin d'avoir une connexion permanente/un équipement toujours en marche
+      - Mais pourrait seulement transmettre les données par intermittence
+      - Remonter les données 1 fois par jour permettrait déjà de suivre que
+        - L'ensemble des capteurs du noeud collectent des données
+        - Les données ne sont pas aberrantes
+      - Peut même mettre en place plusieurs technologies de transmission adaptées à différents use cases
+        - LoRa pour données numériques
+        - Wi-Fi HaLow ou autre techno pour flux plus important
+  - Wi-Fi HaLow
+    - Olivier Berder, chef d'équipe de Granit, m'a expliqué être en train de rapporter sur la thèse de Sebastien Maudet
+    - Thèse porte sur l'évaluation de la techno Wi-Fi HaLow
+      - e.g. https://www.sciencedirect.com/science/article/pii/S2542660523002809
+    - Appartient au Département Réseaux et Télécommunications de l'Université de Nantes
+    - Voir ses travaux et p-e entrer en contact avec eux
+  - Wi-SUN
+    - Olivier Berder m'a aussi présenté Samir El Rhaz, un doctorant de l'équipe Granit
+    - Étudie/travaille avec Wi-SUN, 802.15.4g
+    - M'ont décrit ça comme une évolution de Zigbee adaptée à des situations outdoor/long distance
+    - Voir ce que j'arrive à trouver sur le sujet
+  - Données collectées
+    - Présentations portées par David Sarramia et Jérémy Mezhoud
+      - Travaillent sur le CEBA
+        - https://www.mdpi.com/1424-8220/22/7/2733
+    - Portent une grande attention aux données collectées
+    - De façon à les rendre exploitables à terme par des personnes externes au projet
+      - e.g. spécifier l'unité utilisée pour chaque valeur mesurée au sein de la donnée
+      - Mentionnaient de suivre les schémas proposés par INSPIRE ou l'utilisation de thesaurus
+    - Considèrent aussi important de conserver une copie de la donnée originale
+      - Avant décodage et/ou enrichissement
+      - De façon à pouvoir reproduire la donnée finale, en cas de détection d'un bug dans le pipeline
+      - Ou même de pouvoir auditer régulièrement le pipeline
+    - Serait intéressant de récupérer leurs slides sur les bonnes pratiques présentées et recommandées
+    - Et de voir lesquelles on pourrait mettre en place à notre échelle
+    - Ammar m'a parlé de l'existence d'un Resana TF
+      - Devrais demander les accès pour récupérer les slides intéressantes
+  - Contraintes sur le terrain
+    - Autant on peut mettre en place des workarounds pour certaines
+      - Précipitations/neiges
+        - Quelques mètres de neige par endroit au Jardin du Lautaret
+        - Peut élever le noeud
+      - Faune
+        - Quelques vaches par endroit au Jardin du Lautaret
+        - Peut mettre grillage/cloture autour du noeud
+    - Autant on a pas de solutions low-tech pour d'autres
+      - Température
+        - Semblerait que les batteries n'aiment pas le froid
+        - Emmanuel m'explique que ça provoque en effet des fuites d'énergie
+  - Résilience/pérennité du système
+    - Souhaite collecter des données, de préférence ininterrompue, sur plusieurs années
+      - Besoin d'observer les transitions, les changements de saisons, les points de bascule
+      - Besoin d'observer les répétitions/l'évolution d'une année à l'autre
+    - Est-ce que notre noeud répond ou a vocation de répondre à ces problématiques ?
+    - Ou a-t-il un autre use case ?
+      - Mentionnait l'utilisation de capteurs pour des sessions d'une journée
+      - À quel type de projet de recherche cet use case correspond ?
+  - Questions persos
+    - Projet Open-Source ?
+      - Est-ce que le noeud SmartSense a vocation à être passé en open-source à un moment ?
+      - Que ça soit d'un POV logiciel, matériel et données ?
+    - Limitation de LoRa
+      - Est-ce qu'on peut saturer un réseau LoRa ?
+      - i.e. y a-t-il une limite physique théorique au flux de données que l'on peut remonter
+      - Et est-elle une contrainte possible des observatoires ?
+        - Ou faudrait un nombre de capteurs irréaliste pour l'atteindre ?
 ** Semaine du <2024-05-21 Tue> au <2024-05-24 Fri>
 *** Planned
 **** DONE LivingFog: Mettre à jour le playbook Ansible
