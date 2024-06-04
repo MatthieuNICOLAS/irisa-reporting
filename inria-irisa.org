@@ -120,6 +120,12 @@
 - Voir comment GitLab gère ça
 ** Semaine du <2024-06-03 Mon> au <2024-06-07 Fri>
 *** Planned
+**** DONE SmartSense: Rédiger abstract pour la démo
+CLOSED: [2024-06-04 Tue 08:42]
+- Viens de me rendre compte que pour les AEI 2024, doit soumettre le résumé de la démo aujourd'hui
+- Malheureusement pas de nouvelles de la part de Mickaël à ce sujet
+- Rédiger l'abstract et lui envoyer
+- Soumettre en absence de réponse de sa part
 **** IN-PROGRESS SmartSense: Rédiger un fichier de config Ansible pour le noeud SmartSense
 - Maintenant que j'ai pu déployer un noeud SmartSense et identifier les différentes étapes nécessaires
 - Serait utile de
@@ -165,6 +171,70 @@
 - Dispo ici : https://www.sciencedirect.com/science/article/pii/S2542660523002809
 - Permettra p-e d'avoir une meilleure vision de l'état actuelle de la technologie
 *** Done
+- SmartSense: Rédiger un fichier de config Ansible pour le noeud SmartSense
+  - Mise en place de plusieurs inventaires
+    - Un pour dev, un de prod
+  - Décomposition du playbook en rôles
+  - Pour le moment a les roles suivants
+    - requirements, i.e. les tâches pour installer les dépendances du système
+    - influxdb, i.e les tâches pour installer et configurer InfluxDB
+    - app, i.e. les tâches pour récupérer, setup et lancer l'application
+  - Autres rôles à mettre en place
+    - collectd, i.e. les tâches pour installer et setup le service collectd
+    - dhcp, i.e. les tâches pour installer, setup et lancer le serveur DHCP local
+    - mqtt, i.e. les tâches pour installer, setup et lancer le message broker local
+    - grafana, i.e. les tâches pour installer, setup et lancer le dashboard local
+  - Requirements
+    - [ ] Activer l'interface I2C
+    - [ ] Désactiver le swap
+  - InfluxDB
+    - [ ] Créer l'utilisateur admin
+    - [ ] Mettre en place la configuration appropriée
+  - App
+    - [ ] Installer les dépendances Python de l'application
+    - [ ] Mettre en place le service systemd
+  - Utilisation de Docker ?
+    - Question intéressante de Khaled
+    - Pourquoi installer les applications sur le système ?
+    - Et non pas utiliser Docker/des containers ?
+    - Me parait pas déconnant par exemple de conteneuriser InfluxDB ou Grafana par exemple
+    - Avec le mode privileged, devrais pouvoir faire fonctionner aussi l'application ou collectd dans des containers
+    - Permettrait d'éviter les conflits de dépendances
+    - Et de contrôler facilement ce qu'on déploie/fait tourner
+    - Aborder la question lors du prochain point
+- SmartSense: Rédiger abstract pour la démo
+  - Abstract
+    #+BEGIN_PLAIN
+Afin de suivre l'évolution et les impacts du changement climatique sur l'environnement, différents pays et organisations mettent en place des Observatoires de la Zone Critique (OCZs).
+Les OZCs sont des systèmes où collaborent les différentes communautés des sciences de l'environnement pour étudier et monitorer des milieux naturels donnés.
+Ces observatoires collectent ainsi un large éventail de données, de disciplines différentes, afin de suivre leur évolution respective et d'élucider les liens existants entre elles.
+
+Le déploiement d'équipements au sein des OCZs soulève cependant plusieurs enjeux.
+Notamment, les capteurs et autres appareils déployés dans les OZCs ne disposent que d'une connectivité faible, voire inexistante, les OCZs pouvant se situer dans des zones reculées.
+Cette connectivité faible limite la fréquence et la quantité de données que les capteurs et autres appareils peuvent remonter.
+Cette contrainte entrave donc la transmission des types de données volumineux, e.g. image et son.
+Elle empêche aussi l'utilisation du Cloud pour la mise en place d'applications quasi-temps réel, e.g. la détection et la réponse à des évènements à partir des données collectées.
+
+Pour répondre à ces problématiques, nous développons le noeud SmartSense.
+Le noeud SmartSense est une plateforme multi-capteurs.
+Elle comprend :
+- Un ensemble de capteurs environnementaux (température, lumière, humidité, pression atmosphérique, CO2, COV)
+- Un télémètre
+- Une centrale inertielle 9 axes
+- Deux caméras infrarouges
+- Quatre microphones
+- Une caméra VGA
+Le noeud SmartSense est aussi équipé d'un micro-ordinateur.
+Ce dernier lui permet ainsi d'effectuer des traitements en local sur les données collectées pour détecter et réagir à des évènements, ou produire des données concises à partir de flux de données volumineux.
+
+Dans le cadre de cette démonstration, nous présentons notre prototype de noeud SmartSense autonome.
+Cette version courante du noeud SmartSense configure ses différents capteurs et récupère les données collectées par ces derniers.
+Les données collectées sont formatées et stockées dans une base de données locale.
+Un tableau de bord permet de les consulter en quasi-temps réel.
+Cette version propose donc une base solide pour l'ajout des fonctionnalités proposées.
+    #+END_PLAIN
+  - Validé par Mickaël
+  - Déposé
 ** Semaine du <2024-05-27 Mon> au <2024-05-31 Fri>
 *** Planned
 **** DONE SmartSense: Remettre en fonctionnement le noeud
