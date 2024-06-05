@@ -133,13 +133,7 @@ CLOSED: [2024-06-04 Tue 08:42]
   - L'automatiser
 - Ansible est semblerait l'outil adapté pour cela
 - Automatiser le déploiement d'un noeud SmartSense en utilisant Ansible
-**** TODO Terra Forma: Demander accès au Resana
-- Suis intéressé par récupérer les slides présentées lors des rencontres Terra Forma
-- Particulièrement celles portant sur la gestion du flux de données
-- Et les bonnes pratiques sur le formatage des données
-- D'après Ammar, il existe un Resana où ces documents seront postés
-- Y demander l'accès
-**** TODO LivingFog: Décomposer le playbook en rôles
+**** IN-PROGRESS LivingFog: Décomposer le playbook en rôles
 - Guillermo m'a suggéré de regrouper l'ensemble des tâches de mon playbook en différents rôles
   - Requirements
   - Docker
@@ -148,6 +142,12 @@ CLOSED: [2024-06-04 Tue 08:42]
 - De plus, Khaled m'a expliqué avoir défini une version *add* et une version *remove* de chacun de ses rôles
 - Me paraît une feature intéressante à mettre en place
 - Préparer le terrain
+**** TODO Terra Forma: Demander accès au Resana
+- Suis intéressé par récupérer les slides présentées lors des rencontres Terra Forma
+- Particulièrement celles portant sur la gestion du flux de données
+- Et les bonnes pratiques sur le formatage des données
+- D'après Ammar, il existe un Resana où ces documents seront postés
+- Y demander l'accès
 **** TODO LivingFog: Utiliser un inventory en YAML
 - Semble permettre de coupler plus élégamment les modes de déploiement avec les hosts et les variables correspondants
 - Permettrait d'éviter de devoir préciser le mode et le bon inventaire lorsqu'on lance le playbook
@@ -180,16 +180,19 @@ CLOSED: [2024-06-04 Tue 08:42]
     - influxdb, i.e les tâches pour installer et configurer InfluxDB
     - app, i.e. les tâches pour récupérer, setup et lancer l'application
   - Autres rôles à mettre en place
+    - configuration, i.e. les tâches pour configurer le système
     - collectd, i.e. les tâches pour installer et setup le service collectd
     - dhcp, i.e. les tâches pour installer, setup et lancer le serveur DHCP local
     - mqtt, i.e. les tâches pour installer, setup et lancer le message broker local
     - grafana, i.e. les tâches pour installer, setup et lancer le dashboard local
-  - Requirements
-    - [ ] Activer l'interface I2C
-    - [ ] Désactiver le swap
+  - Configuration
+    - [X] Activer l'interface I2C
+    - [X] Désactiver le swap
+    - [ ] Setup connexion Wi-Fi
+    - [ ] Enable connexion Wi-Fi
   - InfluxDB
     - [ ] Créer l'utilisateur admin
-    - [ ] Mettre en place la configuration appropriée
+    - [X] Mettre en place la configuration appropriée
   - App
     - [ ] Installer les dépendances Python de l'application
     - [ ] Mettre en place le service systemd
@@ -202,6 +205,31 @@ CLOSED: [2024-06-04 Tue 08:42]
     - Permettrait d'éviter les conflits de dépendances
     - Et de contrôler facilement ce qu'on déploie/fait tourner
     - Aborder la question lors du prochain point
+  - Mise en place connexion Wi-Fi
+    - Commande exécutée
+      #+BEGIN_PLAIN
+nmcli c add \
+    con-name INRIA-interne \
+    type wifi \
+    ifname wlan0 \
+    ssid INRIA-interne \
+    802-11-wireless-security.key-mgmt wpa-eap \
+    802-1x.identity mnicolas \
+    802-1x.anonymous-identity anonymous@inria.fr \
+    802-1x.ca-cert file:///home/livingfog/Chain-TCS-4-OV.pem \
+    802-1x.domain-suffix-match inria.fr \
+    802-1x.eap peap \
+    802-1x.phase2-auth mschapv2
+      #+END_PLAIN
+    - Le module nmcli ne me paraît pas adapté à ce que je veux
+      - https://docs.ansible.com/ansible/latest/collections/community/general/nmcli_module.html
+      - Ne vois pas comment spécifier certains paramètres
+      - Genre le certificat ou l'identity
+    - Suis tombé sur un rôle qui semble plus approprié
+      - https://github.com/linux-system-roles/network
+    - Mais a l'air d'être conçu pour les distribs Red Hat
+      - Utilise yum ou dnf comme package manager j'ai l'impression
+    - À creuser
 - SmartSense: Rédiger abstract pour la démo
   - Abstract
     #+BEGIN_PLAIN
@@ -235,6 +263,92 @@ Cette version propose donc une base solide pour l'ajout des fonctionnalités pro
     #+END_PLAIN
   - Validé par Mickaël
   - Déposé
+- LivingFog: Décomposer le playbook en rôles
+  - Pour le moment, pars sur les rôles suivants
+    - [X] Requirements
+      - Installer les dépendances globales
+    - [-] Configuration
+      - [X] Vérifier que le swap est désactivé
+      - [X] Vérifier que le cgroup memory est activé
+      - [X] Vérifier que l'ip forwarding est activé
+      - [-] Pour les workers, vérifier que l'@ip du noeud principal est renseignée dans /etc/hosts
+      - En fonction de l'architecture
+    - [X] containerd
+    - [-] Kubernetes
+  - Rencontre des difficultés à gérer hosts et roles
+    - J'ai des rôles, e.g. configuration et kubernetes, qui ont des tâches en commun
+    - Mais qui ont quelques tâches spécifiques aux différents groupes de hosts
+      - Lors de la configuration, les workers doivent ajouter la machine master dans leur /etc/hosts
+      - Lors de la création du cluster kubernetes
+        - master doit créer le cluster
+        - workers doivent rejoindre le cluster
+    - Sauf que je n'arrive pas au sein d'un rôle à spécifier que certaines tâches concernent un groupe particulier de hosts
+    - À la réflexion, c'est pas déconnant
+    - Les rôles sont conçus pour concevoir des ensembles de tâches réutilisables de projet en projet
+    - Pour cela, ils doivent être découplés de la notion de hosts
+    - Doit donc revoir mon approche sur comment organiser mon code Ansible
+  - Nouvelle organisation de rôles
+    - But est de rendre l'ensemble des tâches spécifiques d'un rôle spécifique à un type de hosts
+    - setup-kubernetes: all
+    - init-k8s-cluster: master
+    - join-k8s-cluster: worker
+  - Me paraît plutôt claire comme organisation et fonctionnement
+  - Mais join-k8s-cluster va poser problème
+    - Destiné aux workers
+    - Mais nécessite que master récupère la commande pour join au préalable
+    - Comment faire cela ?
+    - Rôle à paramètre ?
+- LPWAN'24
+  - Ammar m'a informé qu'allaient se tenir les journées LPWAN'24
+  - Portent sur les différentes technologies de communications Low Power
+    - "Le terme LPWAN (Low-Power Wide Area Network) est envisagé ici dans son sens large, et regroupe les technologies comme LoRa, LTE-M, NB-IoT, Mioty, 802.11ah..."
+  - Les 08 et 09 juillet à Pau
+  - Aborder le sujet lors de la prochaine réunion de suivi
+- Kubernetes Ingress Tutorial for Beginners
+  - https://www.youtube.com/watch?v=80Ew_fsV4rM
+  - Idée est qu'on ne veut pas exposer une adresse IP et un port pour chaque service que l'on veut rendre accessible
+  - Ingress est un reverse-proxy (?) que l'on va déployer pour gérer les requêtes
+  - Et qui va s'occuper de les communiquer aux services correspondants
+  - Configuration
+    - S'agit d'un kind spécifique, Ingress
+    - Permet ensuite de définir des règles de routage
+    - Globalement, de spécifier à quel path on associe quel service
+  - Par contre, nécessite la déclaration d'un host
+    - Quid d'un test en local ?
+    - Ah ben peut probablement utiliser localhost
+  - Host correspond au entrypoint du k8s cluster
+    - Peut s'agir d'une machine du cluster
+    - Ou a l'air de pouvoir aussi être une machine externe qui fait le lien
+  - Existe plusieurs implémentations de Ingress
+  - Doit en déployer une dans le cluster k8s
+    - Celle proposée par k8s au moment de la vidéo est K8s Nginx Ingress Controller
+      - Bel et bien un reverse proxy tel que je connais
+  - Approche proposée en cas d'install sur du bare metal est de mettre en place un proxy
+    - Peut être hardware ou software
+    - Qui fasse office d'entrypoint
+    - Et qui transmet les requêtes au pod Ingress
+  - Pourquoi pas directement exposer le pod Ingress ?
+    - Peut p-e y avoir plusieurs pods Ingress
+    - Et dans ce cas le proxy doit faire office de load balancer ?
+  - Après avoir démarré Ingress, une IP va être attribué
+    - Peut accéder au service grâce à elle
+  - Si tente d'accéder à une URL inconnue, est redirigé sur un endpoint par défaut
+    - Peut définir un service sur cet endpoint pour gérer de manière custom les erreurs 404
+  - Config Ingress permet de gérer plusieurs services simplement
+    - Soit en multipliant les paths
+      - i.e. ajouter un préfixe à l'URL pour indiquer le service concerné
+    - Soit en multipliant les sous-domaines
+      - i.e. utiliser le sous-domaine pour indiquer le service concerné
+  - Permet aussi de mettre en place connexion sécurisée
+    - Juste besoin d'enregistrer le certificat SSL en tant que Secret du cluster
+  - Vidéo n'aborde pas par contre la gestion des ports
+    - Utilise seulement HTTP/HTTPS comme protocole
+    - Mais dans mon cas, je veux rendre accessible un serveur MQTT
+    - Préfère faire en sorte que le client utilise le port par défaut
+  - Documentation indique aussi qu'Ingress n'est plus le composant à utiliser, mais Gateway
+    - https://kubernetes.io/docs/concepts/services-networking/gateway/
+    - Qui a l'air d'être orienté HTTP aussi
+  - À creuser donc
 ** Semaine du <2024-05-27 Mon> au <2024-05-31 Fri>
 *** Planned
 **** DONE SmartSense: Remettre en fonctionnement le noeud
