@@ -100,20 +100,12 @@
 - Voir comment GitLab gère ça
 ** Semaine du <2024-06-10 Mon> au <2024-06-14 Fri>
 *** Planned
-**** TODO Distant: Mettre en place script fournissant données au broker
-- Par ex, générateur de températures
-  - 1 toutes les secondes
-- Les envoie au broker
-- Voir pour mettre un mode de fonctionnement correcte et l'autre "défaillant"
-- Reste à déterminer où se place ce script
-  - Dans le cluster Kubernetes, i.e. un pod
-  - Ou à l'extérieur de ce dernier, et interagit avec le broker via le service dédié
-**** TODO Distant: Mettre en place service pour permettre aux pods d'interagir avec le broker
+**** IN-PROGRESS Distant: Mettre en place service pour permettre aux pods d'interagir avec le broker
 - Est-ce qu'on doit passer par la même approche pour permettre aux pods d'interagir avec l'instance Mosquitto ?
 - Ou comme il s'agit de pods au sein d'un même namespace, peut s'en affranchir ?
 - Ou une autre est plus indiquée ?
 - Quoique, est-ce qu'on mettrait vraiment le broker dans le même namespace que les pods qui le lisent ?
-**** TODO Distant: Mettre en place pod qui traite un flux de données du broker
+**** IN-PROGRESS Distant: Mettre en place pod qui traite un flux de données du broker
 - En guise d'exemple, faire une application qui s'abonne à un flux du broker
 - Pour chaque donnée, vérifie si valeur cohérente
   - e.g. pour température, vérifie qu'est entre 0 et 100
@@ -125,6 +117,14 @@
   - Permet de centraliser le process
 - Ou repasser par le broker carrément ?
   - À ce moment là, est-ce qu'on prend un broker avec persistence des messages ?
+**** TODO Distant: Mettre en place script fournissant données au broker
+- Par ex, générateur de températures
+  - 1 toutes les secondes
+- Les envoie au broker
+- Voir pour mettre un mode de fonctionnement correcte et l'autre "défaillant"
+- Reste à déterminer où se place ce script
+  - Dans le cluster Kubernetes, i.e. un pod
+  - Ou à l'extérieur de ce dernier, et interagit avec le broker via le service dédié
 **** IN-PROGRESS SmartSense: Rédiger un fichier de config Ansible pour le noeud SmartSense
 - Maintenant que j'ai pu déployer un noeud SmartSense et identifier les différentes étapes nécessaires
 - Serait utile de
@@ -147,15 +147,136 @@
 - Et les bonnes pratiques sur le formatage des données
 - D'après Ammar, il existe un Resana où ces documents seront postés
 - Y demander l'accès
-**** TODO LivingFog: Utiliser un inventory en YAML
-- Semble permettre de coupler plus élégamment les modes de déploiement avec les hosts et les variables correspondants
-- Permettrait d'éviter de devoir préciser le mode et le bon inventaire lorsqu'on lance le playbook
-- Confirmer ce point et mettre en place le cas échéant cette nouvelle approche
 **** TODO SmartSense: Lire *Practical evaluation of Wi-Fi HaLow performance*
 - Article de Sébastien Maudet de 2023
 - Dispo ici : https://www.sciencedirect.com/science/article/pii/S2542660523002809
 - Permettra p-e d'avoir une meilleure vision de l'état actuelle de la technologie
 *** Done
+- Distant: Mettre en place service pour permettre aux pods d'interagir avec le broker
+  - Est-ce que je redéploie un nouveau service `ClusterIP` ?
+  - Ou est-ce que je réutilise le service `NodePort` existant ?
+  - Va plutôt partir sur cette seconde approche pour le moment
+- Distant: Mettre en place pod qui traite un flux de données du broker
+  - Comment permettre à un pod de communiquer avec un service ?
+    - Kubernetes fait tourner un service DNS
+    - Et enregistre automatiquement les pods et services créés
+      - https://kubernetes.io/docs/concepts/services-networking/dns-pod-service/
+    - De la forme
+      - <my-svc>.<my-namespace>.svc.<cluster-domain>[.example]
+    - Dans mon cas
+      - mosquitto.default.svc.cluster.local
+  - Reste le problème du port
+    - NodePort alloue un port au service dans la range 30000-32767
+      - https://kubernetes.io/docs/concepts/services-networking/service/#type-nodeport
+    - Peut fixer le port utiliser par le service mosquitto dans ce cas, 31883
+  - [-] Reste plus qu'à mettre en place une petite application qui
+    - [ ] Récupère ces paramètres
+      - Pour le moment, codé en dur
+    - [X] Instancie un client MQTT
+    - [X] S'inscrit à un topic
+    - [X] Traite les messages reçus
+      - Se contente d'afficher le message pour le moment
+    - [ ] Poste un message dans le broker en cas d'anomalie
+  - [ ] Comment dockeriser proprement une application Python ?
+    - Est-ce que j'introduis par exemple Poetry dans l'image ?
+    - Ou y a un moyen plus simple pour mettre en place les dépendances ?
+  - [ ] Comment mettre en place un pipeline propre & simple pour déployer sur k8s l'application ?
+    - Jusqu'à maintenant, n'a utilisé que des applications/images déjà disponibles dans des registres publiques
+    - Là faudrait que je génère ma propre image
+    - Et que je la rende disponible à mes clusters, VMs & k8s
+    - Utiliser le registre public de Docker, tout simplement ?
+- Réunion suivi du <2024-06-11 Tue>
+  - Préparation
+    - LivingFog
+      - La dernière fois, venais de mettre en place un cluster k8s sur le picocluster
+      - A reproduit/adapté les étapes pour pouvoir travailler sur VMs
+      - Et a automatisé le processus avec Ansible
+        - Avec Guillermo, a fait une revue du code
+          - M'a indiqué comment structurer le playbook à l'aide des rôles
+          - M'a donné accès au Ansible pour l'overleaf Inria
+        - A amélioré mon playbook en me basant dessus
+        - Mais encore quelques difficultés
+          - Sur bonne utilisation des rôles et la gestion des dépendances de modules Ansible
+        - Vois Matthieu Simonin dans l'aprem pour en discuter
+      - On a eu une réunion avec Ammar et Guillaume avec nos partenaires de l'OSUR et de Potsdam dans le cadre du projet Distant
+        - Projet de mise en place d'un système de monitoring/assurance qualité des données dans le cadre d'un observatoire au Népal
+        - Idée est ne pas remplacer l'existant, seulement de s'y greffer
+        - i.e. qu'on duplique le flux de données, qu'on le donne en entrée à notre noeud fog
+        - Et que ce dernier fasse tourner une ou des applications qui observent le flux, analysent les données, et émettent une alerte en cas de détection d'une anomalie
+        - Actuellement sur la réalisation d'un PoC avec Kubernetes
+          - Une appli de production de données, externe
+          - Qui les transmet à un message broker, géré par k8s
+          - Et une autre appli de monitoring, gérée par le cluster, qui les consomme et génère des alertes en cas d'anomalies
+        - Progression
+          - A mis en place le message broker et la configuration pour le rendre accessible depuis l'extérieur du cluster k8s
+          - A pu tester écrire et lire depuis une app s'exécutant depuis l'extérieur du cluster k8s
+          - À présent, vois pour interagir avec le broker depuis l'app de monitoring
+          - Plutôt en train de voir comment conteneuriser proprement une application python
+          - Et comment mettre en place un pipeline propre pour développer et tester l'application sur VMs/picocluster facilement
+    - SmartSense
+      - A profité des connaissances gagnées sur Ansible avec LivingFog pour améliorer le playbook
+        - Me pose la question de conteneuriser ou non les composants de SmartSense
+          - SmartSense Node App
+          - InfluxDB
+          - Grafana
+        - Mais quelques difficultés
+      - A participé aux journées TF du <2024-05-28 Tue> au <2024-05-30 Thu>
+        - Présentation de SmartSense dans le cadre des sessions café-bazar
+          - Bien déroulé, pas de bug à reporter
+          - A noté intérêt sur la partie multi-capteurs, consultation en temps réel des données et carte d'extension
+          - Sur la partie calculs en local, problématique partagée dans le cadre d'une caméra spectromètre
+            - Silvert Gousset et Samuel Barnola de l'Institut de Planétologie et d'Astrophysique de Grenoble (IPAG)
+        - Discussion avec Olivier Berder
+          - M'a parlé des travaux de Sébastien Maudet, doctorant à Nantes, qui a fait des évaluations de WiFi HaLow dans le cadre de sa thèse
+            - Des papiers sont disponibles
+          - M'a parlé des travaux de Samir El Rhaz, doctorant à Lannion, qui étudie/travaille avec Wi-SUN, un dérivé de Zigbee
+          - Serait intéressant de prendre le temps de se pencher sur leurs travaux/ces technos
+        - Présentation intéressante IMO sur le flux de données
+          - Par David Sarramia et Jérémy Mezhoud qui travaillent sur le CEBA
+          - Donnaient des bonnes pratiques sur comment structurer/quels champs inclure dans ses données pour les rendre pérennes/exploitables
+          - Pareil, serait intéressant de relire ça à tête reposée pour voir ce qu'on peut en tirer
+        - Question personnelle pour mieux cerner le projet
+          - Vu l'autonomie du noeud, semble plus adapté à des expérimentations sur une journée
+          - À quoi correspond ce type d'expérimentation ? Avez-vous un exemple ?
+      - Atelier expérimentation et instrumentation (AEI) 2024 aura lieu à Rennes du 25 au 28 juin
+        - Workshop/conf sur la conception de capteurs
+          - Public + d'électroniciens si j'ai bien compris ?
+        - Avec l'aide de Mickaël, a proposé d'y refaire la démo de SmartSense
+        - Doit envoyer une présentation flash d'ici le 17 juin
+  - Questions
+    - [ ] Conteneurisation des composants de SmartSense ?
+      - Pour plusieurs composants de SmartSense, plutôt que de les installer manuellement
+      - Pourrait les déployer par le biais de conteneurs
+        - SmartSense Node App
+          - Mode privilégié ou autorisation manuelle du bus I2C
+        - InfluxDB
+        - dnsmasq
+      - Systemd vs Docker ?
+    - [ ] Prochaines étapes pour l'antenne ?
+    - [ ] Participation aux journées LPWAN'2024 ?
+      - À Pau les 8 et 9 juillet
+      - https://cpham.perso.univ-pau.fr/LPWAN24/
+      - Portent sur les technologies LPWAN
+        - P-e plus sur la partie conception/challenges qu'utilisation cependant
+      - Pas de date précise pour les inscriptions sur le site
+- Réunion Ansible avec Matthieu du <2024-06-11 Tue>
+  - Questions
+    - [ ] Est-ce que chaque rôle gère ses propres dépendances ?
+      - Un "requirements" par rôle ?
+    - [ ] Peut donc pas au sein d'un rôle refaire un filtre sur le host ?
+      - Cas d'actions de configuration qui ne concernent que les workers
+      - Cas des actions pour permettre à un worker de rejoindre le cluster k8s
+    - [ ] Peut on préciser l'environnement virtuel utilisé par Ansible ?
+    - [ ] Comment gérer les dépendances des modules Ansible, notamment les librairies python ?
+      - Regardais pour utiliser le module kubernetes
+        - https://docs.ansible.com/ansible/latest/collections/kubernetes/core/k8s_module.html
+      - Mais a pour dépendances deux modules Python
+        - https://pypi.org/project/PyYAML/
+        - https://pypi.org/project/jsonpatch/
+      - Obtiens une erreur quand utilise pip
+        - Pas le droit d'installer en global
+      - Peut utiliser un virtualenv
+      - Mais comment réutiliser ce virtuelenv lors de mes tâches avec ce module ?
 ** Semaine du <2024-06-03 Mon> au <2024-06-07 Fri>
 *** Planned
 **** DONE SmartSense: Rédiger abstract pour la démo
@@ -172,6 +293,11 @@ CLOSED: [2024-06-06 Thu 17:53]
 CLOSED: [2024-06-06 Thu 17:53]
 - Voir du côté d'Ingress?
 - Pareil, voir comment faire cela proprement
+**** DONE LivingFog: Utiliser un inventory en YAML
+CLOSED: [2024-06-10 Mon 11:31]
+- Semble permettre de coupler plus élégamment les modes de déploiement avec les hosts et les variables correspondants
+- Permettrait d'éviter de devoir préciser le mode et le bon inventaire lorsqu'on lance le playbook
+- Confirmer ce point et mettre en place le cas échéant cette nouvelle approche
 **** IN-PROGRESS SmartSense: Rédiger un fichier de config Ansible pour le noeud SmartSense
 - Maintenant que j'ai pu déployer un noeud SmartSense et identifier les différentes étapes nécessaires
 - Serait utile de
@@ -194,10 +320,6 @@ CLOSED: [2024-06-06 Thu 17:53]
 - Et les bonnes pratiques sur le formatage des données
 - D'après Ammar, il existe un Resana où ces documents seront postés
 - Y demander l'accès
-**** TODO LivingFog: Utiliser un inventory en YAML
-- Semble permettre de coupler plus élégamment les modes de déploiement avec les hosts et les variables correspondants
-- Permettrait d'éviter de devoir préciser le mode et le bon inventaire lorsqu'on lance le playbook
-- Confirmer ce point et mettre en place le cas échéant cette nouvelle approche
 **** TODO Distant: Mettre en place script fournissant données au broker
 - Par ex, générateur de températures
   - 1 toutes les secondes
