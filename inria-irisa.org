@@ -3,32 +3,12 @@
 
 * Journal de bord
 ** Backlog
-*** TODO Distant: Mettre en place service pour permettre aux pods d'interagir avec le broker
-- Est-ce qu'on doit passer par la même approche pour permettre aux pods d'interagir avec l'instance Mosquitto ?
-- Ou comme il s'agit de pods au sein d'un même namespace, peut s'en affranchir ?
-- Ou une autre est plus indiquée ?
-- Quoique, est-ce qu'on mettrait vraiment le broker dans le même namespace que les pods qui le lisent ?
-*** TODO Distant: Mettre en place pod qui traite un flux de données du broker
-- En guise d'exemple, faire une application qui s'abonne à un flux du broker
-- Pour chaque donnée, vérifie si valeur cohérente
-  - e.g. pour température, vérifie qu'est entre 0 et 100
-- Lève alerte en cas de multiples valeurs incohérentes
-  - Fenêtre de temps ?
-  - Fenêtre de valeurs ?
-- Comment représenter alerte ?
-- Requête à un pod dédié me paraît une bonne idée
-  - Permet de centraliser le process
-- Ou repasser par le broker carrément ?
-  - À ce moment là, est-ce qu'on prend un broker avec persistence des messages ?
 *** TODO LivingFog: Automatiser le setup de k3s sur un cluster de Raspberry
 - Permettrait de graduate de minikube
   - Et d'apprendre ainsi tout ce qu'il gère pour moi automatiquement
 - Et d'aller plus loin dans notre mise en place automatique d'environnements de dev et de test
 - Ressources
   - Blogpost: https://medium.com/@stevenhoang/step-by-step-guide-installing-k3s-on-a-raspberry-pi-4-cluster-8c12243800b9
-*** TODO Déployer WordPress sur un cluster de Raspberry
-- Permettrait de valider le résultat obtenu dans les étapes précédentes
-- Et de rencontrer les problèmes éventuels liés aux architectures processeurs
 *** TODO SmartSense: Étudier la mise en place d'un schéma de fichier de config
 - L'initialisation des noeuds reposent sur un fichier config.ini
 - Pour le moment, je le retro-ingénérie pour identifier les différentes options possibles
@@ -118,14 +98,33 @@
   - Garantirait la reproductibilité de l'environnement de tests
   - Et que j'oublie pas de les faire tourner avant l'intégration
 - Voir comment GitLab gère ça
-** Semaine du <2024-06-03 Mon> au <2024-06-07 Fri>
+** Semaine du <2024-06-10 Mon> au <2024-06-14 Fri>
 *** Planned
-**** DONE SmartSense: Rédiger abstract pour la démo
-CLOSED: [2024-06-04 Tue 08:42]
-- Viens de me rendre compte que pour les AEI 2024, doit soumettre le résumé de la démo aujourd'hui
-- Malheureusement pas de nouvelles de la part de Mickaël à ce sujet
-- Rédiger l'abstract et lui envoyer
-- Soumettre en absence de réponse de sa part
+**** TODO Distant: Mettre en place script fournissant données au broker
+- Par ex, générateur de températures
+  - 1 toutes les secondes
+- Les envoie au broker
+- Voir pour mettre un mode de fonctionnement correcte et l'autre "défaillant"
+- Reste à déterminer où se place ce script
+  - Dans le cluster Kubernetes, i.e. un pod
+  - Ou à l'extérieur de ce dernier, et interagit avec le broker via le service dédié
+**** TODO Distant: Mettre en place service pour permettre aux pods d'interagir avec le broker
+- Est-ce qu'on doit passer par la même approche pour permettre aux pods d'interagir avec l'instance Mosquitto ?
+- Ou comme il s'agit de pods au sein d'un même namespace, peut s'en affranchir ?
+- Ou une autre est plus indiquée ?
+- Quoique, est-ce qu'on mettrait vraiment le broker dans le même namespace que les pods qui le lisent ?
+**** TODO Distant: Mettre en place pod qui traite un flux de données du broker
+- En guise d'exemple, faire une application qui s'abonne à un flux du broker
+- Pour chaque donnée, vérifie si valeur cohérente
+  - e.g. pour température, vérifie qu'est entre 0 et 100
+- Lève alerte en cas de multiples valeurs incohérentes
+  - Fenêtre de temps ?
+  - Fenêtre de valeurs ?
+- Comment représenter alerte ?
+- Requête à un pod dédié me paraît une bonne idée
+  - Permet de centraliser le process
+- Ou repasser par le broker carrément ?
+  - À ce moment là, est-ce qu'on prend un broker avec persistence des messages ?
 **** IN-PROGRESS SmartSense: Rédiger un fichier de config Ansible pour le noeud SmartSense
 - Maintenant que j'ai pu déployer un noeud SmartSense et identifier les différentes étapes nécessaires
 - Serait utile de
@@ -152,12 +151,53 @@ CLOSED: [2024-06-04 Tue 08:42]
 - Semble permettre de coupler plus élégamment les modes de déploiement avec les hosts et les variables correspondants
 - Permettrait d'éviter de devoir préciser le mode et le bon inventaire lorsqu'on lance le playbook
 - Confirmer ce point et mettre en place le cas échéant cette nouvelle approche
-**** TODO Distant: Déployer Mosquitto sur le cluster Kubernetes
+**** TODO SmartSense: Lire *Practical evaluation of Wi-Fi HaLow performance*
+- Article de Sébastien Maudet de 2023
+- Dispo ici : https://www.sciencedirect.com/science/article/pii/S2542660523002809
+- Permettra p-e d'avoir une meilleure vision de l'état actuelle de la technologie
+*** Done
+** Semaine du <2024-06-03 Mon> au <2024-06-07 Fri>
+*** Planned
+**** DONE SmartSense: Rédiger abstract pour la démo
+CLOSED: [2024-06-04 Tue 08:42]
+- Viens de me rendre compte que pour les AEI 2024, doit soumettre le résumé de la démo aujourd'hui
+- Malheureusement pas de nouvelles de la part de Mickaël à ce sujet
+- Rédiger l'abstract et lui envoyer
+- Soumettre en absence de réponse de sa part
+**** DONE Distant: Déployer Mosquitto sur le cluster Kubernetes
+CLOSED: [2024-06-06 Thu 17:53]
 - Première étape du projet est de voir comment on déploie proprement un pod
 - Fichier de configuration ?
-**** TODO Distant: Mettre en place service pour offrir un accès externe au broker
+**** DONE Distant: Mettre en place service pour offrir un accès externe au broker
+CLOSED: [2024-06-06 Thu 17:53]
 - Voir du côté d'Ingress?
 - Pareil, voir comment faire cela proprement
+**** IN-PROGRESS SmartSense: Rédiger un fichier de config Ansible pour le noeud SmartSense
+- Maintenant que j'ai pu déployer un noeud SmartSense et identifier les différentes étapes nécessaires
+- Serait utile de
+  - Documenter le processus
+  - L'automatiser
+- Ansible est semblerait l'outil adapté pour cela
+- Automatiser le déploiement d'un noeud SmartSense en utilisant Ansible
+**** IN-PROGRESS LivingFog: Décomposer le playbook en rôles
+- Guillermo m'a suggéré de regrouper l'ensemble des tâches de mon playbook en différents rôles
+  - Requirements
+  - Docker
+  - Kubernetes
+  - CNI
+- De plus, Khaled m'a expliqué avoir défini une version *add* et une version *remove* de chacun de ses rôles
+- Me paraît une feature intéressante à mettre en place
+- Préparer le terrain
+**** TODO Terra Forma: Demander accès au Resana
+- Suis intéressé par récupérer les slides présentées lors des rencontres Terra Forma
+- Particulièrement celles portant sur la gestion du flux de données
+- Et les bonnes pratiques sur le formatage des données
+- D'après Ammar, il existe un Resana où ces documents seront postés
+- Y demander l'accès
+**** TODO LivingFog: Utiliser un inventory en YAML
+- Semble permettre de coupler plus élégamment les modes de déploiement avec les hosts et les variables correspondants
+- Permettrait d'éviter de devoir préciser le mode et le bon inventaire lorsqu'on lance le playbook
+- Confirmer ce point et mettre en place le cas échéant cette nouvelle approche
 **** TODO Distant: Mettre en place script fournissant données au broker
 - Par ex, générateur de températures
   - 1 toutes les secondes
@@ -349,6 +389,42 @@ Cette version propose donc une base solide pour l'ajout des fonctionnalités pro
     - https://kubernetes.io/docs/concepts/services-networking/gateway/
     - Qui a l'air d'être orienté HTTP aussi
   - À creuser donc
+- Distant: Mettre en place service pour offrir un accès externe au broker
+  - Ressource suivante semble être complète
+    - https://www.enabler.no/blog/mosquitto-mqtt-broker-in-kubernetes
+  - Ce qui est à noter, c'est que MQTT repose sur TCP
+  - Doit donc voir comment router du traffic TCP vers le broker
+  - Indique que Ingress-nginx offre cette feature
+  - Est-ce que Gateway aussi ?
+  - Oui mais c'est encore expérimental
+    - https://gateway-api.sigs.k8s.io/guides/tcp/
+    - Est-ce que je peux me baser là-dessus ?
+  - Dans LivingFog, utilisaient un simple service NodePort
+    - https://github.com/FogGuru/livingfog/blob/main/chirpstack-kubernetes/mosquitto/service.yml
+  - A parcouru *Understanding Kubernetes in a visual way*
+    - Confirme que qu'un service NodePort est une bonne approche pour commencer
+  - Et qu'à terme ça pourrait être mieux de passer à du Ingress
+  - A déployé un système basique de message broker
+    - Utilisation de mosquitto
+    - Définition au préalable d'une ConfigMap pour spécifier la config de mosquitto
+      - Notamment autoriser l'utilisation anonyme du broker
+      - Et qu'il écoute bien sur le port 1883
+    - Définition d'un service *NodePort* permettant d'exposer le message broker à l'extérieur du cluster
+  - Mais n'arrive pas à l'utiliser
+    - Utilise le test d'intég mis en place pour SmartSense
+    - Mais obtient une erreur, impossible de se connecter
+  - N'arrive pas à lire les logs du container sur VMs
+    - Obtient erreur `Error from server (NotFound): the server could not find the requested resource ( pods/log mosquitto-deployment-6f7458b9d-sc4pw)`
+    - Doit avoir un soucis au niveau de ma config Vagrant
+  - Sur picocluster par contre, cela fonctionne
+  - On a bien une trace d'une connexion au broker dans ses logs
+  - Pourquoi ?
+  - En fait, y a deux endroits dans le code du test où l'on définit l'adresse du message broker
+    - Dans la fonction helper permettant de créer un client pour lire les messages postés
+    - Dans le fichier config fournit à l'application, permettant ensuite d'instancier des *MqttInterface*
+  - N'avait modifié que le 1er emplacement dans le code
+  - Essayais donc de lire, mais sans écrire
+  - Fonctionne désormais, après avoir modifié les deux emplacements dans le code
 ** Semaine du <2024-05-27 Mon> au <2024-05-31 Fri>
 *** Planned
 **** DONE SmartSense: Remettre en fonctionnement le noeud
@@ -1552,7 +1628,7 @@ cpuset cpu io memory hugetlb pids rdma misc
     - Cluster semble fonctionnel
     - Mais a rencontré une erreur lorsque j'ai mis en place un Service NodePort pour mon appli Hello World
     - Le service est créé, j'ai pas noté d'erreur particulière
-    - Mais en pratique, ne peut contacté l'appli que via l'url <ip_worker>:<port_service>
+    - Mais en pratique, ne peut contacter l'appli que via l'url <ip_worker>:<port_service>
     - Et non pas en utilisant l'ip de n'importe quel noeud du cluster, ici le master
     - En modifiant la config de flannel pour utiliser l'interface permettant aux noeuds de communiquer, résout le problème
   - A perdu la commande générée par kubeadm init pour permettre à un noeud de rejoindre
