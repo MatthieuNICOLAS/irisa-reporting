@@ -100,6 +100,22 @@
 - Voir comment GitLab gère ça
 ** Semaine du <2024-06-10 Mon> au <2024-06-14 Fri>
 *** Planned
+**** DONE SmartSense: Contacter Sarramia et Mezhoud pour leurs slides sur le flux de donnée
+CLOSED: [2024-06-11 Tue 16:14]
+**** DONE LPWAN'24: Contacter Stéphanie pour organiser mission
+CLOSED: [2024-06-11 Tue 16:30]
+- Après discussion avec Guillaume et Mickaël, encouragé de participer à LPWAN'24
+  - https://cpham.perso.univ-pau.fr/LPWAN24/
+- Évènement a lieu à Pau le 08 et 09 juillet
+  - Prévoir transport la veille
+    - Train au départ de Rennes le 07/07 à 12:00, arrivée à 18:35 à Pau
+    - Train au départ de Pau le 10/07 à 07:25, arrivée à 13:48 à Rennes
+- Juste, quand démarre et fini exactement l'évènement ?
+  - L'an dernier ça a duré les 2 jours entiers
+  - https://journees-lpwan-2023.liglab.fr/programme.html
+**** IN-PROGRESS SmartSense: Faire v1 de la présentation flash pour AEI 2024
+- Doit fournir une présentation flash (2-3min) à AEI 2024 d'ici le <2024-06-17 Mon>
+- Faire une ébauche et itérer avec Mickaël
 **** IN-PROGRESS Distant: Mettre en place service pour permettre aux pods d'interagir avec le broker
 - Est-ce qu'on doit passer par la même approche pour permettre aux pods d'interagir avec l'instance Mosquitto ?
 - Ou comme il s'agit de pods au sein d'un même namespace, peut s'en affranchir ?
@@ -185,6 +201,34 @@
     - Là faudrait que je génère ma propre image
     - Et que je la rende disponible à mes clusters, VMs & k8s
     - Utiliser le registre public de Docker, tout simplement ?
+  - Suite à ma discussion avec Matthieu, partirais sur
+    - La réalisation d'un package de l'application
+    - L'enregistrement de ce package sur le registre gitlab
+    - Création d'une image Docker installant ce package via pip et lançant l'application
+    - Matthieu m'a expliqué qu'on peut facilement installer une app Python
+  - Étapes suivies
+    - Création du projet avec Poetry
+      - poetry new distant_simple_anomaly_detector
+    - Build du projet
+      - poetry build
+    - Création d'un repo git sur gitlab
+      - https://gitlab.inria.fr/mnicolas/distant-simple-anomaly-detector
+    - Déploiement du package python sur le repo
+      - poetry config repositories.gitlab https://gitlab.inria.fr/api/v4/projects/53204/packages/pypi
+      - poetry publish --repository gitlab -u <username> -p <access_token>
+    - Démarrage d'un conteneur Docker pour expérimenter avant de passer au Dockerfile
+      - docker run --rm -it python /bin/bash
+    - Installation du package
+      - Via le registry
+        - pip install --index-url https://token:<access_token>@gitlab.inria.fr/api/v4/projects/53204/packages/pypi/simple distant-simple-anomaly-detector
+      - Peut aussi l'installer via le repo
+        - pip install git+https://token:<access_token>@gitlab.inria.fr/mnicolas/distant-simple-anomaly-detector.git
+    - Exécuter le script Python
+      - Package installé à /usr/local/lib/python3.12/site-packages/distant_simple_anomaly_detector/
+      - Peut donc le lancer avec python3 /usr/local/lib/python3.12/site-packages/distant_simple_anomaly_detector/main.py
+      - Mais y a pas un moyen plus propre ?
+      - Si si
+        - python -m distant_simple_anomaly_detector.main
 - Réunion suivi du <2024-06-11 Tue>
   - Préparation
     - LivingFog
@@ -197,9 +241,11 @@
         - A amélioré mon playbook en me basant dessus
         - Mais encore quelques difficultés
           - Sur bonne utilisation des rôles et la gestion des dépendances de modules Ansible
+            - Est-ce que chaque rôle gère ses dépendances ?
+            - Comment gérer les rôles où des groupes d'hosts différents doivent effectuer des tâches
         - Vois Matthieu Simonin dans l'aprem pour en discuter
       - On a eu une réunion avec Ammar et Guillaume avec nos partenaires de l'OSUR et de Potsdam dans le cadre du projet Distant
-        - Projet de mise en place d'un système de monitoring/assurance qualité des données dans le cadre d'un observatoire au Népal
+        - Projet de mise en place d'un système de monitoring/assurance qualité des données dans le cadre de l'observatoire de la rivière Kaligandaki au Népal
         - Idée est ne pas remplacer l'existant, seulement de s'y greffer
         - i.e. qu'on duplique le flux de données, qu'on le donne en entrée à notre noeud fog
         - Et que ce dernier fasse tourner une ou des applications qui observent le flux, analysent les données, et émettent une alerte en cas de détection d'une anomalie
@@ -215,11 +261,13 @@
           - Et comment mettre en place un pipeline propre pour développer et tester l'application sur VMs/picocluster facilement
     - SmartSense
       - A profité des connaissances gagnées sur Ansible avec LivingFog pour améliorer le playbook
+        - Mais quelques difficultés
+          - Quand installe le gestionnaire de dépendances poetry, celui-ci n'est pas dispo
+          - Vois pour gérer/configurer le virtual env utilisé manuellement
         - Me pose la question de conteneuriser ou non les composants de SmartSense
           - SmartSense Node App
           - InfluxDB
           - Grafana
-        - Mais quelques difficultés
       - A participé aux journées TF du <2024-05-28 Tue> au <2024-05-30 Thu>
         - Présentation de SmartSense dans le cadre des sessions café-bazar
           - Bien déroulé, pas de bug à reporter
@@ -244,7 +292,7 @@
         - Avec l'aide de Mickaël, a proposé d'y refaire la démo de SmartSense
         - Doit envoyer une présentation flash d'ici le 17 juin
   - Questions
-    - [ ] Conteneurisation des composants de SmartSense ?
+    - [X] Conteneurisation des composants de SmartSense ?
       - Pour plusieurs composants de SmartSense, plutôt que de les installer manuellement
       - Pourrait les déployer par le biais de conteneurs
         - SmartSense Node App
@@ -252,22 +300,44 @@
         - InfluxDB
         - dnsmasq
       - Systemd vs Docker ?
-    - [ ] Prochaines étapes pour l'antenne ?
-    - [ ] Participation aux journées LPWAN'2024 ?
+    - [X] Prochaines étapes pour l'antenne ?
+    - [X] Participation aux journées LPWAN'2024 ?
       - À Pau les 8 et 9 juillet
       - https://cpham.perso.univ-pau.fr/LPWAN24/
       - Portent sur les technologies LPWAN
         - P-e plus sur la partie conception/challenges qu'utilisation cependant
       - Pas de date précise pour les inscriptions sur le site
+  - Notes
+    - Quel est le protocole de données utilisé dans l'observatoire népalais pour transmettre les données des capteurs au data logger ?
+      - SDI-12
+    - Est-ce qu'un Compute Module consomme autant qu'un RPi équivalent ?
+    - Voir si le shell peut être une source d'erreur Ansible
+    - Dockeriser peut être une piste d'amélioration
+    - Wi-SUN
+      - Actuellement en cours d'évaluation au sein de l'équipe
+      - Portée de plusieurs centaines de mètres/voir le km
+      - Débit > LoRa (10-100ko/h)
+    - Utilisation du noeud SmartSense
+      - Dans le cadre de sciences participatives sur durée courte
+        - Comptage d'insectes sur un w-e
+      - Autonomie limite cas d'utilisations à titre de démonstration
+        - Expérience avec les bus
+      - Peut être utilisé de manière exploratoire
+        - Sait ce qu'on veut mesurer, mais pas comment
+        - Fait des mesures avec noeud SmartSense pour voir si une approche sort du lot
+        - Reviens ensuite avec capteur spécialisé
 - Réunion Ansible avec Matthieu du <2024-06-11 Tue>
   - Questions
-    - [ ] Est-ce que chaque rôle gère ses propres dépendances ?
+    - [X] Est-ce que chaque rôle gère ses propres dépendances ?
       - Un "requirements" par rôle ?
-    - [ ] Peut donc pas au sein d'un rôle refaire un filtre sur le host ?
+      - Oui
+    - [X] Peut donc pas au sein d'un rôle refaire un filtre sur le host ?
       - Cas d'actions de configuration qui ne concernent que les workers
       - Cas des actions pour permettre à un worker de rejoindre le cluster k8s
-    - [ ] Peut on préciser l'environnement virtuel utilisé par Ansible ?
-    - [ ] Comment gérer les dépendances des modules Ansible, notamment les librairies python ?
+      - Possible, pas très propre, mais possible
+    - [ ] Peut préciser l'user courant pour des tâches d'un rôle ?
+      - Dans requirements, si je veux installer des outils autre chose qu'en tant que root ?
+    - [X] Comment gérer les dépendances des modules Ansible, notamment les librairies python ?
       - Regardais pour utiliser le module kubernetes
         - https://docs.ansible.com/ansible/latest/collections/kubernetes/core/k8s_module.html
       - Mais a pour dépendances deux modules Python
@@ -276,7 +346,16 @@
       - Obtiens une erreur quand utilise pip
         - Pas le droit d'installer en global
       - Peut utiliser un virtualenv
-      - Mais comment réutiliser ce virtuelenv lors de mes tâches avec ce module ?
+      - Mais comment réutiliser ce virtualenv lors de mes tâches avec ce module ?
+        Peut supprimer fichier
+      - Voir https://gitlab.inria.fr/discovery/enoslib/-/issues/195
+    - [ ] Au sujet de Python, des bonnes pratiques pour dockeriser application ?
+      - Juste copier le virtual env préparé dans l'image finale ?
+  - Notes
+    - Voir pour packager l'application et la push sur le registry gitlab
+      - Peut aussi push les images Docker sur gitlab au fait
+- SmartSense: Faire v1 de la présentation flash pour AEI 2024
+  - Mise en place d'un git
 ** Semaine du <2024-06-03 Mon> au <2024-06-07 Fri>
 *** Planned
 **** DONE SmartSense: Rédiger abstract pour la démo
