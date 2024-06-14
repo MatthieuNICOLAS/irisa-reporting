@@ -119,7 +119,8 @@ CLOSED: [2024-06-13 Thu 14:58]
 - Faire une ébauche et itérer avec Mickaël
 **** DONE LPWAN'24: Voir Stéphanie pour faire l'ordre de mission
 CLOSED: [2024-06-13 Thu 14:58]
-**** IN-PROGRESS Distant: Mettre en place service pour permettre aux pods d'interagir avec le broker
+**** DONE Distant: Mettre en place service pour permettre aux pods d'interagir avec le broker
+CLOSED: [2024-06-14 Fri 16:58]
 - Est-ce qu'on doit passer par la même approche pour permettre aux pods d'interagir avec l'instance Mosquitto ?
 - Ou comme il s'agit de pods au sein d'un même namespace, peut s'en affranchir ?
 - Ou une autre est plus indiquée ?
@@ -283,9 +284,24 @@ spec:
       - [?] App dockerisée
       - [X] App déployée au sein du cluster k8s
         - Comment on teste ça ?
-        - Est-ce qu'on setup à chaque fois un cluster k8s de test, déploie les apps qui nous intéressent et testons le fonctionnement ?
-        - Ou est-ce qu'on maintient un jumeau de notre cluster k8s en permanence, un staging environment, et on y effectue une sorte de rolling release où on monitore le comportement des pods nouvelle version avant de valider/rollback le changement ?
-        - Comment on ferait ça ?
+        - Est-ce qu'on setup à chaque fois un cluster k8s de test, déploie les apps qui nous intéressent ?
+        - Ou est-ce qu'on maintient un jumeau de notre cluster k8s en permanence, un staging environment ?
+          - Peut utiliser un outil comme minikube/microk8s/kind pour cette étape
+        - Et on y effectue une sorte de rolling release où on monitore le comportement des pods nouvelle version avant de valider/rollback le changement ?
+          - Comment on ferait ça ?
+  - Questions restantes
+    - Comment tester l'appli ?
+      - Suffit de faire une fonction prenant les données intéressantes du message en paramètre
+        - Topic, payload
+      - Qu'on puisse faire des tests unitaires dessus
+    - Comment gérer proprement le passage de paramètres au script Python ?
+      - Notamment le host et le port du message broker
+    - Comment gérer le déclenchement de la génération de l'image Docker ?
+      - Uniquement quand on intègre dans main ou qu'on ajoute un tag ?
+    - Comment gérer la génération de l'image Docker à la fois pour desktop et pour RPi ?
+    - Comment utiliser un autre user que root dans l'image Docker ?
+    - Comment configurer Mosquitto proprement ?
+    - Serait intéressant de voir au niveau du SED si quelqu'un est familier du process/pipeline de Local Kubernetes Development ?
 - Réunion suivi du <2024-06-11 Tue>
   - Préparation
     - LivingFog
@@ -427,6 +443,7 @@ spec:
     - [X] Comment dockeriser proprement une app Python ?
     - Comment automatiser la génération de l'image Docker avec Gitlab ?
     - Tout en gardant un pipeline simple pour tester les changements en local sur minikube
+      - Local Kubernetes Development
 ** Semaine du <2024-06-03 Mon> au <2024-06-07 Fri>
 *** Planned
 **** DONE SmartSense: Rédiger abstract pour la démo
