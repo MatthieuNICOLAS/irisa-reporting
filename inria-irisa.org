@@ -244,6 +244,48 @@ CLOSED: [2024-06-13 Thu 14:58]
       - [X] Ou est-ce que je veux pouvoir build des images Docker, e.g. pour tester avant de push
       - Peut, par soucis d'uniformisation, peut me plier aux vars d'env de Gitlab
         - Et faire en sorte de générer l'équivalent de mon côté
+    - Déploiement sur Minikube
+      - Avant de tester sur les VMs/picocluster
+      - Vais essayer de faire tomber ça en marche en local
+      - Besoin de partager l'image Docker avec minikube
+      - i.e. besoin de recréer l'image avec le daemon Docker utilisé par minikube
+        - eval $(minikube docker-env)
+        - docker build
+      - Et d'indiquer à la création de ne pas pull l'image
+        #+BEGIN_PLAIN
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: anomaly-detector-deployment
+  labels:
+    app: anomaly-detector
+spec:
+  selector:
+    matchLabels:
+      app: anomaly-detector
+  template:
+    metadata:
+      labels:
+        app: anomaly-detector
+    spec:
+      containers:
+      - name: anomaly-detector
+        image: distant-simple-anomaly-detector:latest
+        imagePullPolicy: IfNotPresent
+        #+END_PLAIN
+      - Peut ensuite démarrer le pod
+      - Ok, c'est tombé en marche
+      - MAIS le port à utiliser n'est pas le nodePort (31883) du service
+      - Mais le port (1883)
+      - A pas de log par contre
+    - À terme, faudrait plusieurs environnements/settings de tests
+      - [X] App lancée "nature", interagissant avec un broker tiers
+      - [?] App dockerisée
+      - [X] App déployée au sein du cluster k8s
+        - Comment on teste ça ?
+        - Est-ce qu'on setup à chaque fois un cluster k8s de test, déploie les apps qui nous intéressent et testons le fonctionnement ?
+        - Ou est-ce qu'on maintient un jumeau de notre cluster k8s en permanence, un staging environment, et on y effectue une sorte de rolling release où on monitore le comportement des pods nouvelle version avant de valider/rollback le changement ?
+        - Comment on ferait ça ?
 - Réunion suivi du <2024-06-11 Tue>
   - Préparation
     - LivingFog
@@ -373,6 +415,18 @@ CLOSED: [2024-06-13 Thu 14:58]
   - Mise en place d'un git
     - https://gitlab.inria.fr/smartsense/smartobs/2024-aei
   - Réalisation d'un premier jet et envoi à Mickaël
+- Réunion non-permanents du <2024-06-14 Fri>
+  - Travaille toujours sur le prototype d'appli pour le projet Distant
+    - Données arrivent sur message broker, app qui process ces données pour détecter des anomalies
+    - Orchestrée par k8s
+  - Done
+    - [X] Comment exposer le message broker aux applications extérieures du cluster ?
+    - [X] Comment exposer le message broker aux applications internes au cluster ?
+  - M'attaque principalement au(x?) process pour développer, tester et déployer le système
+    - [X] Comment distribuer une app Python ?
+    - [X] Comment dockeriser proprement une app Python ?
+    - Comment automatiser la génération de l'image Docker avec Gitlab ?
+    - Tout en gardant un pipeline simple pour tester les changements en local sur minikube
 ** Semaine du <2024-06-03 Mon> au <2024-06-07 Fri>
 *** Planned
 **** DONE SmartSense: Rédiger abstract pour la démo
