@@ -98,6 +98,108 @@
   - Garantirait la reproductibilité de l'environnement de tests
   - Et que j'oublie pas de les faire tourner avant l'intégration
 - Voir comment GitLab gère ça
+** Semaine du <2024-06-17 Mon> au <2024-06-21 Fri>
+*** Planned
+**** DONE AEI'24: Faire v2 de la présentation flash
+CLOSED: [2024-06-17 Mon 14:10]
+- A reçu des retours de la part de Mickaël sur la v1
+  #+BEGIN_PLAIN
+Les items de ta partie "Absence ou faible connectivité" je les aurais intégrés dans la description des Zones Critique sous ta ligne "milieu contraints" parce que ça découle de ça.
+
+Lister en dessous d'"une pluralité de données" les grandes familles :
+
+     -> Capteurs environnementaux
+     -> Son avec spatialisation
+     -> Vidéo RGB et Infrarouge
+     -> Spectre radio fréquences 2,4GHz et Sub-GHz
+
+Rajouter dans la partie "Noeud SmartSense" la possibilité de rajouter des modules USB pour étendre les fonctionnalités.
+Rajouter les capteurs manquant sur l'illustration de la slide 2 (Capteur de luminosité, radios, caméra RGB)
+
+Il faudrait rajouter un encart sur ce qui reste à faire/développer je pense pour être transparent. (c'est le champ "perspective" du template)
+
+     -> Connectivité longue portée (LoRa, cellulaire, ...)
+     -> Raccordement à un système de récupération d'énergie (Photovoltaïque, ...)
+     -> Logiciel de traitement audio local
+     -> Essais sur le campus de Beaulieu
+  #+END_PLAIN
+- Intégrer ces différentes remarques
+**** IN-PROGRESS Distant: Mettre en place pod qui traite un flux de données du broker
+- En guise d'exemple, faire une application qui s'abonne à un flux du broker
+- Pour chaque donnée, vérifie si valeur cohérente
+  - e.g. pour température, vérifie qu'est entre 0 et 100
+- Lève alerte en cas de multiples valeurs incohérentes
+  - Fenêtre de temps ?
+  - Fenêtre de valeurs ?
+- Comment représenter alerte ?
+- Requête à un pod dédié me paraît une bonne idée
+  - Permet de centraliser le process
+- Ou repasser par le broker carrément ?
+  - À ce moment là, est-ce qu'on prend un broker avec persistence des messages ?
+**** TODO Distant: Mettre en place script fournissant données au broker
+- Par ex, générateur de températures
+  - 1 toutes les secondes
+- Les envoie au broker
+- Voir pour mettre un mode de fonctionnement correcte et l'autre "défaillant"
+- Reste à déterminer où se place ce script
+  - Dans le cluster Kubernetes, i.e. un pod
+  - Ou à l'extérieur de ce dernier, et interagit avec le broker via le service dédié
+**** TODO Kubernetes: Identifier et mettre en place un process de développement
+- Développer pour Kubernetes implique un certain nombre d'étapes
+  - Dockerisation de l'application
+  - Récupération de l'image Docker par k8s
+  - MàJ des pods concernés
+- Clarifier la méthode à adopter pour fluidifier ces étapes
+**** IN-PROGRESS SmartSense: Rédiger un fichier de config Ansible pour le noeud SmartSense
+- Maintenant que j'ai pu déployer un noeud SmartSense et identifier les différentes étapes nécessaires
+- Serait utile de
+  - Documenter le processus
+  - L'automatiser
+- Ansible est semblerait l'outil adapté pour cela
+- Automatiser le déploiement d'un noeud SmartSense en utilisant Ansible
+**** IN-PROGRESS LivingFog: Décomposer le playbook en rôles
+- Guillermo m'a suggéré de regrouper l'ensemble des tâches de mon playbook en différents rôles
+  - Requirements
+  - Docker
+  - Kubernetes
+  - CNI
+- De plus, Khaled m'a expliqué avoir défini une version *add* et une version *remove* de chacun de ses rôles
+- Me paraît une feature intéressante à mettre en place
+- Préparer le terrain
+**** TODO SmartSense: Lire *Practical evaluation of Wi-Fi HaLow performance*
+- Article de Sébastien Maudet de 2023
+- Dispo ici : https://www.sciencedirect.com/science/article/pii/S2542660523002809
+- Permettra p-e d'avoir une meilleure vision de l'état actuelle de la technologie
+*** Done
+- AEI'24: Faire la v2 de la présentation flash
+  - A effectué les changements suivants
+    - Ajouté la partie travaux en cours
+    - Précisé les grandes familles de capteurs
+    - Mentionné la possibilité de brancher des cartes d'extensions
+    - Annoté l'image du noeud pour indiquer la caméra à basse résolution
+  - À voir avec Mickaël ce qu'il en pense
+  - Reste à
+    - [ ] Vérifier ce qu'on indique comme affiliations/labos
+    - [ ] Ajouter les logos des différentes organisations
+- Distant: Mettre en place pod qui traite un flux de données du broker
+  - [X] Définir et utiliser utilisateur dédié dans image Docker
+    - Dans alpine, se fait avec les commandes `addgroup` et `adduser`
+    - Création du groupe et de l'utilisateur au début du Dockerfile
+    - Switch sur ce nouvel utilisateur juste avant CMD
+  - [X] Passer par paramètres host et port
+    - Approche choisie par le biais d'un env file
+      - https://dev.to/jakewitcher/using-env-files-for-environment-variables-in-python-applications-55a1
+    - Permet juste de récupérer des strings
+      - Parse en entier le port avec int()
+    - Peut passer le fichier à l'application conteneurisée via l'option suivante
+      - docker run --env-file=.env --rm distant-simple-anomaly-detector
+  - [X] Mise en place et utilisation du fichier __main__
+    - Si présent, correspond au script exécuté avec la commande `python -m module`
+      - https://docs.python.org/fr/3/library/__main__.html
+    - Permet de simplifier l'exécution de l'application
+  - [ ] Ajouter tests
+    - [ ] Lecture d'un message avec donnée valide
+    - [ ] Lecture d'un message avec donnée invalide
 ** Semaine du <2024-06-10 Mon> au <2024-06-14 Fri>
 *** Planned
 **** DONE SmartSense: Contacter Sarramia et Mezhoud pour leurs slides sur le flux de donnée
