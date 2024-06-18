@@ -124,7 +124,17 @@ Il faudrait rajouter un encart sur ce qui reste à faire/développer je pense po
      -> Essais sur le campus de Beaulieu
   #+END_PLAIN
 - Intégrer ces différentes remarques
-**** IN-PROGRESS Distant: Mettre en place pod qui traite un flux de données du broker
+**** DONE Distant: Mettre en place script fournissant données au broker
+CLOSED: [2024-06-18 Tue 15:53]
+- Par ex, générateur de températures
+  - 1 toutes les secondes
+- Les envoie au broker
+- Voir pour mettre un mode de fonctionnement correcte et l'autre "défaillant"
+- Reste à déterminer où se place ce script
+  - Dans le cluster Kubernetes, i.e. un pod
+  - Ou à l'extérieur de ce dernier, et interagit avec le broker via le service dédié
+**** DONE Distant: Mettre en place pod qui traite un flux de données du broker
+CLOSED: [2024-06-18 Tue 16:22]
 - En guise d'exemple, faire une application qui s'abonne à un flux du broker
 - Pour chaque donnée, vérifie si valeur cohérente
   - e.g. pour température, vérifie qu'est entre 0 et 100
@@ -136,14 +146,6 @@ Il faudrait rajouter un encart sur ce qui reste à faire/développer je pense po
   - Permet de centraliser le process
 - Ou repasser par le broker carrément ?
   - À ce moment là, est-ce qu'on prend un broker avec persistence des messages ?
-**** TODO Distant: Mettre en place script fournissant données au broker
-- Par ex, générateur de températures
-  - 1 toutes les secondes
-- Les envoie au broker
-- Voir pour mettre un mode de fonctionnement correcte et l'autre "défaillant"
-- Reste à déterminer où se place ce script
-  - Dans le cluster Kubernetes, i.e. un pod
-  - Ou à l'extérieur de ce dernier, et interagit avec le broker via le service dédié
 **** TODO Kubernetes: Identifier et mettre en place un process de développement
 - Développer pour Kubernetes implique un certain nombre d'étapes
   - Dockerisation de l'application
@@ -179,8 +181,8 @@ Il faudrait rajouter un encart sur ce qui reste à faire/développer je pense po
     - Annoté l'image du noeud pour indiquer la caméra à basse résolution
   - À voir avec Mickaël ce qu'il en pense
   - Reste à
-    - [ ] Vérifier ce qu'on indique comme affiliations/labos
-    - [ ] Ajouter les logos des différentes organisations
+    - [X] Vérifier ce qu'on indique comme affiliations/labos
+    - [X] Ajouter les logos des différentes organisations
 - Distant: Mettre en place pod qui traite un flux de données du broker
   - [X] Définir et utiliser utilisateur dédié dans image Docker
     - Dans alpine, se fait avec les commandes `addgroup` et `adduser`
@@ -197,9 +199,86 @@ Il faudrait rajouter un encart sur ce qui reste à faire/développer je pense po
     - Si présent, correspond au script exécuté avec la commande `python -m module`
       - https://docs.python.org/fr/3/library/__main__.html
     - Permet de simplifier l'exécution de l'application
-  - [ ] Ajouter tests
-    - [ ] Lecture d'un message avec donnée valide
-    - [ ] Lecture d'un message avec donnée invalide
+  - [-] Ajouter tests
+    - [X] Définir format des messages
+      - Serait bien de voir ce qui est utilisé au niveau de l'observatoire
+      - De la forme suivante, cf. screenshot 24.5 page 41 de la doc
+        "device,key1=value1,key2=value2,...,keyn=valuen"
+      - Avec
+        - key sur 2 caractères
+        - value qui comprend l'unité
+          - Toujours sur 1 caractère ?
+      - Pas sûr pour le 1er composant du message
+        - Suppose qu'il s'agit d'un identifiant du capteur
+      - Peut partir sur des messages du type
+      - "T=40C"
+    - [X] Lecture d'un message avec donnée valide
+    - [-] Lecture d'un message avec donnée invalide
+  - [X] Ajouter tâche CI d'exécution des tests
+    - Ajout d'un stage "test"
+      - Part de l'image python:3.12.4-alpine
+      - Installe poetry via pip
+      - Installe les deps du projet
+      - Exécute les tests
+    - Le stage "release" ne se lance plus par contre
+    - Pourquoi donc ?
+    - J'avais mis des "" en trop dans ma condition
+  - [X] Rédiger config Kubernetes
+    - Configuration du pod
+    - Configuration de la config map pour fournir les bons paramètres
+    - Config finale
+      #+BEGIN_PLAIN
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: anomaly-detector-config
+data:
+  .env: |-
+    MQTT_HOST=mosquitto.default.svc.cluster.local
+    MQTT_PORT=1883
+    LOGGING_LEVEL=DEBUG
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: anomaly-detector-deployment
+  labels:
+    app: anomaly-detector
+spec:
+  selector:
+    matchLabels:
+      app: anomaly-detector
+  template:
+    metadata:
+      labels:
+        app: anomaly-detector
+    spec:
+      containers:
+      - name: anomaly-detector
+        image: distant-simple-anomaly-detector:latest
+        imagePullPolicy: IfNotPresent
+        volumeMounts:
+          - name: anomaly-detector-configmap-volume
+            mountPath: /.env
+            subPath: .env
+            readOnly: true
+      volumes:
+      - name: anomaly-detector-configmap-volume
+        configMap:
+          name: anomaly-detector-config
+      #+END_PLAIN
+    - Pas super convaincu de ma façon de fournir le .env
+    - Voir s'il y a mieux
+- Distant: Mettre en place script fournissant données au broker
+  - Ajout d'un script *basic_producer.py* dans le repo de *distant-simple-anomaly-detector*
+  - Fonctionnement
+    - Récupère hostname et port via env
+      - Peut ainsi le faire communiquer avec cluster k8s local, VMs, picocluster
+    - Instancie client MQTT
+    - Boucle à l'infini
+      - Génère valeur entre -50 et 150
+      - Génère payload correspondant
+      - Envoi message au broker
 ** Semaine du <2024-06-10 Mon> au <2024-06-14 Fri>
 *** Planned
 **** DONE SmartSense: Contacter Sarramia et Mezhoud pour leurs slides sur le flux de donnée
