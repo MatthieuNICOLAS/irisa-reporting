@@ -92,12 +92,6 @@
   - En laissant penser que le noeud est équipé d'une horloge hardware
 - Et elles se révèlent inutiles en l'état
 - Proposer leur suppression (MR)
-*** TODO SmartSense: Mise en place d'un processus de CI
-- Mettre en place des tests, c'était un bon début
-- Mettre en place un processus de CI, ça serait mieux
-  - Garantirait la reproductibilité de l'environnement de tests
-  - Et que j'oublie pas de les faire tourner avant l'intégration
-- Voir comment GitLab gère ça
 ** Semaine du <2024-06-17 Mon> au <2024-06-21 Fri>
 *** Planned
 **** DONE AEI'24: Faire v2 de la présentation flash
@@ -146,12 +140,45 @@ CLOSED: [2024-06-18 Tue 16:22]
   - Permet de centraliser le process
 - Ou repasser par le broker carrément ?
   - À ce moment là, est-ce qu'on prend un broker avec persistence des messages ?
+**** IN-PROGRESS SmartSense: Mise en place d'un processus de CI
+- Mettre en place des tests, c'était un bon début
+- Mettre en place un processus de CI, ça serait mieux
+  - Garantirait la reproductibilité de l'environnement de tests
+  - Et que j'oublie pas de les faire tourner avant l'intégration
+- Voir comment GitLab gère ça
 **** TODO Kubernetes: Identifier et mettre en place un process de développement
 - Développer pour Kubernetes implique un certain nombre d'étapes
   - Dockerisation de l'application
   - Récupération de l'image Docker par k8s
   - MàJ des pods concernés
 - Clarifier la méthode à adopter pour fluidifier ces étapes
+**** IN-PROGRESS SmartSense: Rédiger un fichier de config Ansible pour le noeud SmartSense
+- Maintenant que j'ai pu déployer un noeud SmartSense et identifier les différentes étapes nécessaires
+- Serait utile de
+  - Documenter le processus
+  - L'automatiser
+- Ansible est semblerait l'outil adapté pour cela
+- Automatiser le déploiement d'un noeud SmartSense en utilisant Ansible
+**** IN-PROGRESS LivingFog: Décomposer le playbook en rôles
+- Guillermo m'a suggéré de regrouper l'ensemble des tâches de mon playbook en différents rôles
+  - Requirements
+  - Docker
+  - Kubernetes
+  - CNI
+- De plus, Khaled m'a expliqué avoir défini une version *add* et une version *remove* de chacun de ses rôles
+- Me paraît une feature intéressante à mettre en place
+- Préparer le terrain
+**** TODO SmartSense: Lire *Practical evaluation of Wi-Fi HaLow performance*
+- Article de Sébastien Maudet de 2023
+- Dispo ici : https://www.sciencedirect.com/science/article/pii/S2542660523002809
+- Permettra p-e d'avoir une meilleure vision de l'état actuelle de la technologie
+**** TODO Docker: Déterminer comment générer une image Docker pour x86 et ARM
+- Pour le moment, l'idée est de faire générer les images Docker des applis que je dev par gitlab
+  - SmartSense Node App
+  - Distant Simple Anomaly Detector
+- De façon à pouvoir ensuite les déployer dans des settings de test (staging) et en prod
+- Faudrait à ce moment là une image Docker par archi
+- Voir comment mettre en place cela
 **** IN-PROGRESS SmartSense: Rédiger un fichier de config Ansible pour le noeud SmartSense
 - Maintenant que j'ai pu déployer un noeud SmartSense et identifier les différentes étapes nécessaires
 - Serait utile de
@@ -279,6 +306,21 @@ spec:
       - Génère valeur entre -50 et 150
       - Génère payload correspondant
       - Envoi message au broker
+- SmartSense: Mise en place d'un processus de CI
+  - [X] Packager application
+    - [X] Adopter structure avec code dans répertoire dédié
+    - [X] Déplacer le code de lancement de l'application dans le fichier __main__.py
+  - [X] Définition d'une tâche unit-test
+    - [X] Marquer les tests correspondants comme des tests unitaires
+  - [ ] Définition de service influxdb et mqtt
+    - [ ] Définir les services dans .gitlab-ci.yml
+    - [ ] Modifier les tests pour paramétriser les URLs d'InfluxDB et Mosquitto
+      - À l'heure actuelle, la connexion InfluxDB est codée en dur
+        - localhost:1883
+      - Devrait pouvoir fournir un autre hostname/port à l'application via le fichier de config
+  - [X] Définition d'une tâche integration-test
+    - [X] Marquer les tests correspondants comme des tests d'intégration
+      - Séparer entre influxdb et mqtt ?
 ** Semaine du <2024-06-10 Mon> au <2024-06-14 Fri>
 *** Planned
 **** DONE SmartSense: Contacter Sarramia et Mezhoud pour leurs slides sur le flux de donnée
