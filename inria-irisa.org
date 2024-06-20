@@ -140,7 +140,8 @@ CLOSED: [2024-06-18 Tue 16:22]
   - Permet de centraliser le process
 - Ou repasser par le broker carrément ?
   - À ce moment là, est-ce qu'on prend un broker avec persistence des messages ?
-**** IN-PROGRESS SmartSense: Mise en place d'un processus de CI
+**** DONE SmartSense: Mise en place d'un processus de CI
+CLOSED: [2024-06-20 Thu 16:53]
 - Mettre en place des tests, c'était un bon début
 - Mettre en place un processus de CI, ça serait mieux
   - Garantirait la reproductibilité de l'environnement de tests
@@ -312,12 +313,41 @@ spec:
     - [X] Déplacer le code de lancement de l'application dans le fichier __main__.py
   - [X] Définition d'une tâche unit-test
     - [X] Marquer les tests correspondants comme des tests unitaires
-  - [ ] Définition de service influxdb et mqtt
-    - [ ] Définir les services dans .gitlab-ci.yml
-    - [ ] Modifier les tests pour paramétriser les URLs d'InfluxDB et Mosquitto
+  - [X] Définition de service influxdb et mqtt
+    - [X] Modifier les tests pour paramétriser les URLs d'InfluxDB et Mosquitto
       - À l'heure actuelle, la connexion InfluxDB est codée en dur
         - localhost:1883
       - Devrait pouvoir fournir un autre hostname/port à l'application via le fichier de config
+      - A défini plusieurs fichiers de config
+        - Un par environnement
+        - Avec celui de dev par défaut
+      - Et a modifié le code pour spécifier via une variable d'env lequel utiliser
+        - Permet ainsi d'override la configuration initiale
+        - Par exemple pour utiliser celui pour l'env gitlab-ci
+    - [X] Définir les services dans .gitlab-ci.yml
+    - Rencontre cependant des difficultés pour le service mosquitto
+      - mosquitto ne se configure que via un fichier de conf
+      - Sauf que gitlab ne permet pas de passer un volume pour les volumes
+      - A lu à propos de workaround en utilisant un service basé sur docker
+        - Idée est de démarrer un conteneur capable d'exécuter docker comme service
+        - Et de démarrer mosquitto sur ce dernier, de manière identique à comme je travaille en local
+      - Sauf que rencontre une erreur pour l'exécution de la commande
+      - Nécessite en effet d'évaluer une variable d'env ou commande pour obtenir le volume
+      - Par défaut, CMD d'un conteneur docker n'effectue aucune évaluation
+      - A tenté de modifier la CMD pour invoquer un shell
+        - Préfixer CMD avec sh -c
+        - Mais erreur de format, nécessite de regrouper reste de la CMD dans un seul "<cmd>"
+      - A tenté de remplacer sh -c par exec
+        - Serait plus indiqué de ce que je lisais
+      - Mais me retrouve en fait avec une commande "docker exec docker run..."
+      - Prend exec comme option de docker, non comme commande itself
+        - Et prend alors le second "docker" comme le nom d'un conteneur
+      - Finalement, pars sur l'utilisation d'une image tier permettant de configurer mosquitto via variables d'environnement
+        - https://github.com/efrecon/docker-mosquitto
+      - Permet de mettre en place correctement le service
+    - J'avais aussi des endroits des tests où je n'utilisais pas la config mais des valeurs en dur
+      - Correction du code
+    - Fonctionne enfin
   - [X] Définition d'une tâche integration-test
     - [X] Marquer les tests correspondants comme des tests d'intégration
       - Séparer entre influxdb et mqtt ?
