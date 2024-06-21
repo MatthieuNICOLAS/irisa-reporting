@@ -147,32 +147,21 @@ CLOSED: [2024-06-20 Thu 16:53]
   - Garantirait la reproductibilité de l'environnement de tests
   - Et que j'oublie pas de les faire tourner avant l'intégration
 - Voir comment GitLab gère ça
+**** IN-PROGRESS CI/CD: Déterminer les bonnes pratiques sur la release de package/image Docker au cours du dev
+- J'arrive au stade où j'aimerais mettre à release de manière automatique des nouvelles versions des applications
+- Que ça soit sous la forme d'image Docker pour distant-simple-anomaly-detector
+- Et sous une forme encore indéfinie de smartsense-node-app
+  - Soit package Python, soit image Docker aussi
+- Mais quand générer ces releases ?
+  - À chaque commit ? Seulement en cas de tags ?
+- Et comment nommer ces releases ?
+  - commit sha ? tag ? nom de la branche ?
 **** TODO Kubernetes: Identifier et mettre en place un process de développement
 - Développer pour Kubernetes implique un certain nombre d'étapes
   - Dockerisation de l'application
   - Récupération de l'image Docker par k8s
   - MàJ des pods concernés
 - Clarifier la méthode à adopter pour fluidifier ces étapes
-**** IN-PROGRESS SmartSense: Rédiger un fichier de config Ansible pour le noeud SmartSense
-- Maintenant que j'ai pu déployer un noeud SmartSense et identifier les différentes étapes nécessaires
-- Serait utile de
-  - Documenter le processus
-  - L'automatiser
-- Ansible est semblerait l'outil adapté pour cela
-- Automatiser le déploiement d'un noeud SmartSense en utilisant Ansible
-**** IN-PROGRESS LivingFog: Décomposer le playbook en rôles
-- Guillermo m'a suggéré de regrouper l'ensemble des tâches de mon playbook en différents rôles
-  - Requirements
-  - Docker
-  - Kubernetes
-  - CNI
-- De plus, Khaled m'a expliqué avoir défini une version *add* et une version *remove* de chacun de ses rôles
-- Me paraît une feature intéressante à mettre en place
-- Préparer le terrain
-**** TODO SmartSense: Lire *Practical evaluation of Wi-Fi HaLow performance*
-- Article de Sébastien Maudet de 2023
-- Dispo ici : https://www.sciencedirect.com/science/article/pii/S2542660523002809
-- Permettra p-e d'avoir une meilleure vision de l'état actuelle de la technologie
 **** TODO Docker: Déterminer comment générer une image Docker pour x86 et ARM
 - Pour le moment, l'idée est de faire générer les images Docker des applis que je dev par gitlab
   - SmartSense Node App
@@ -351,6 +340,80 @@ spec:
   - [X] Définition d'une tâche integration-test
     - [X] Marquer les tests correspondants comme des tests d'intégration
       - Séparer entre influxdb et mqtt ?
+- CI/CD: Déterminer les bonnes pratiques sur la release de package/image Docker au cours du dev
+  - Pose la question de ce que je veux faire de ces images
+  - Si s'agit de versions déjà testées, peut les release manuellement avec des tags
+    - Correspond au cas de distant-simple-anomaly-detector
+    - Quoique
+    - Je peux effectivement build une image de mon application, la tester en local sur un cluster k8s, e.g. avec minikube
+    - Mais faudrait à un moment que j'utilise une image créée par le CI
+      - De façon à éviter les effets de bords
+    - Et que je teste cette image dans le cadre d'un cluster k8s propre
+      - Là aussi, pour garantir qu'on est capable de remettre sur pied le cluster k8s from scratch
+  - Marc m'a suggéré la mise en place d'une branche dev
+    - Permet de build des images automatiquement au fur et à mesure qu'on intègre les branches dedans
+    - Mais tout en les marquant comme en beta
+    - De tester ces images manuellement
+    - Et d'intégrer ensuite dans main si aucun problème détecté
+  - Est-ce qu'on peut utiliser minikube dans un conteneur/CI ?
+    - Me permettrait de setup de manière pas trop coûteuse mon cluster k8s
+    - Et de tester dessus la configuration existante en utilisant la nouvelle image
+  - Tombé sur cet article qui invite à think twice avant d'utiliser DinD (Docker in Docker)
+    - https://jpetazzo.github.io/2015/09/03/do-not-use-docker-in-docker-for-ci/
+    - Un use-case valide évoqué est celui de vouloir déployer une staging Kubernetes app
+  - Revenons au sujet initial
+  - Qu'est-ce que je veux faire ?
+    - [X] Release des versions validées des applications
+      - Pour déploiement
+      - Peut faire ça au moment où on intègre les changements dans main
+      - Correspond à une release
+      - Peut alors utiliser une branche dédiée depuis dev pour ça
+      - Dans laquelle on effectue les changements pour la release
+      - Notamment fixer le nouveau numéro de version
+        - Comment faire cela ?
+        - Manuellement ou automatiquement ?
+        - Peut partir sur un outil en local qui édite pyproject.toml et créé le tag en fonction de ce que je lui donne
+      - Au push/à la fusion, génère image/paquet projet:version
+        - Quelle condition ?
+        - tag a l'air d'être un numéro de version
+        - Mais une condition par rapport à la branche ?
+        - Est-ce que ça a du sens ?
+    - [ ] Release des versions intermédiaires des applications
+      - Pour staging/validation avant intégration dans main
+      - Peut faire ça au moment où on intègre les changements dans dev
+      - Pareil, comment fixer le tag de cette version ?
+      - Pas vraiment des rcs, puisque ça peut être des versions intermédiaires d'ici la prochaine release visée
+      - Quel formalisme/terme correspondrait mieux ?
+- Réunion non-permanents du <2024-06-21 Fri>
+  - A atteint une 1ère version de l'application de détection d'anomalie
+    - Cluster k8s qui fait tourner un message broker et le détecteur d'anomalie
+    - Message broker est exposé
+    - Script poste des messages en boucle
+    - En cas d'anomalie, le détecteur poste lui-même un message dans le broker pour traitement
+  - Me suis penché la partie CI/CD pour le détecteur
+    - Exécuter automatiquement les tests
+    - Release automatiquement une image Docker
+  - A profité de ces nouvelles connaissances pour mettre en place quelque chose de similaire du côté SmartSense
+    - A refactor l'application pour qu'elle puisse être build/installée facilement
+    - A mis en place une distinction entre tests unitaires et d'intégration
+    - A galéré à mettre en place le bon env pour les tests d'intégration
+      - Interagissent avec une instance d'InfluxDB et de Mosquitto
+      - GitLab propose la feature de services pour gérer ce cas de figure, permettant de démarrer et de se connecter à des conteneurs
+      - Mais Mosquitto nécessite de lui fournir une configuration via un fichier
+      - Et GitLab ne gère pas les volumes pour les services
+      - A exploré une solution à base de Docker in Docker (DinD), sans succès
+      - Me suis rabattu sur une image tierce de Mosquitto, permettant de configurer le broker via des variables d'environnements
+  - Prochaines pistes de travail
+    - Construire image Docker pour ARM
+    - Étudier l'utilisation de GPIO et I2C depuis un conteneur
+    - Modifier playbook Ansible pour SmartSense pour utiliser Docker/docker-compose pour gérer les applications
+    - Étudier le déployement d'un cluster k8s dans un conteneur
+      - Idée est que je développe des applications, que je conteneurise
+      - Que je rédige des configurations pour k8s
+      - Voudrais tester les deux ensemble
+      - Déployer un staging environment, appliquer mes configurations k8s, et voir si ça prend feu
+      - Le top serait d'automatiquement déployer la configuration mise à jour lors de la release d'une nouvelle image d'un des composants
+      - Et de créer la MR en cas de succès
 ** Semaine du <2024-06-10 Mon> au <2024-06-14 Fri>
 *** Planned
 **** DONE SmartSense: Contacter Sarramia et Mezhoud pour leurs slides sur le flux de donnée
