@@ -92,6 +92,67 @@
   - En laissant penser que le noeud est équipé d'une horloge hardware
 - Et elles se révèlent inutiles en l'état
 - Proposer leur suppression (MR)
+** Semaine du <2024-06-24 Mon> au <2024-06-28 Fri>
+*** Planned
+**** IN-PROGRESS Docker: Déterminer comment générer une image Docker pour x86 et ARM
+- Pour le moment, l'idée est de faire générer les images Docker des applis que je dev par gitlab
+  - SmartSense Node App
+  - Distant Simple Anomaly Detector
+- De façon à pouvoir ensuite les déployer dans des settings de test (staging) et en prod
+- Faudrait à ce moment là une image Docker par archi
+- Voir comment mettre en place cela
+**** TODO SmartSense: Rédiger un docker-compose pour le noeud SmartSense
+- Finalement, si on utilise Docker pour lancer les différents composants du système SmartSense
+- Bonne partie de la config se déplace dans un docker-compose
+- Rédiger config
+**** IN-PROGRESS Kubernetes: Étudier la possibilité d'utiliser Kubernetes dans un conteneur
+- Le but serait de déployer un cluster k8s dans le cadre d'un job de CI
+- Est-ce qu'on peut utiliser minikube/kind depuis un conteneur ?
+**** TODO Kubernetes: Identifier et mettre en place un process de développement
+- Développer pour Kubernetes implique un certain nombre d'étapes
+  - Dockerisation de l'application
+  - Récupération de l'image Docker par k8s
+  - MàJ des pods concernés
+- Clarifier la méthode à adopter pour fluidifier ces étapes
+**** IN-PROGRESS SmartSense: Rédiger un fichier de config Ansible pour le noeud SmartSense
+- Maintenant que j'ai pu déployer un noeud SmartSense et identifier les différentes étapes nécessaires
+- Serait utile de
+  - Documenter le processus
+  - L'automatiser
+- Ansible est semblerait l'outil adapté pour cela
+- Automatiser le déploiement d'un noeud SmartSense en utilisant Ansible
+**** IN-PROGRESS LivingFog: Décomposer le playbook en rôles
+- Guillermo m'a suggéré de regrouper l'ensemble des tâches de mon playbook en différents rôles
+  - Requirements
+  - Docker
+  - Kubernetes
+  - CNI
+- De plus, Khaled m'a expliqué avoir défini une version *add* et une version *remove* de chacun de ses rôles
+- Me paraît une feature intéressante à mettre en place
+- Préparer le terrain
+**** TODO SmartSense: Lire *Practical evaluation of Wi-Fi HaLow performance*
+- Article de Sébastien Maudet de 2023
+- Dispo ici : https://www.sciencedirect.com/science/article/pii/S2542660523002809
+- Permettra p-e d'avoir une meilleure vision de l'état actuelle de la technologie
+*** Done
+- Réunion Guillaume du <2024-06-24 Mon>
+  - A atteint une v1 dans le projet Distant
+    - Message broker géré par k8s, exposé à l'extérieur via un service
+    - Script externe s'y connecte et génère des messages en continu
+    - Application gérée par k8s qui s'y connecte, récupère et traite les messages
+      - Récupère valeur de T° et poste un message dans un topic si valeur en dehors d'une range
+    - Protocole de communication utilisé dans l'observatoire : SDI-12 (Serial Digital Interface at 1200 baud)
+  - Me suis penché sur Gitlab CI dans le cadre de cette application
+    - Pour mettre en place build automatique du package/de l'image Docker
+    - Et de les mettre à disposition sur les registries du projet Gitlab
+  - A profité de ces nouvelles connaissances pour faire de même au niveau de SmartSense
+    - Quelques difficultés au niveau des tests d'intégration avec Mosquitto
+  - Interrogations
+    - Comment mettre en place et tester automatiquement une configuration Kubernetes ?
+      - Teste en local, mais prone à des effets de bords et autres erreurs
+      - A dabble pour lancer minikube/kind dans un conteneur, sans succès
+    - Comment build une image pour ARM depuis Gitlab ?
+  - Participation à AEI'2024 cette semaine
 ** Semaine du <2024-06-17 Mon> au <2024-06-21 Fri>
 *** Planned
 **** DONE AEI'24: Faire v2 de la présentation flash
