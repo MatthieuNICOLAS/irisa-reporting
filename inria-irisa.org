@@ -94,7 +94,8 @@
 - Proposer leur suppression (MR)
 ** Semaine du <2024-06-24 Mon> au <2024-06-28 Fri>
 *** Planned
-**** IN-PROGRESS Docker: Déterminer comment générer une image Docker pour x86 et ARM
+**** DONE Docker: Déterminer comment générer une image Docker pour x86 et ARM
+CLOSED: [2024-06-25 Tue 10:15]
 - Pour le moment, l'idée est de faire générer les images Docker des applis que je dev par gitlab
   - SmartSense Node App
   - Distant Simple Anomaly Detector
@@ -151,8 +152,91 @@
     - Comment mettre en place et tester automatiquement une configuration Kubernetes ?
       - Teste en local, mais prone à des effets de bords et autres erreurs
       - A dabble pour lancer minikube/kind dans un conteneur, sans succès
+    - Comment bien gérer les tags/versions d'une application ?
     - Comment build une image pour ARM depuis Gitlab ?
-  - Participation à AEI'2024 cette semaine
+  - Participation à AEI'2024 cette semaineThe speed and performance of the new Raspberry Pi 4 is a step up from earlier models. For the first time, we've built a complete desktop experience. Whether you're editing documents, browsing the web with a bunch of tabs open, juggling spreadsheets or drafting a presentation, you'll find the experience smooth and very recognisable — but on a smaller, more energy-efficient and much more cost-effective machine.
+  - Notes
+    - On a du budget à dépenser cette année
+    - Voir pour le matériel pour le projet distant
+      - Besoin de capteurs
+        - Voir si on peut se brancher sur les capteurs qu'ils ont déployé dans la rivière
+      - Besoin du cluster fog
+        - Partir sur 2-3 RPi 4
+        - Réfléchir à la partie boitier/étanchéité pour le noeud Fog
+        - Alimentation
+    - Voir pour itérer de mon côté avec Christof
+      - Comment se greffer à leur système
+- Docker: Déterminer comment générer une image Docker pour x86 et ARM64
+  - Sur ma machine, peut générer image pour arm64 avec la commande suivante
+    - docker build --platform linux/arm64 -t smartsense-node-app .
+  - Mais est-ce que ça repose sur des dépendances que j'ai déjà ?
+  - Rencontre une erreur lors du build de l'image cross platform dans une VM où j'ai juste installé docker
+  - Rencontre toujours l'erreur après avoir installé QEMU
+  - Pense avoir trouvé la raison
+  - La commande `docker build` repose sur un builder pour générer l'image
+  - Peut consulter les builders disponibles avec la commande `docker buildx ls`
+  - Dans le cas de ma machine, obtient le résultat suivant
+    #+BEGIN_PLAIN
+NAME/NODE     DRIVER/ENDPOINT   STATUS    BUILDKIT   PLATFORMS
+default*      docker
+ \_ default    \_ default       running   v0.13.2    linux/amd64, linux/amd64/v2, linux/amd64/v3, linux/arm64, linux/riscv64, linux/ppc64, linux/ppc64le, linux/s390x, linux/386, linux/mips64le, linux/mips64, linux/loong64, linux/arm/v7, linux/arm/v6
+    #+END_PLAIN
+  - Dans le cas de la VM
+    #+BEGIN_PLAIN
+NAME/NODE     DRIVER/ENDPOINT   STATUS    BUILDKIT   PLATFORMS
+default*      docker
+ \_ default    \_ default       running   v0.13.2    linux/amd64, linux/amd64/v2, linux/386
+    #+END_PLAIN
+  - Tombe en marche en ajoutant un nouveau builder
+    - docker buildx create --use --name mybuild --platform linux/amd64,linux/arm64
+    - docker buildx build --platform=linux/arm64 -t smartsense-node-app:arm .
+  - A lancé un job sur gitlab-ci pour voir la config proposée par défaut
+    - docker 'buildx' is not a docker command
+  - Ça s'annonce plus lourd que prévu
+  - J'ai vu avec Khaled, il a pas fait ça récemment
+    - Avait mis en place un process similaire, mais qui tournait sur un runner dédié
+    - Et c'était pas dans le gitlab Inria
+  - Suis tombé sur une page présentant l'outil kaniko
+    - https://docs.gitlab.com/ee/ci/docker/using_kaniko.html
+  - Arrive, moyennement quelques détails, à générer une image avec la commande suivante
+    - /kaniko/executor --custom-platform linux/arm --context . --dockerfile Dockerfile-dev --no-push
+  - Le détail principal étant que la commande permettant de monter le repo dans le contexte de build n'est pas supportée par kaniko
+    - RUN --mount=type=bind,source=.,target=/tmp/app/ pip install -U /tmp/app
+  - Et produit donc l'erreur suivante
+    - ERROR: Invalid requirement: '/tmp/app'
+  - Peut contourner le problème soit en montant les ressources directement au bon emplacement
+    - docker run -v .:/tmp/app --rm -it --entrypoint="" gcr.io/kaniko-project/executor:v1.14.0-debug sh
+    - /kaniko/executor --custom-platform linux/arm --context /tmp/app --dockerfile /tmp/app/Dockerfile-dev --no-push
+  - Soit en modifiant le Dockerfile pour utiliser le contenu du répertoire workspace/ pour installer l'application
+    - docker run -v .:/workspace --rm -it --entrypoint="" gcr.io/kaniko-project/executor:v1.14.0-debug sh
+    - /kaniko/executor --custom-platform linux/arm --context . --dockerfile Dockerfile-dev --no-push
+  - Semble en effet utiliser le filesystem de la machine directement pour build l'image
+  - Mais les tutos que je trouve ont l'air de dater de 2-3 ans
+  - A retenté un peu avec docker:dind
+    - En utilisant docker:dind au lieu de docker:stable, a accès à docker buildx
+    - Sur une VM, a pu build une image Docker pour arch arm64 en
+      - Installant docker
+      - Créant un builder pour arm64
+      - Buildant l'image avec ce dernier
+  - A mis en place le job correspondant sur gitlab CI
+  - L'image que j'obtiens semble invalide
+    - L'interface m'indique "invalid tag: missing manifest digest"
+    - Et que l'image fait 0B
+    - Tente de la pull depuis le picocluster
+  - Mais semble fonctionnelle lorsque je le pull sur le picocluster
+    - ~77Mo, créée il y a ~18h
+  - Démarre et se correctement au broker MQTT lorsque lance manuellement l'appli
+    - docker run --env LOGGING_LEVEL=DEBUG --env MQTT_HOST=192.168.1.10 --env MQTT_PORT=31883 --rm registry.gitlab.inria.fr/mnicolas/distant-simple-anomaly-detector:arm-95b7a60c
+  - Donc un problème au niveau du registry plutôt que de l'image itself
+  - Tombé sur des issues mentionnant ce problème
+    - https://gitlab.com/gitlab-org/gitlab/-/issues/393202
+    - https://gitlab.com/gitlab-org/gitlab/-/issues/388865#workaround
+  - Semble être lié à l'utilisation de buildx
+  - Mise en place du workaround
+  - Fixe bien l'état du registre
+  - Vois dans l'exemple donné qu'on peut build une même image pour plusieurs arch à la fois
+    - Et avoir un tag unique
+  - Modification du job pour procéder de la sorte
 ** Semaine du <2024-06-17 Mon> au <2024-06-21 Fri>
 *** Planned
 **** DONE AEI'24: Faire v2 de la présentation flash
