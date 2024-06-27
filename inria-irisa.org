@@ -102,6 +102,8 @@ CLOSED: [2024-06-25 Tue 10:15]
 - De façon à pouvoir ensuite les déployer dans des settings de test (staging) et en prod
 - Faudrait à ce moment là une image Docker par archi
 - Voir comment mettre en place cela
+**** DONE SmartSense: Rédiger Dockerfile pour l'app SmartSense
+CLOSED: [2024-06-25 Tue 11:34]
 **** TODO SmartSense: Rédiger un docker-compose pour le noeud SmartSense
 - Finalement, si on utilise Docker pour lancer les différents composants du système SmartSense
 - Bonne partie de la config se déplace dans un docker-compose
@@ -237,6 +239,63 @@ default*      docker
   - Vois dans l'exemple donné qu'on peut build une même image pour plusieurs arch à la fois
     - Et avoir un tag unique
   - Modification du job pour procéder de la sorte
+- SmartSense: Rédiger un Dockerfile pour l'app SmartSense
+  - Part sur python:3.11-alpine
+  - Principale question porte sur les dépendances requises par les dépendances pyton de l'appli
+    - "gcc not found" -> gcc
+    - "<stdlib.h>: No such file" -> musl-dev
+    - "<linux/spi/spidev.h>: No such file" -> linux-headers
+  - Obtiens une image
+- SmartSense: Rédiger un docker-compose pour le noeud SmartSense
+- AEI'2024
+  - WISENET, Guillaume Bourger
+    - Déjà vu dans le cadre du webinaire y a quelques semaines
+    - A des liens de ~50km, mais avec LoS et aucune interférence
+    - Explore la possibilité d'utiliser la feature de relais LoraWAN
+    - Mais se pose la question de la compatibilité du matériel
+      - Est-ce que simple MàJ du firmware suffit ?
+      - Est-ce que les constructeurs vont release cette MàJ ?
+    - D'après lui, gateway Lora consomme même ordre de grandeur qu'une RPi
+    - Pose la question d'une gateway intelligente
+  - Métrologie des températures : le cas de la mesure sans contact
+    - L'unité thermodynamique de température
+      - Utilise le Kelvin
+        - Woot, pas le C ?
+      - Depuis 2018, liée à la constante de Boltzmann
+    - Delta entre échelle de témpérature (C) vs température thermodynamique (K)
+    - Plusieurs refontes des échelles de température pour corriger cela
+      - 1968, 1990
+    - Pour hautes températures, utilise généralement Couais, les documents sur le noeud extérieur étant d'eux
+    - Pour basses températures, utilise généralement K
+    - Température thermodynamique trop compliquée à mettre en place pour tous les jours, tous les cas d'usages
+    - Pour ça qu'on passe sur des échelles de température
+      - Avec des interpolations, des points fixes
+    - À partir de hautes températures (1000C), utilise le rayonnement thermique pour mesurer la température
+      - Longueur d'onde indique la température
+    - Mais émissivité de la cible perturbe la valeur observée
+    - Émissivité dépend en plus en de la longueur d'onde
+    - Besoin de connaitre les spécificités de la cible pour effectuer les mesures
+  - Quand a mentionné l'application de détection de chants d'oiseaux, on m'a recommandé de check les travaux de Vincent Lostanlen
+    - https://www.lostanlen.com/
+    - A communiqué le nom à Mickaël
+    - S'avère qu'ils sont déjà en collab
+  - Julien Moureau a expliqué expérimenter avec la communication de capteur à capteur
+    - De façon à mettre en place de la réaction à des évènements
+    - "Redescend" au niveau de LoRa pour ça
+      - Et non plus LoRaWAN
+    - Pose des questions du PoV duty-cycle, interférences
+- Démo AEI'2024
+  - Commandes utiles
+    - Se co au noeud
+      - ssh pi@192.168.1.2
+    - MàJ l'horloge
+      - sudo timedatectl set-time '2024-06-27 13:36:00'
+    - Lister les measurements en BDD
+      - SHOW MEASUREMENTS
+    - Observer les valeurs en BDD
+      - SELECT * FROM <measurement> ORDER BY time DESC LIMIT 10
+    - Suivre les logs de l'application
+      - journalctl -f -u mainApp
 ** Semaine du <2024-06-17 Mon> au <2024-06-21 Fri>
 *** Planned
 **** DONE AEI'24: Faire v2 de la présentation flash
