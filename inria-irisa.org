@@ -104,13 +104,14 @@ CLOSED: [2024-06-25 Tue 10:15]
 - Voir comment mettre en place cela
 **** DONE SmartSense: Rédiger Dockerfile pour l'app SmartSense
 CLOSED: [2024-06-25 Tue 11:34]
+**** DONE Kubernetes: Étudier la possibilité d'utiliser Kubernetes dans un conteneur
+CLOSED: [2024-06-28 Fri 16:30]
+- Le but serait de déployer un cluster k8s dans le cadre d'un job de CI
+- Est-ce qu'on peut utiliser minikube/kind depuis un conteneur ?
 **** TODO SmartSense: Rédiger un docker-compose pour le noeud SmartSense
 - Finalement, si on utilise Docker pour lancer les différents composants du système SmartSense
 - Bonne partie de la config se déplace dans un docker-compose
 - Rédiger config
-**** IN-PROGRESS Kubernetes: Étudier la possibilité d'utiliser Kubernetes dans un conteneur
-- Le but serait de déployer un cluster k8s dans le cadre d'un job de CI
-- Est-ce qu'on peut utiliser minikube/kind depuis un conteneur ?
 **** TODO Kubernetes: Identifier et mettre en place un process de développement
 - Développer pour Kubernetes implique un certain nombre d'étapes
   - Dockerisation de l'application
@@ -156,7 +157,7 @@ CLOSED: [2024-06-25 Tue 11:34]
       - A dabble pour lancer minikube/kind dans un conteneur, sans succès
     - Comment bien gérer les tags/versions d'une application ?
     - Comment build une image pour ARM depuis Gitlab ?
-  - Participation à AEI'2024 cette semaineThe speed and performance of the new Raspberry Pi 4 is a step up from earlier models. For the first time, we've built a complete desktop experience. Whether you're editing documents, browsing the web with a bunch of tabs open, juggling spreadsheets or drafting a presentation, you'll find the experience smooth and very recognisable — but on a smaller, more energy-efficient and much more cost-effective machine.
+  - Participation à AEI'2024 cette semaine
   - Notes
     - On a du budget à dépenser cette année
     - Voir pour le matériel pour le projet distant
@@ -247,6 +248,7 @@ default*      docker
     - "<linux/spi/spidev.h>: No such file" -> linux-headers
   - Obtiens une image
 - SmartSense: Rédiger un docker-compose pour le noeud SmartSense
+  - [ ] SmartSense
 - AEI'2024
   - WISENET, Guillaume Bourger
     - Déjà vu dans le cadre du webinaire y a quelques semaines
@@ -296,6 +298,94 @@ default*      docker
       - SELECT * FROM <measurement> ORDER BY time DESC LIMIT 10
     - Suivre les logs de l'application
       - journalctl -f -u mainApp
+- Kubernetes: Étudier la possibilité d'utiliser Kubernetes dans un conteneur
+  - Problème semble provenir du fait que l'image docker:dind est basée sur alpine
+  - Minikube repose sur glibc, qui n'est pas installée par défaut
+    - https://github.com/kubernetes/minikube/issues/16228
+  - A tenté de compiler les binaries moi-même
+    #+BEGIN_PLAIN
+### On the host machine
+
+```sh
+docker run --privileged --name mind -d -v /var/run/docker.sock:/var/run/docker.sock docker:dind-rootless
+docker exec -it --user root mind sh
+```
+
+### Inside the container
+
+```sh
+apk update && apk add go make curl
+```
+
+### On the host machine
+
+```sh
+docker exec -it mind sh
+```
+
+### Inside the container
+
+```sh
+cd
+
+git clone --depth=1 https://github.com/kubernetes/minikube.git
+cd minikube
+
+make
+
+./out/minikube start --driver=docker
+```
+    #+END_PLAIN
+  - Mais problème de droit vis-à-vis de Docker
+  - Peut pas lancer minikube avec le driver docker en étant root (image docker:dind)
+    - Ou du moins, fortement déconseillée
+    - Vu que je partage le service Docker entre ma machine hôte et le conteneur, suis plutôt de cet avis
+  - Mais docker:dind-rootless n'a pas l'air de fonctionner off the shelf
+    #+BEGIN_PLAIN
+docker run hello-world
+docker: permission denied while trying to connect to the Docker daemon socket at unix:///var/run/docker.sock: Head "http://%2Fvar%2Frun%2Fdocker.sock/_ping": dial unix /var/run/docker.sock: connect: permission denied.
+See 'docker run --help'.
+    #+END_PLAIN
+  - Ne fonctionne pas en ajoutant l'user rootless au group docker
+  - Est-ce que je dois lui passer le gid du groupe docker de la machine hôte ?
+  - Oui
+  - Commande qui fonctionne
+    - docker run --user rootless:$(getent group | grep docker | cut -d: -f3) --rm -v /var/run/docker.sock:/var/run/docker.sock -it docker:dind-rootless sh
+  - Commande pour démarrer minikube au sein du conteneur reste en pending
+    - Un problème doit survenir et fail silencieusement
+  - Ça me parait pas très viable comme approche pour de la CI
+    - Entre les passages de root à rootless
+    - Et la compilation de minikube
+  - Dernières tentatives en suivant les infos du thread suivant
+    - https://gist.github.com/trondhindenes/0307fbe9cda1164115353b4632a31ea9
+  - Tombe en marche
+    #+BEGIN_PLAIN
+apk update && apk add go curl
+go install sigs.k8s.io/kind@v0.23.0
+
+export PATH=$PATH:$(go env GOPATH)/bin
+
+curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+mv kubectl /usr/bin/kubectl
+chmod +x /usr/bin/kubectl
+
+cat > kind-config.yml << EOF
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+networking:
+  apiServerAddress: "0.0.0.0"
+EOF
+
+kind create cluster --config kind-config.yml --wait 120s
+
+REAL_IP=$(ip route|awk '/default/ { print $3 }')
+sed -i -e "s/0.0.0.0/$REAL_IP/g" $HOME/.kube/config
+
+kubectl get nodes --insecure-skip-tls-verify=true
+    #+END_PLAIN
+  - Mais y a une erreur de certificat qui persiste et qui nécessite d'ajouter l'option --insecure-skip-tls-verify=true à chaque commande
+  - Discussion lors de la réunion des non-permanents va plutôt dans le sens d'utiliser une VM/un noeud dédié plutôt que des conteneurs
+    - Mentionnaient la possibilité d'obtenir une VM auprès de la DSI du labo ou de l'ISTIC
 ** Semaine du <2024-06-17 Mon> au <2024-06-21 Fri>
 *** Planned
 **** DONE AEI'24: Faire v2 de la présentation flash
