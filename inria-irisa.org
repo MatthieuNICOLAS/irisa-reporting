@@ -92,6 +92,155 @@
   - En laissant penser que le noeud est équipé d'une horloge hardware
 - Et elles se révèlent inutiles en l'état
 - Proposer leur suppression (MR)
+** Semaine du <2024-07-01 Mon> au <2024-07-05 Fri>
+*** Planned
+**** IN-PROGRESS SmartSense: Rédiger un docker-compose pour le noeud SmartSense
+- Finalement, si on utilise Docker pour lancer les différents composants du système SmartSense
+- Bonne partie de la config se déplace dans un docker-compose
+- Rédiger config
+**** TODO Kubernetes: Identifier et mettre en place un process de développement
+- Développer pour Kubernetes implique un certain nombre d'étapes
+  - Dockerisation de l'application
+  - Récupération de l'image Docker par k8s
+  - MàJ des pods concernés
+- Clarifier la méthode à adopter pour fluidifier ces étapes
+**** IN-PROGRESS SmartSense: Rédiger un fichier de config Ansible pour le noeud SmartSense
+- Maintenant que j'ai pu déployer un noeud SmartSense et identifier les différentes étapes nécessaires
+- Serait utile de
+  - Documenter le processus
+  - L'automatiser
+- Ansible est semblerait l'outil adapté pour cela
+- Automatiser le déploiement d'un noeud SmartSense en utilisant Ansible
+**** IN-PROGRESS LivingFog: Décomposer le playbook en rôles
+- Guillermo m'a suggéré de regrouper l'ensemble des tâches de mon playbook en différents rôles
+  - Requirements
+  - Docker
+  - Kubernetes
+  - CNI
+- De plus, Khaled m'a expliqué avoir défini une version *add* et une version *remove* de chacun de ses rôles
+- Me paraît une feature intéressante à mettre en place
+- Préparer le terrain
+**** TODO SmartSense: Lire *Practical evaluation of Wi-Fi HaLow performance*
+- Article de Sébastien Maudet de 2023
+- Dispo ici : https://www.sciencedirect.com/science/article/pii/S2542660523002809
+- Permettra p-e d'avoir une meilleure vision de l'état actuelle de la technologie
+*** Done
+- SmartSense: Rédiger un docker-compose pour le noeud SmartSense
+  - [X] influxdb
+    - Passe la config que j'ai récupéré du noeud SmartSense
+    - Pour interagir avec collectd, a besoin de passer le fichier /types.bd/
+      - Et d'ouvrir le port 25826/udp
+    - Par contre, peut pas préciser d'user pour influxDB
+  - [-] collectd
+    - A récupérer la config du noeud SmartSense
+      - Qui notamment interagit avec influxdb pour enregistrer les données
+    - Mais comment passer à une version conteneurisée ?
+    - Pas d'image Docker officielle de dispo
+    - Peut en faire une
+    - Mise en place d'un Dockerfile avec les plugins requis
+    - Le problème consiste à faire tourner correctement l'outil dans le conteneur
+    - Ne vois passer aucun message
+      - Modification du plugin de logging utilisé pour écrire sur STDOUT du conteneur
+    - Tutos que je trouve conseillent de monter /proc dans /mnt/proc
+      - Mais observe aucune donnée
+      - Quand je monte /proc dans /proc, génère une erreur au lancement du conteneur
+    - Pour le moment, va abandonner l'idée de dockeriser collectd
+  - [X] grafana
+    - Configuration actuelle du service
+      #+BEGIN_PLAIN
+sudo systemctl cat grafana-server.service
+# /lib/systemd/system/grafana-server.service
+[Unit]
+Description=Grafana instance
+Documentation=http://docs.grafana.org
+Wants=network-online.target
+After=network-online.target
+After=postgresql.service mariadb.service mysql.service
+
+[Service]
+# /lib/systemd/system/grafana-server.service
+[Unit]
+Description=Grafana instance
+Documentation=http://docs.grafana.org
+Wants=network-online.target
+After=network-online.target
+After=postgresql.service mariadb.service mysql.service
+
+[Service]
+# /lib/systemd/system/grafana-server.service
+[Unit]
+Description=Grafana instance
+Documentation=http://docs.grafana.org
+Wants=network-online.target
+After=network-online.target
+After=postgresql.service mariadb.service mysql.service
+
+[Service]
+EnvironmentFile=/etc/default/grafana-server
+User=grafana
+Group=grafana
+Type=simple
+Restart=on-failure
+WorkingDirectory=/usr/share/grafana
+RuntimeDirectory=grafana
+RuntimeDirectoryMode=0750
+ExecStart=/usr/sbin/grafana-server                                                  \
+                            --config=${CONF_FILE}                                   \
+                            --pidfile=${PID_FILE_DIR}/grafana-server.pid            \
+                            --packaging=deb                                         \
+                            cfg:default.paths.logs=${LOG_DIR}                       \
+                            cfg:default.paths.data=${DATA_DIR}                      \
+                            cfg:default.paths.plugins=${PLUGINS_DIR}                \
+                            cfg:default.paths.provisioning=${PROVISIONING_CFG_DIR}
+
+LimitNOFILE=10000
+TimeoutStopSec=20
+UMask=0027
+
+[Install]
+WantedBy=multi-user.target
+      #+END_PLAIN
+    - Comprend pas trop comment cela peut fonctionner
+    - On a pas de services postgresql, mariadb ou mysql
+    - L'user grafana n'a pas l'air d'avoir de variables d'env
+      - /sudo runuser -l grafana -c env/ ne renvoie rien
+    - Le dossier de grafana se trouve à /var/lib/grafana
+    - Y trouve un fichier grafana.db
+      - N'utilise pas donc un service tiers pour le stockage
+      - Mais d'où vient cette configuration ?
+    - Présence d'un répertoire plugins/, avec un plugin smartsenseaudio et un plugin smartsenseimg
+      - Ils sortent d'où eux ?
+      - Et est-ce qu'on a le code ?
+    - Ah oui, j'avais loupé ces repos
+      - https://gitlab.inria.fr/smartsense/3douest/grafana
+    - Config présente sur gitlab semble plutôt correspondre à la config pour la version centralisée
+    - Comment peut-on pré-configurer les users et les dashboards ?
+    - Tombé sur ce tuto
+      - https://cristianpb.github.io/blog/monitoring-grafana
+    - Associe collectd, influxdb et grafana dans un docker-compose
+    - Similaire à ce qu'on veut faire
+    - Présente comment on peut passer via la config des datasources et des dashboards preset
+    - Ne trouve aucune conf correspondante pour grafana
+      - find / -type f -name "*\.yml" ne montrent que les fichiers de config par défaut
+      - De même pour les autres extensions de fichiers : yaml, conf, ini
+    - Donc non, ça sera plus simple de repartir from scratch
+    - A trouvé une config, mais toutes les lignes sont commentées en fait
+    - Donc config par défaut
+    - Peut passer un utilisateur grafana à l'image Docker
+    - Page suivante détaille comment provisionner Grafana
+      - https://grafana.com/docs/grafana/latest/administration/provisioning/
+    - Passe donc un volume provisioning permettant de déclarer
+      - Les data sources /SensorData/ et /Collectd/
+      - Les dashboards /Sensor Data/ et /Hardware Monitoring/
+    - Peut passer un volume pour le répertoire /var/lib/grafana
+    - Est-ce utile/nécessaire ?
+      - Permet de sauvegarder le compte utilisateur mis en place
+      - Moins couteux à redémarrer ?
+    - Reste à voir comment
+      - Créer les comptes admin et utilisateur
+      - Installer les plugins spécifiques à SmartSense
+      - Mettre en place l'authentification au niveau des data sources
+  - [ ] dnsmasq
 ** Semaine du <2024-06-24 Mon> au <2024-06-28 Fri>
 *** Planned
 **** DONE Docker: Déterminer comment générer une image Docker pour x86 et ARM
