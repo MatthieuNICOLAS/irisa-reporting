@@ -236,11 +236,46 @@ WantedBy=multi-user.target
     - Est-ce utile/nécessaire ?
       - Permet de sauvegarder le compte utilisateur mis en place
       - Moins couteux à redémarrer ?
+      - Le compose pour overleaf inria n'a pas l'air d'en mettre un en place
+      - Faudra que j'aborde la question avec Matthieu
     - Reste à voir comment
       - Créer les comptes admin et utilisateur
       - Installer les plugins spécifiques à SmartSense
       - Mettre en place l'authentification au niveau des data sources
-  - [ ] dnsmasq
+  - Plutôt que d'utiliser des bind mounts pour gérer les volumes
+  - Utiliser des volumes ?
+    - Peut ensuite retrouver et accéder aux données via le système de fichier via la commande `docker volume inspect <nom volume>`
+  - [-] dnsmasq
+    - Quelques ressources utiles
+      - https://stackoverflow.com/questions/38816077/run-dnsmasq-as-dhcp-server-from-inside-a-docker-container
+      - https://computingforgeeks.com/run-and-use-dnsmasq-in-docker-container/
+    - Mais pas d'image Docker officielle
+    - Pas sûr que ça soit bon signe
+    - Peut ne pas le dockeriser pour le moment
+  - [ ] smartsense-node-app
+    - [ ] Comment gérer les logs de l'application ?
+      - i.e. utilise actuellement syslog
+      - Mais une fois l'application conteneurisée, ne peut plus consulter ses logs au fur et à mesure
+        - Docker récupérant/loggant ce que l'application émet sur STDOUT
+      - Possible de préciser à Docker où lire les logs ?
+      - Ne trouve pas d'option au niveau de Docker pour cela
+      - Me penche du côté de Python, de comment configurer le logger pour écrire aussi sur STDOUT
+    - [ ] Comment gérer l'interaction avec les capteurs ?
+      - I2C : https://stackoverflow.com/questions/40265984/i2c-inside-a-docker-container
+      - GPIO : https://stackoverflow.com/questions/30059784/docker-access-to-raspberry-pi-gpio-pins
+      - À tester et vérifier la config pour I2C
+        - Plus précisément, c'est quel numéro ?
+  - Par contre, pose la question de comment on organise tous les fichiers de config
+    - Entre le docker compose et les fichiers qu'il nécessite
+    - Et Ansible
+  - À moins qu'on considère que le compose et ses fichiers n'est qu'un élément du Ansible
+  - Et que c'est le playbook qui se charge de tout copier, potentiellement en settant les bonnes valeurs, sur le noeud SmartSense
+    - Mais je vais me retrouver avec un process en plusieurs étapes
+      1. Copie depuis la machine hôte du compose et des fichiers associés à partir de templates
+      2. Exécution du compose avec les fichiers associés sur la machine cible
+    - N'est-ce pas lourd ?
+    - Voir ce qui est template, ce qui est en dur
+      - Les paths des fichiers sur la machine cible
 ** Semaine du <2024-06-24 Mon> au <2024-06-28 Fri>
 *** Planned
 **** DONE Docker: Déterminer comment générer une image Docker pour x86 et ARM
