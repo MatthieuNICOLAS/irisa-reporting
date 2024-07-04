@@ -94,6 +94,11 @@
 - Proposer leur suppression (MR)
 ** Semaine du <2024-07-01 Mon> au <2024-07-05 Fri>
 *** Planned
+**** DONE SmartSense: Lire *Practical evaluation of Wi-Fi HaLow performance*
+CLOSED: [2024-07-04 Thu 14:21]
+- Article de Sébastien Maudet de 2023
+- Dispo ici : https://www.sciencedirect.com/science/article/pii/S2542660523002809
+- Permettra p-e d'avoir une meilleure vision de l'état actuelle de la technologie
 **** IN-PROGRESS SmartSense: Rédiger un docker-compose pour le noeud SmartSense
 - Finalement, si on utilise Docker pour lancer les différents composants du système SmartSense
 - Bonne partie de la config se déplace dans un docker-compose
@@ -120,10 +125,6 @@
 - De plus, Khaled m'a expliqué avoir défini une version *add* et une version *remove* de chacun de ses rôles
 - Me paraît une feature intéressante à mettre en place
 - Préparer le terrain
-**** TODO SmartSense: Lire *Practical evaluation of Wi-Fi HaLow performance*
-- Article de Sébastien Maudet de 2023
-- Dispo ici : https://www.sciencedirect.com/science/article/pii/S2542660523002809
-- Permettra p-e d'avoir une meilleure vision de l'état actuelle de la technologie
 *** Done
 - SmartSense: Rédiger un docker-compose pour le noeud SmartSense
   - [X] influxdb
@@ -276,6 +277,61 @@ WantedBy=multi-user.target
     - N'est-ce pas lourd ?
     - Voir ce qui est template, ce qui est en dur
       - Les paths des fichiers sur la machine cible
+- SmartSense: Lire *Pratical evaluation of Wi-Fi HaLow performance*
+  - Papier plutôt clair pour moi qui ne suis pas du domaine
+  - Evalue la distance et le débit offert par Wi-Fi HaLow dans 2 settings
+    - outdoor, où un AP est mis en place sur le toit d'un labo et des STAtions sont déployées aux alentours, jusqu'à 1km
+    - indoor, où un AP est mis en place dans un bureau du labo et des STA sont déployées dans l'étage
+  - Se sont basés sur de l'équipement issu du commerce pour réaliser leur testbed
+  - Testbed utilise des antennes omni-directionnelles
+  - Précise que *la limitation légale* sur la puissance de transmission d'un signal est *14dBm en EU*
+  - Précise qu'il *existe une faille de sécurité* dans PV1 MAC header, utilise donc PV0 MAC header
+  - Mentionne des outils Linux pour analyser les performances réseaux
+    - iw, iperf et ping
+  - Mesure l'impact de la distance sur la Received Signal Strength Indication (RSSI)
+    - i.e. la qualité du signal reçue
+  - Obtiennent des résultats proches de la théorie
+  - Dans settings expérimentaux qui correspond à notre use case (outdoor, 14dBm ou 0dBm)
+    - 14dBm : RSSI varie de -40dBm (à 50m) à -90dBm (~500m)
+    - 0dBm : RSSI varie de -55dBm (à 50m) à -90dBm (~330m)
+  - Existe plusieurs Modulation and Coding Scheme (MCS)
+    - Sont chacun conçus pour travailler avec un RSSI dans un range donnée
+    - Équipement switch automatiquement (?) de MCS en fonction de la qualité du signal
+    - Avec des débits de plus en plus faibles au fur et à mesure que le RSSI diminue
+  - Mesure le MCS utilisé en fonction du RSSI
+    - Globalement proche de la théorie dans le cas de l'outdoor
+    - Moins pour l'indoor
+    - Pas sûr de comprendre ce que ça montre lorsque le MCS utilisé à un RSSI donné n'est pas celui expected
+    - Problème du matériel ? Du logiciel ? Du standard ?
+  - Mesure finalement le débit en fonction du MCS utilisé
+    - Existe des mécanismes d'ACK et de limitation des collisions
+    - Qui diminue le débit
+    - Et un mécanisme d'aggrégation des data frames
+    - Qui contrebalance largement les diminutions de débit évoquées précédemment
+  - Finalement, mesure latences
+    - Globalement faibles pour notre cas d'usage
+    - ~30ms dans le pire cas, généralement autour de 12ms, 2ms dans le meilleur cas
+  - Confirme expérimentalement les résultats théoriques
+    - Mentionne l'absence d'overheads dans leur process expérimental, l'IP fragmentation et mesh topology
+    - À voir leur impact(s) respectif(s)
+  - Résultats expérimentaux
+    - 150m, 14dBm
+      - 1MHz BW => 2.65Mbps = 331.25ko/s
+      - 2MHz BW => 5.6Mbps = 700ko/s
+    - 500m, 14dBm <=> 330m, 0dBm
+      - 1MHz BW => 0.249Mbps = 31.125ko/s
+      - 2MHz BW => 0.599Mbps = 74.875ko/s
+  - J'ai juste un doute sur un aspect de leurs résultats
+    - À partir d'un moment, font l'équivalence entre un range de RSSI avec un MCS
+    - Et mesurent donc le débit ou la latence en fonction du MCS
+    - Mais intuitivement, dirais que les performances d'un MCS donné dépendent du RSSI
+    - Notamment, plus on s'approche du RSSI seuil, de la valeur à partir de laquelle on est censé passer au MCS suivant
+    - Plus je m'attends à des pertes/corruptions de message
+    - Et donc une diminution du débit
+    - Pour ces mesures, ne précisent pas les conditions expérimentales
+    - Après, peut supposer qu'il y a en fait de la marge dans cette fonction qui pick un MCS en fct de la valeur du RSSI
+    - De façon à conserver une bonne qualité de service même proches des valeurs seuils
+    - À confirmer
 ** Semaine du <2024-06-24 Mon> au <2024-06-28 Fri>
 *** Planned
 **** DONE Docker: Déterminer comment générer une image Docker pour x86 et ARM
